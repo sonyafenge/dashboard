@@ -35,7 +35,19 @@ type PersistentVolumeDetail struct {
 func GetPersistentVolumeDetail(client client.Interface, name string) (*PersistentVolumeDetail, error) {
 	log.Printf("Getting details of %s persistent volume", name)
 
-	rawPersistentVolume, err := client.CoreV1().PersistentVolumes().Get(name, metaV1.GetOptions{})
+	rawPersistentVolume, err := client.CoreV1().PersistentVolumesWithMultiTenancy("").Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return getPersistentVolumeDetail(*rawPersistentVolume), nil
+}
+
+// GetPersistentVolumeDetailWithMultiTenancy returns detailed information about a persistent volume
+func GetPersistentVolumeDetailWithMultiTenancy(client client.Interface, tenant string, name string) (*PersistentVolumeDetail, error) {
+	log.Printf("Getting details of %s persistent volume", name)
+
+	rawPersistentVolume, err := client.CoreV1().PersistentVolumesWithMultiTenancy(tenant).Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

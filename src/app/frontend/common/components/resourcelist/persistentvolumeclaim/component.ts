@@ -32,7 +32,7 @@ export class PersistentVolumeClaimListComponent extends ResourceListWithStatuses
   PersistentVolumeClaimList,
   PersistentVolumeClaim
 > {
-  @Input() endpoint = EndpointManager.resource(Resource.persistentVolumeClaim, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.persistentVolumeClaim, true, true).list();
 
   constructor(
     private readonly persistentVolumeClaim_: NamespacedResourceService<PersistentVolumeClaimList>,

@@ -89,10 +89,10 @@ func getScaleGetter(cfg *rest.Config) (scale.ScalesGetter, error) {
 		return nil, err
 	}
 
-	cfg.GroupVersion = &appsv1beta2.SchemeGroupVersion
-	cfg.NegotiatedSerializer = scheme.Codecs
+	cfg.GetConfig().GroupVersion = &appsv1beta2.SchemeGroupVersion
+	cfg.GetConfig().NegotiatedSerializer = scheme.Codecs
 
-	restClient, err := rest.RESTClientFor(cfg)
+	restClient, err := rest.RESTClientFor(cfg.GetConfig())
 	if err != nil {
 		return nil, err
 	}

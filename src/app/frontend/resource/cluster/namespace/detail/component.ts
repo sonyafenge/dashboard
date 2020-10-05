@@ -28,7 +28,7 @@ import {ResourceService} from '../../../../common/services/resource/resource';
 })
 export class NamespaceDetailComponent implements OnInit, OnDestroy {
   private namespaceSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.namespace);
+  private readonly endpoint_ = EndpointManager.resource(Resource.namespace, false, true);
   namespace: NamespaceDetail;
   isInitialized = false;
   eventListEndpoint: string;

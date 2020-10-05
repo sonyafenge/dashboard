@@ -29,7 +29,7 @@ import {ResourceService} from '../../../../common/services/resource/resource';
 })
 export class PersistentVolumeDetailComponent implements OnInit, OnDestroy {
   private persistentVolumeSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.persistentVolume);
+  private readonly endpoint_ = EndpointManager.resource(Resource.persistentVolume, false, true);
   persistentVolume: PersistentVolumeDetail;
   isInitialized = false;
 

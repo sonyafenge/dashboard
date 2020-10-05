@@ -30,6 +30,7 @@ import (
 type FakePlugins struct {
 	Fake *FakeDashboardV1alpha1
 	ns   string
+	te   string
 }
 
 var pluginsResource = schema.GroupVersionResource{Group: "dashboard.k8s.io", Version: "v1alpha1", Resource: "plugins"}
@@ -39,18 +40,19 @@ var pluginsKind = schema.GroupVersionKind{Group: "dashboard.k8s.io", Version: "v
 // Get takes name of the plugin, and returns the corresponding plugin object, and an error if there is any.
 func (c *FakePlugins) Get(name string, options v1.GetOptions) (result *v1alpha1.Plugin, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(pluginsResource, c.ns, name), &v1alpha1.Plugin{})
+		Invokes(testing.NewGetActionWithMultiTenancy(pluginsResource, c.ns, name, c.te), &v1alpha1.Plugin{})
 
 	if obj == nil {
 		return nil, err
 	}
+
 	return obj.(*v1alpha1.Plugin), err
 }
 
 // List takes label and field selectors, and returns the list of Plugins that match those selectors.
 func (c *FakePlugins) List(opts v1.ListOptions) (result *v1alpha1.PluginList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(pluginsResource, pluginsKind, c.ns, opts), &v1alpha1.PluginList{})
+		Invokes(testing.NewListActionWithMultiTenancy(pluginsResource, pluginsKind, c.ns, opts, c.te), &v1alpha1.PluginList{})
 
 	if obj == nil {
 		return nil, err
@@ -69,46 +71,51 @@ func (c *FakePlugins) List(opts v1.ListOptions) (result *v1alpha1.PluginList, er
 	return list, err
 }
 
-// Watch returns a watch.Interface that watches the requested plugins.
-func (c *FakePlugins) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(pluginsResource, c.ns, opts))
+// Watch returns a watch.AggregatedWatchInterface that watches the requested plugins.
+func (c *FakePlugins) Watch(opts v1.ListOptions) watch.AggregatedWatchInterface {
+	aggWatch := watch.NewAggregatedWatcher()
+	watcher, err := c.Fake.
+		InvokesWatch(testing.NewWatchActionWithMultiTenancy(pluginsResource, c.ns, opts, c.te))
 
+	aggWatch.AddWatchInterface(watcher, err)
+	return aggWatch
 }
 
 // Create takes the representation of a plugin and creates it.  Returns the server's representation of the plugin, and an error, if there is any.
 func (c *FakePlugins) Create(plugin *v1alpha1.Plugin) (result *v1alpha1.Plugin, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(pluginsResource, c.ns, plugin), &v1alpha1.Plugin{})
+		Invokes(testing.NewCreateActionWithMultiTenancy(pluginsResource, c.ns, plugin, c.te), &v1alpha1.Plugin{})
 
 	if obj == nil {
 		return nil, err
 	}
+
 	return obj.(*v1alpha1.Plugin), err
 }
 
 // Update takes the representation of a plugin and updates it. Returns the server's representation of the plugin, and an error, if there is any.
 func (c *FakePlugins) Update(plugin *v1alpha1.Plugin) (result *v1alpha1.Plugin, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(pluginsResource, c.ns, plugin), &v1alpha1.Plugin{})
+		Invokes(testing.NewUpdateActionWithMultiTenancy(pluginsResource, c.ns, plugin, c.te), &v1alpha1.Plugin{})
 
 	if obj == nil {
 		return nil, err
 	}
+
 	return obj.(*v1alpha1.Plugin), err
 }
 
 // Delete takes name of the plugin and deletes it. Returns an error if one occurs.
 func (c *FakePlugins) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(pluginsResource, c.ns, name), &v1alpha1.Plugin{})
+		Invokes(testing.NewDeleteActionWithMultiTenancy(pluginsResource, c.ns, name, c.te), &v1alpha1.Plugin{})
 
 	return err
 }
 
 // DeleteCollection deletes a collection of objects.
 func (c *FakePlugins) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(pluginsResource, c.ns, listOptions)
+	action := testing.NewDeleteCollectionActionWithMultiTenancy(pluginsResource, c.ns, listOptions, c.te)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.PluginList{})
 	return err
@@ -117,10 +124,11 @@ func (c *FakePlugins) DeleteCollection(options *v1.DeleteOptions, listOptions v1
 // Patch applies the patch and returns the patched plugin.
 func (c *FakePlugins) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Plugin, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(pluginsResource, c.ns, name, pt, data, subresources...), &v1alpha1.Plugin{})
+		Invokes(testing.NewPatchSubresourceActionWithMultiTenancy(pluginsResource, c.te, c.ns, name, pt, data, subresources...), &v1alpha1.Plugin{})
 
 	if obj == nil {
 		return nil, err
 	}
+
 	return obj.(*v1alpha1.Plugin), err
 }

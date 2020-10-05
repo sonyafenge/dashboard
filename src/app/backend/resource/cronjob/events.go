@@ -33,3 +33,16 @@ func GetCronJobEvents(client client.Interface, dsQuery *dataselect.DataSelectQue
 	events := event.CreateEventList(raw, dsQuery)
 	return &events, nil
 }
+
+// GetCronJobEventsWithMultiTenancy gets events associated to cron job.
+func GetCronJobEventsWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant, namespace, name string) (
+	*common.EventList, error) {
+
+	raw, err := event.GetEventsWithMultiTenancy(client, tenant, namespace, name)
+	if err != nil {
+		return event.EmptyEventList, err
+	}
+
+	events := event.CreateEventList(raw, dsQuery)
+	return &events, nil
+}

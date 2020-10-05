@@ -46,7 +46,20 @@ type IngressList struct {
 // GetIngressList returns all ingresses in the given namespace.
 func GetIngressList(client client.Interface, namespace *common.NamespaceQuery,
 	dsQuery *dataselect.DataSelectQuery) (*IngressList, error) {
-	ingressList, err := client.ExtensionsV1beta1().Ingresses(namespace.ToRequestParam()).List(api.ListEverything)
+	ingressList, err := client.ExtensionsV1beta1().IngressesWithMultiTenancy(namespace.ToRequestParam(), "").List(api.ListEverything)
+
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	return toIngressList(ingressList.Items, nonCriticalErrors, dsQuery), nil
+}
+
+// GetIngressListWithMultiTenancy returns all ingresses in the given namespace.
+func GetIngressListWithMultiTenancy(client client.Interface, tenant string, namespace *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery) (*IngressList, error) {
+	ingressList, err := client.ExtensionsV1beta1().IngressesWithMultiTenancy(namespace.ToRequestParam(), tenant).List(api.ListEverything)
 
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {

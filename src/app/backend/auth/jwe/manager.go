@@ -21,6 +21,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/client-go/tools/clientcmd/api"
 
+	// "encoding/json"
+
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 )
@@ -29,6 +31,11 @@ import (
 type jweTokenManager struct {
 	keyHolder KeyHolder
 	tokenTTL  time.Duration
+}
+
+type Token struct {
+	LocationOfOrigin string
+	Token            string
 }
 
 // AdditionalAuthData contains information required to validate token. It is integrity protected.

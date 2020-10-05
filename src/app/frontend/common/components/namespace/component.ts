@@ -38,7 +38,7 @@ import {NamespaceChangeDialog} from './changedialog/dialog';
 export class NamespaceSelectorComponent implements OnInit, OnDestroy {
   private namespaceUpdate_ = new Subject();
   private unsubscribe_ = new Subject();
-  private readonly endpoint_ = EndpointManager.resource(Resource.namespace);
+  private readonly endpoint_ = EndpointManager.resource(Resource.namespace, false, true);
 
   namespaces: string[] = [];
   selectNamespaceInput = '';
@@ -160,7 +160,7 @@ export class NamespaceSelectorComponent implements OnInit, OnDestroy {
             }
           }
         },
-        undefined,
+        () => {},
         () => {
           this.onNamespaceLoaded_();
         },

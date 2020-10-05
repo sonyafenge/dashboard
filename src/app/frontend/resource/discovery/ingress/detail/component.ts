@@ -30,7 +30,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class IngressDetailComponent implements OnInit, OnDestroy {
   private ingressSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.ingress, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.ingress, true, true);
   ingress: IngressDetail;
   isInitialized = false;
 

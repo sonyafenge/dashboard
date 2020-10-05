@@ -51,8 +51,28 @@ func GetReplicaSetPods(client k8sClient.Interface, metricClient metricapi.Metric
 	return &podList, nil
 }
 
+// GetReplicaSetPodsWithMultiTenancy return list of pods targeting replica set.
+func GetReplicaSetPodsWithMultiTenancy(client k8sClient.Interface, metricClient metricapi.MetricClient, tenant string,
+	dsQuery *dataselect.DataSelectQuery, petSetName, namespace string) (*pod.PodList, error) {
+	log.Printf("Getting replication controller %s pods in namespace %s for %s", petSetName, namespace, tenant)
+
+	pods, err := getRawReplicaSetPodsWithMultiTenancy(client, tenant, petSetName, namespace)
+	if err != nil {
+		return pod.EmptyPodList, err
+	}
+
+	events, err := event.GetPodsEventsWithMultiTenancy(client, tenant, namespace, pods)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	podList := pod.ToPodList(pods, events, nonCriticalErrors, dsQuery, metricClient)
+	return &podList, nil
+}
+
 func getRawReplicaSetPods(client k8sClient.Interface, petSetName, namespace string) ([]v1.Pod, error) {
-	rs, err := client.AppsV1().ReplicaSets(namespace).Get(petSetName, metaV1.GetOptions{})
+	rs, err := client.AppsV1().ReplicaSetsWithMultiTenancy(namespace, "").Get(petSetName, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -69,10 +89,47 @@ func getRawReplicaSetPods(client k8sClient.Interface, petSetName, namespace stri
 	return common.FilterPodsByControllerRef(rs, podList.Items), nil
 }
 
+func getRawReplicaSetPodsWithMultiTenancy(client k8sClient.Interface, tenant, petSetName, namespace string) ([]v1.Pod, error) {
+	rs, err := client.AppsV1().ReplicaSetsWithMultiTenancy(namespace, tenant).Get(petSetName, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		PodList: common.GetPodListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	podList := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return nil, err
+	}
+
+	return common.FilterPodsByControllerRef(rs, podList.Items), nil
+}
+
 func getReplicaSetPodInfo(client k8sClient.Interface, replicaSet *apps.ReplicaSet) (*common.PodInfo, error) {
 	labelSelector := labels.SelectorFromSet(replicaSet.Spec.Selector.MatchLabels)
 	channels := &common.ResourceChannels{
 		PodList: common.GetPodListChannelWithOptions(client, common.NewSameNamespaceQuery(replicaSet.Namespace),
+			metaV1.ListOptions{
+				LabelSelector: labelSelector.String(),
+				FieldSelector: fields.Everything().String(),
+			}, 1),
+	}
+
+	pods := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return nil, err
+	}
+
+	podInfo := common.GetPodInfo(replicaSet.Status.Replicas, replicaSet.Spec.Replicas, pods.Items)
+	return &podInfo, nil
+}
+
+func getReplicaSetPodInfoWithMultiTenancy(client k8sClient.Interface, replicaSet *apps.ReplicaSet, tenant string) (*common.PodInfo, error) {
+	labelSelector := labels.SelectorFromSet(replicaSet.Spec.Selector.MatchLabels)
+	channels := &common.ResourceChannels{
+		PodList: common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant, common.NewSameNamespaceQuery(replicaSet.Namespace),
 			metaV1.ListOptions{
 				LabelSelector: labelSelector.String(),
 				FieldSelector: fields.Everything().String(),

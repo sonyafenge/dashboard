@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class ReplicaSetDetailComponent implements OnInit, OnDestroy {
   private replicaSetSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.replicaSet, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.replicaSet, true, true);
   replicaSet: ReplicaSetDetail;
   isInitialized = false;
   eventListEndpoint: string;

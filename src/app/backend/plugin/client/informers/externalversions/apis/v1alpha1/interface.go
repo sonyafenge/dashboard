@@ -28,16 +28,22 @@ type Interface interface {
 
 type version struct {
 	factory          internalinterfaces.SharedInformerFactory
+	tenant           string
 	namespace        string
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 }
 
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
-	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+	return &version{factory: f, tenant: "system", namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+func NewWithMultiTenancy(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc, tenant string) Interface {
+
+	return &version{factory: f, tenant: tenant, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
 // Plugins returns a PluginInformer.
 func (v *version) Plugins() PluginInformer {
-	return &pluginInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &pluginInformer{factory: v.factory, namespace: v.namespace, tenant: v.tenant, tweakListOptions: v.tweakListOptions}
 }

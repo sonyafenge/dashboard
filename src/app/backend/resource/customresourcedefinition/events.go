@@ -26,3 +26,9 @@ func GetEventsForCustomResourceObject(client client.Interface, dsQuery *datasele
 	namespace, name string) (*common.EventList, error) {
 	return event.GetResourceEvents(client, dsQuery, namespace, name)
 }
+
+// GetEventsForCustomResourceObject gets events that are associated with this CR object.
+func GetEventsForCustomResourceObjectWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant,
+	namespace, name string) (*common.EventList, error) {
+	return event.GetResourceEventsWithMultiTenancy(client, dsQuery, tenant, namespace, name)
+}

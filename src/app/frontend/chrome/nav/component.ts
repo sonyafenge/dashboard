@@ -15,7 +15,9 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {MatDrawer} from '@angular/material';
 
+import {CONFIG} from '../../index.config';
 import {NavService} from '../../common/services/nav/service';
+import {TenantService} from 'common/services/global/tenant';
 
 @Component({
   selector: 'kd-nav',
@@ -25,7 +27,18 @@ import {NavService} from '../../common/services/nav/service';
 export class NavComponent implements OnInit {
   @ViewChild(MatDrawer, {static: true}) private readonly nav_: MatDrawer;
 
-  constructor(private readonly navService_: NavService) {}
+  constructor(
+    private readonly navService_: NavService,
+    private readonly tenantService_: TenantService,
+  ) {}
+
+  get isSystem(): boolean {
+    return this.tenantService_.isSystem();
+  }
+
+  get isCurrentSystem(): boolean {
+    return this.tenantService_.isCurrentSystem();
+  }
 
   ngOnInit(): void {
     this.navService_.setNav(this.nav_);

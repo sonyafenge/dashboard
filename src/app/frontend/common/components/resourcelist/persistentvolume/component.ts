@@ -32,7 +32,7 @@ export class PersistentVolumeListComponent extends ResourceListWithStatuses<
   PersistentVolumeList,
   PersistentVolume
 > {
-  @Input() endpoint = EndpointManager.resource(Resource.persistentVolume).list();
+  @Input() endpoint = EndpointManager.resource(Resource.persistentVolume, false, true).list();
 
   constructor(
     private readonly pv_: ResourceService<PersistentVolumeList>,

@@ -39,7 +39,19 @@ type SecretDetail struct {
 func GetSecretDetail(client kubernetes.Interface, namespace, name string) (*SecretDetail, error) {
 	log.Printf("Getting details of %s secret in %s namespace\n", name, namespace)
 
-	rawSecret, err := client.CoreV1().Secrets(namespace).Get(name, metaV1.GetOptions{})
+	rawSecret, err := client.CoreV1().SecretsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return getSecretDetail(rawSecret), nil
+}
+
+// GetSecretDetailWithMultiTenancy returns detailed information about a secret
+func GetSecretDetailWithMultiTenancy(client kubernetes.Interface, tenant, namespace, name string) (*SecretDetail, error) {
+	log.Printf("Getting details of %s secret in %s namespace for %s\n", name, namespace, tenant)
+
+	rawSecret, err := client.CoreV1().SecretsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

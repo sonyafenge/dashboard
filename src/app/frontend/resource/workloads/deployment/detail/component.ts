@@ -30,7 +30,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class DeploymentDetailComponent implements OnInit, OnDestroy {
   private unsubscribe_ = new Subject<void>();
-  private readonly endpoint_ = EndpointManager.resource(Resource.deployment, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.deployment, true, true);
   deployment: DeploymentDetail;
   newReplicaSet: ReplicaSet;
   isInitialized = false;

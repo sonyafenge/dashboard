@@ -26,7 +26,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({selector: 'kd-ingress-list', templateUrl: './template.html'})
 export class IngressListComponent extends ResourceListBase<IngressList, Ingress> {
-  @Input() endpoint = EndpointManager.resource(Resource.ingress, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.ingress, true, true).list();
 
   constructor(
     private readonly ingress_: NamespacedResourceService<IngressList>,

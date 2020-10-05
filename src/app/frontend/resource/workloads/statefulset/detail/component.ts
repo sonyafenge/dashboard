@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class StatefulSetDetailComponent implements OnInit, OnDestroy {
   private statefulSetSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.statefulSet, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.statefulSet, true, true);
   statefulSet: StatefulSetDetail;
   isInitialized = false;
   podListEndpoint: string;

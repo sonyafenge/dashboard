@@ -29,6 +29,7 @@ import {K8SError} from '../../errors/errors';
 
 import {CsrfTokenService} from './csrftoken';
 import {KdStateService} from './state';
+import {TenantService} from './tenant';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,7 @@ export class AuthService {
     private readonly http_: HttpClient,
     private readonly csrfTokenService_: CsrfTokenService,
     private readonly stateService_: KdStateService,
+    private readonly tenantService_: TenantService,
   ) {
     this.init_();
   }
@@ -50,6 +52,16 @@ export class AuthService {
         this.refreshToken();
       }
     });
+  }
+
+  private setTenantCookie_(tenant: string): void {
+    // This will only work for HTTPS connection
+    this.cookies_.set(this.config_.authTenantCookieName, tenant, null, null, null, true);
+
+    // This will only work when accessing Dashboard at 'localhost' or
+    // '127.0.0.1'
+    this.cookies_.set(this.config_.authTenantCookieName, tenant, null, null, 'localhost');
+    this.cookies_.set(this.config_.authTenantCookieName, tenant, null, null, '127.0.0.1');
   }
 
   private setTokenCookie_(token: string): void {
@@ -65,9 +77,15 @@ export class AuthService {
     return this.cookies_.get(this.config_.authTokenCookieName) || '';
   }
 
+  private setAuthTenant_(tenant: string): void {
+    this.tenantService_.setAuthTenant(tenant);
+  }
+
   removeAuthCookies(): void {
     this.cookies_.delete(this.config_.authTokenCookieName);
     this.cookies_.delete(this.config_.skipLoginPageCookieName);
+    this.cookies_.delete(this.config_.authTenantCookieName);
+    this.setAuthTenant_('');
   }
 
   /**
@@ -87,6 +105,8 @@ export class AuthService {
         switchMap((authResponse: AuthResponse) => {
           if (authResponse.jweToken.length !== 0 && authResponse.errors.length === 0) {
             this.setTokenCookie_(authResponse.jweToken);
+            this.setTenantCookie_(authResponse.tenant);
+            this.setAuthTenant_(authResponse.tenant);
           }
 
           return of(authResponse.errors);

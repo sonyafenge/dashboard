@@ -47,6 +47,15 @@ func GetClusterRoleList(client kubernetes.Interface, dsQuery *dataselect.DataSel
 	return GetClusterRoleListFromChannels(channels, dsQuery)
 }
 
+func GetClusterRoleListWithMultiTenancy(client kubernetes.Interface, tenant string, dsQuery *dataselect.DataSelectQuery) (*ClusterRoleList, error) {
+	log.Println("Getting list of RBAC roles")
+	channels := &common.ResourceChannels{
+		ClusterRoleList: common.GetClusterRoleListChannelWithMultiTenancy(client, tenant, 1),
+	}
+
+	return GetClusterRoleListFromChannels(channels, dsQuery)
+}
+
 func GetClusterRoleListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery) (*ClusterRoleList, error) {
 	clusterRoles := <-channels.ClusterRoleList.List
 	err := <-channels.ClusterRoleList.Error

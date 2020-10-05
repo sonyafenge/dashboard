@@ -100,7 +100,7 @@ func GetPodDetail(client kubernetes.Interface, metricClient metricapi.MetricClie
 		SecretList:    common.GetSecretListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
 	}
 
-	pod, err := client.CoreV1().Pods(namespace).Get(name, metaV1.GetOptions{})
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +136,64 @@ func GetPodDetail(client kubernetes.Interface, metricClient metricapi.MetricClie
 	}
 
 	persistentVolumeClaimList, err := persistentvolumeclaim.GetPodPersistentVolumeClaims(client,
+		namespace, name, dataselect.DefaultDataSelect)
+	nonCriticalErrors, criticalError = errorHandler.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	podDetail := toPodDetail(pod, metrics, configMapList, secretList, controller,
+		eventList, persistentVolumeClaimList, nonCriticalErrors)
+	return &podDetail, nil
+}
+
+// GetPodDetailWithMultiTenancy returns the details of a named Pod from a particular namespace.
+func GetPodDetailWithMultiTenancy(client kubernetes.Interface, metricClient metricapi.MetricClient, tenant, namespace, name string) (
+	*PodDetail, error) {
+	log.Printf("Getting details of %s pod in %s namespace for %s", name, namespace, tenant)
+
+	channels := &common.ResourceChannels{
+		ConfigMapList: common.GetConfigMapListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+		SecretList:    common.GetSecretListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	controller, err := getPodController(client, common.NewSameNamespaceQuery(namespace), pod)
+	nonCriticalErrors, criticalError := errorHandler.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	_, metricPromises := dataselect.GenericDataSelectWithMetrics(toCells([]v1.Pod{*pod}),
+		dataselect.StdMetricsDataSelect, metricapi.NoResourceCache, metricClient)
+	metrics, _ := metricPromises.GetMetrics()
+
+	configMapList := <-channels.ConfigMapList.List
+	err = <-channels.ConfigMapList.Error
+	nonCriticalErrors, criticalError = errorHandler.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	secretList := <-channels.SecretList.List
+	err = <-channels.SecretList.Error
+	nonCriticalErrors, criticalError = errorHandler.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	eventList, err := GetEventsForPodWithMultiTenancy(client, dataselect.DefaultDataSelect, pod.Tenant, pod.Namespace, pod.Name)
+	nonCriticalErrors, criticalError = errorHandler.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	persistentVolumeClaimList, err := persistentvolumeclaim.GetPodPersistentVolumeClaimsWithMultiTenancy(client, pod.Tenant,
 		namespace, name, dataselect.DefaultDataSelect)
 	nonCriticalErrors, criticalError = errorHandler.AppendError(err, nonCriticalErrors)
 	if criticalError != nil {

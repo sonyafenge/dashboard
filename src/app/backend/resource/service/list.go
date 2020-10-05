@@ -72,6 +72,18 @@ func GetServiceList(client client.Interface, nsQuery *common.NamespaceQuery,
 	return GetServiceListFromChannels(channels, dsQuery)
 }
 
+// GetServiceListWithMultiTenancy returns a list of all services in the cluster.
+func GetServiceListWithMultiTenancy(client client.Interface, tenant string, nsQuery *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery) (*ServiceList, error) {
+	log.Printf("Getting list of all services in the cluster for %s", tenant)
+
+	channels := &common.ResourceChannels{
+		ServiceList: common.GetServiceListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetServiceListFromChannels(channels, dsQuery)
+}
+
 // GetServiceListFromChannels returns a list of all services in the cluster.
 func GetServiceListFromChannels(channels *common.ResourceChannels,
 	dsQuery *dataselect.DataSelectQuery) (*ServiceList, error) {

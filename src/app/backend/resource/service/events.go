@@ -41,3 +41,21 @@ func GetServiceEvents(client client.Interface, dsQuery *dataselect.DataSelectQue
 	log.Printf("Found %d events related to %s service in %s namespace", len(eventList.Events), name, namespace)
 	return &eventList, nil
 }
+
+// GetServiceEventsWithMultiTenancy returns model events for a service with the given name in the given namespace.
+func GetServiceEventsWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant, namespace, name string) (
+	*common.EventList, error) {
+	eventList := common.EventList{
+		Events:   make([]common.Event, 0),
+		ListMeta: api.ListMeta{TotalItems: 0},
+	}
+
+	serviceEvents, err := event.GetEventsWithMultiTenancy(client, tenant, namespace, name)
+	if err != nil {
+		return &eventList, err
+	}
+
+	eventList = event.CreateEventList(event.FillEventsType(serviceEvents), dsQuery)
+	log.Printf("Found %d events related to %s service in %s namespace for %s", len(eventList.Events), name, namespace, tenant)
+	return &eventList, nil
+}

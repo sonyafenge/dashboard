@@ -136,6 +136,9 @@ type AuthResponse struct {
 	JWEToken string `json:"jweToken"`
 	// Errors are a list of non-critical errors that happened during login request.
 	Errors []error `json:"errors"`
+	// Tenant is the tenant that user belongs to. Used by frontend to determine if the current user is system tenant
+	// or regular tenant.
+	Tenant string `json:"tenant"`
 }
 
 // TokenRefreshSpec contains token that is required by token refresh operation.

@@ -40,7 +40,7 @@ func GetDaemonSetDetail(client k8sClient.Interface, metricClient metricapi.Metri
 	namespace, name string) (*DaemonSetDetail, error) {
 
 	log.Printf("Getting details of %s daemon set in %s namespace", name, namespace)
-	daemonSet, err := client.AppsV1().DaemonSets(namespace).Get(name, metaV1.GetOptions{})
+	daemonSet, err := client.AppsV1().DaemonSetsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +48,38 @@ func GetDaemonSetDetail(client k8sClient.Interface, metricClient metricapi.Metri
 	channels := &common.ResourceChannels{
 		EventList: common.GetEventListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
 		PodList:   common.GetPodListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	eventList := <-channels.EventList.List
+	if err := <-channels.EventList.Error; err != nil {
+		return nil, err
+	}
+
+	podList := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return nil, err
+	}
+
+	return &DaemonSetDetail{
+		DaemonSet:     toDaemonSet(*daemonSet, podList.Items, eventList.Items),
+		LabelSelector: daemonSet.Spec.Selector,
+		Errors:        []error{},
+	}, nil
+}
+
+// Returns detailed information about the given daemon set in the given namespace.
+func GetDaemonSetDetailWithMultiTenancy(client k8sClient.Interface, metricClient metricapi.MetricClient, tenant,
+	namespace, name string) (*DaemonSetDetail, error) {
+
+	log.Printf("Getting details of %s daemon set in %s namespace", name, namespace)
+	daemonSet, err := client.AppsV1().DaemonSetsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		EventList: common.GetEventListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+		PodList:   common.GetPodListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
 	}
 
 	eventList := <-channels.EventList.List

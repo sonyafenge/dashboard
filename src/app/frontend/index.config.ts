@@ -19,18 +19,22 @@ export let CONFIG_DI_TOKEN = new InjectionToken<Config>('kd.config');
 
 export interface Config {
   authTokenCookieName: string;
+  authTenantCookieName: string;
   skipLoginPageCookieName: string;
   csrfHeaderName: string;
   authTokenHeaderName: string;
   defaultNamespace: string;
+  systemTenantName: string;
 }
 
 export const CONFIG: Config = {
   authTokenCookieName: 'jweToken',
   authTokenHeaderName: 'jweToken',
+  authTenantCookieName: 'tenant',
   csrfHeaderName: 'X-CSRF-TOKEN',
   skipLoginPageCookieName: 'skipLoginPage',
   defaultNamespace: 'default',
+  systemTenantName: 'system',
 };
 
 // Override default material tooltip values.

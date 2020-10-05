@@ -60,6 +60,23 @@ func GetServiceEndpoints(client k8sClient.Interface, namespace, name string) (*E
 	return endpointList, nil
 }
 
+// GetServiceEndpointsWithMultiTenancy gets list of endpoints targeted by given label selector in given namespace.
+func GetServiceEndpointsWithMultiTenancy(client k8sClient.Interface, tenant, namespace, name string) (*EndpointList, error) {
+	endpointList := &EndpointList{
+		Endpoints: make([]Endpoint, 0),
+		ListMeta:  api.ListMeta{TotalItems: 0},
+	}
+
+	serviceEndpoints, err := GetEndpointsWithMultiTenancy(client, tenant, namespace, name)
+	if err != nil {
+		return endpointList, err
+	}
+
+	endpointList = toEndpointList(serviceEndpoints)
+	log.Printf("Found %d endpoints related to %s service in %s namespace", len(endpointList.Endpoints), name, namespace)
+	return endpointList, nil
+}
+
 // GetEndpoints gets endpoints associated to resource with given name.
 func GetEndpoints(client k8sClient.Interface, namespace, name string) ([]v1.Endpoints, error) {
 	fieldSelector, err := fields.ParseSelector("metadata.name" + "=" + name)
@@ -69,6 +86,31 @@ func GetEndpoints(client k8sClient.Interface, namespace, name string) ([]v1.Endp
 
 	channels := &common.ResourceChannels{
 		EndpointList: common.GetEndpointListChannelWithOptions(client,
+			common.NewSameNamespaceQuery(namespace),
+			metaV1.ListOptions{
+				LabelSelector: labels.Everything().String(),
+				FieldSelector: fieldSelector.String(),
+			},
+			1),
+	}
+
+	endpointList := <-channels.EndpointList.List
+	if err := <-channels.EndpointList.Error; err != nil {
+		return nil, err
+	}
+
+	return endpointList.Items, nil
+}
+
+// GetEndpoints gets endpoints associated to resource with given name.
+func GetEndpointsWithMultiTenancy(client k8sClient.Interface, tenant, namespace, name string) ([]v1.Endpoints, error) {
+	fieldSelector, err := fields.ParseSelector("metadata.name" + "=" + name)
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		EndpointList: common.GetEndpointListChannelWithMultiTenancyAndOptions(client, tenant,
 			common.NewSameNamespaceQuery(namespace),
 			metaV1.ListOptions{
 				LabelSelector: labels.Everything().String(),

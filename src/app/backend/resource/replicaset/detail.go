@@ -48,7 +48,7 @@ func GetReplicaSetDetail(client k8sClient.Interface, metricClient metricapi.Metr
 	namespace, name string) (*ReplicaSetDetail, error) {
 	log.Printf("Getting details of %s service in %s namespace", name, namespace)
 
-	rs, err := client.AppsV1().ReplicaSets(namespace).Get(name, metaV1.GetOptions{})
+	rs, err := client.AppsV1().ReplicaSetsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +60,32 @@ func GetReplicaSetDetail(client k8sClient.Interface, metricClient metricapi.Metr
 	}
 
 	hpas, err := hpa.GetHorizontalPodAutoscalerListForResource(client, namespace, "ReplicaSet", name)
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	rsDetail := toReplicaSetDetail(rs, *podInfo, *hpas, nonCriticalErrors)
+	return &rsDetail, nil
+}
+
+// GetReplicaSetDetailWithMultiTenancy gets replica set details.
+func GetReplicaSetDetailWithMultiTenancy(client k8sClient.Interface, metricClient metricapi.MetricClient, tenant string,
+	namespace, name string) (*ReplicaSetDetail, error) {
+	log.Printf("Getting details of %s service in %s namespace for %s", name, namespace, tenant)
+
+	rs, err := client.AppsV1().ReplicaSetsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	podInfo, err := getReplicaSetPodInfoWithMultiTenancy(client, rs, tenant)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	hpas, err := hpa.GetHorizontalPodAutoscalerListForResourceWithMultiTenancy(client, tenant, namespace, "ReplicaSet", name)
 	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
 	if criticalError != nil {
 		return nil, criticalError

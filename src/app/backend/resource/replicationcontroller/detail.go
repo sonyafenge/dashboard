@@ -46,7 +46,7 @@ type ReplicationControllerSpec struct {
 func GetReplicationControllerDetail(client k8sClient.Interface, namespace, name string) (*ReplicationControllerDetail, error) {
 	log.Printf("Getting details of %s replication controller in %s namespace", name, namespace)
 
-	replicationController, err := client.CoreV1().ReplicationControllers(namespace).Get(name, metaV1.GetOptions{})
+	replicationController, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -61,25 +61,68 @@ func GetReplicationControllerDetail(client k8sClient.Interface, namespace, name 
 	return &replicationControllerDetail, nil
 }
 
+// GetReplicationControllerDetailWithMultiTenancy returns detailed information about the given replication controller
+// in the given namespace.
+func GetReplicationControllerDetailWithMultiTenancy(client k8sClient.Interface, tenant, namespace, name string) (*ReplicationControllerDetail, error) {
+	log.Printf("Getting details of %s replication controller in %s namespace for %s", name, namespace, tenant)
+
+	replicationController, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	podInfo, err := getReplicationControllerPodInfoWithMultiTenancy(client, replicationController, tenant, namespace)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	replicationControllerDetail := toReplicationControllerDetail(replicationController, podInfo, nonCriticalErrors)
+	return &replicationControllerDetail, nil
+}
+
 // UpdateReplicasCount updates number of replicas in Replication Controller based on Replication Controller Spec
 func UpdateReplicasCount(client k8sClient.Interface, namespace, name string, spec *ReplicationControllerSpec) error {
 	log.Printf("Updating replicas count to %d for %s replication controller from %s namespace",
 		spec.Replicas, name, namespace)
 
-	replicationController, err := client.CoreV1().ReplicationControllers(namespace).Get(name, metaV1.GetOptions{})
+	replicationController, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
 	replicationController.Spec.Replicas = &spec.Replicas
 
-	_, err = client.CoreV1().ReplicationControllers(namespace).Update(replicationController)
+	_, err = client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, "").Update(replicationController)
 	if err != nil {
 		return err
 	}
 
 	log.Printf("Successfully updated replicas count to %d for %s replication controller from %s namespace",
 		spec.Replicas, name, namespace)
+
+	return nil
+}
+
+// UpdateReplicasCountWithMultiTenancy updates number of replicas in Replication Controller based on Replication Controller Spec
+func UpdateReplicasCountWithMultiTenancy(client k8sClient.Interface, tenant, namespace, name string, spec *ReplicationControllerSpec) error {
+	log.Printf("Updating replicas count to %d for %s replication controller from %s namespace for %s",
+		spec.Replicas, name, namespace, tenant)
+
+	replicationController, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	replicationController.Spec.Replicas = &spec.Replicas
+
+	_, err = client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, tenant).Update(replicationController)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Successfully updated replicas count to %d for %s replication controller from %s namespace for %s",
+		spec.Replicas, name, namespace, tenant)
 
 	return nil
 }

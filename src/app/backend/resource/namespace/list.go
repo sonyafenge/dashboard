@@ -62,7 +62,20 @@ func GetNamespaceListFromChannels(channels *common.ResourceChannels, dsQuery *da
 // GetNamespaceList returns a list of all namespaces in the cluster.
 func GetNamespaceList(client kubernetes.Interface, dsQuery *dataselect.DataSelectQuery) (*NamespaceList, error) {
 	log.Println("Getting list of namespaces")
-	namespaces, err := client.CoreV1().Namespaces().List(api.ListEverything)
+	namespaces, err := client.CoreV1().NamespacesWithMultiTenancy("").List(api.ListEverything)
+
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	return toNamespaceList(namespaces.Items, nonCriticalErrors, dsQuery), nil
+}
+
+// GetNamespaceListWithMultiTenancy returns a list of all namespaces in the cluster.
+func GetNamespaceListWithMultiTenancy(client kubernetes.Interface, tenant string, dsQuery *dataselect.DataSelectQuery) (*NamespaceList, error) {
+	log.Println("Getting list of namespaces")
+	namespaces, err := client.CoreV1().NamespacesWithMultiTenancy(tenant).List(api.ListEverything)
 
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {

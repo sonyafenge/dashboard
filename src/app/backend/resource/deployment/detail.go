@@ -82,7 +82,7 @@ func GetDeploymentDetail(client client.Interface, namespace string, deploymentNa
 
 	log.Printf("Getting details of %s deployment in %s namespace", deploymentName, namespace)
 
-	deployment, err := client.AppsV1().Deployments(namespace).Get(deploymentName, metaV1.GetOptions{})
+	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, "").Get(deploymentName, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +99,74 @@ func GetDeploymentDetail(client client.Interface, namespace string, deploymentNa
 		PodList: common.GetPodListChannelWithOptions(client,
 			common.NewSameNamespaceQuery(namespace), options, 1),
 		EventList: common.GetEventListChannelWithOptions(client,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+	}
+
+	rawRs := <-channels.ReplicaSetList.List
+	err = <-channels.ReplicaSetList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	rawPods := <-channels.PodList.List
+	err = <-channels.PodList.Error
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	rawEvents := <-channels.EventList.List
+	err = <-channels.EventList.Error
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	// Extra Info
+	var rollingUpdateStrategy *RollingUpdateStrategy
+	if deployment.Spec.Strategy.RollingUpdate != nil {
+		rollingUpdateStrategy = &RollingUpdateStrategy{
+			MaxSurge:       deployment.Spec.Strategy.RollingUpdate.MaxSurge,
+			MaxUnavailable: deployment.Spec.Strategy.RollingUpdate.MaxUnavailable,
+		}
+	}
+
+	return &DeploymentDetail{
+		Deployment:            toDeployment(deployment, rawRs.Items, rawPods.Items, rawEvents.Items),
+		Selector:              deployment.Spec.Selector.MatchLabels,
+		StatusInfo:            GetStatusInfo(&deployment.Status),
+		Conditions:            getConditions(deployment.Status.Conditions),
+		Strategy:              deployment.Spec.Strategy.Type,
+		MinReadySeconds:       deployment.Spec.MinReadySeconds,
+		RollingUpdateStrategy: rollingUpdateStrategy,
+		RevisionHistoryLimit:  deployment.Spec.RevisionHistoryLimit,
+		Errors:                nonCriticalErrors,
+	}, nil
+}
+
+// GetDeploymentDetailWithMultiTenancy returns model object of deployment and error, if any.
+func GetDeploymentDetailWithMultiTenancy(client client.Interface, tenant string, namespace string, deploymentName string) (*DeploymentDetail, error) {
+
+	log.Printf("Getting details of %s deployment in %s namespace for %s", deploymentName, namespace, tenant)
+
+	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, tenant).Get(deploymentName, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	selector, err := metaV1.LabelSelectorAsSelector(deployment.Spec.Selector)
+	if err != nil {
+		return nil, err
+	}
+	options := metaV1.ListOptions{LabelSelector: selector.String()}
+
+	channels := &common.ResourceChannels{
+		ReplicaSetList: common.GetReplicaSetListChannelWithMultiTenancyAndOptions(client, tenant,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+		PodList: common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+		EventList: common.GetEventListChannelWithMultiTenancyAndOptions(client, tenant,
 			common.NewSameNamespaceQuery(namespace), options, 1),
 	}
 

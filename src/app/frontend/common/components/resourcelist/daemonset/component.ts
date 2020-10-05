@@ -29,7 +29,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   templateUrl: './template.html',
 })
 export class DaemonSetListComponent extends ResourceListWithStatuses<DaemonSetList, DaemonSet> {
-  @Input() endpoint = EndpointManager.resource(Resource.daemonSet, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.daemonSet, true, true).list();
 
   constructor(
     private readonly daemonSet_: NamespacedResourceService<DaemonSetList>,

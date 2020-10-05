@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class JobDetailComponent implements OnInit, OnDestroy {
   private jobSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.job, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.job, true, true);
   job: JobDetail;
   isInitialized = false;
   eventListEndpoint: string;

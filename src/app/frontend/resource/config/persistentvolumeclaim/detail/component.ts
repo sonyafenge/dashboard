@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class PersistentVolumeClaimDetailComponent implements OnInit, OnDestroy {
   private persistentVolumeClaimSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.persistentVolumeClaim, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.persistentVolumeClaim, true, true);
   persistentVolumeClaim: PersistentVolumeClaimDetail;
   isInitialized = false;
 

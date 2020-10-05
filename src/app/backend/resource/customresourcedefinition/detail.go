@@ -44,7 +44,7 @@ type CustomResourceDefinitionVersion struct {
 // GetCustomResourceDefinitionDetail returns detailed information about a custom resource definition.
 func GetCustomResourceDefinitionDetail(client apiextensionsclientset.Interface, config *rest.Config, name string) (*CustomResourceDefinitionDetail, error) {
 	customResourceDefinition, err := client.ApiextensionsV1beta1().
-		CustomResourceDefinitions().
+		CustomResourceDefinitionsWithMultiTenancy("").
 		Get(name, metav1.GetOptions{})
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
@@ -52,6 +52,25 @@ func GetCustomResourceDefinitionDetail(client apiextensionsclientset.Interface, 
 	}
 
 	objects, err := GetCustomResourceObjectList(client, config, &common.NamespaceQuery{}, dataselect.DefaultDataSelect, name)
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	return toCustomResourceDefinitionDetail(customResourceDefinition, *objects, nonCriticalErrors), nil
+}
+
+// GetCustomResourceDefinitionDetailWithMultiTenancy returns detailed information about a custom resource definition.
+func GetCustomResourceDefinitionDetailWithMultiTenancy(client apiextensionsclientset.Interface, config *rest.Config, tenant, name string) (*CustomResourceDefinitionDetail, error) {
+	customResourceDefinition, err := client.ApiextensionsV1beta1().
+		CustomResourceDefinitionsWithMultiTenancy(tenant).
+		Get(name, metav1.GetOptions{})
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	objects, err := GetCustomResourceObjectListWithMultiTenancy(client, config, tenant, &common.NamespaceQuery{}, dataselect.DefaultDataSelect, name)
 	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
 	if criticalError != nil {
 		return nil, criticalError

@@ -17,6 +17,7 @@ import {ActivatedRoute, NavigationEnd, Params, Route, Router} from '@angular/rou
 import {Breadcrumb} from '@api/frontendapi';
 import {POD_DETAIL_ROUTE} from '../../../resource/workloads/pod/routing';
 import {SEARCH_QUERY_STATE_PARAM} from '../../params/params';
+import {TenantService} from 'common/services/global/tenant';
 
 export const LOGS_PARENT_PLACEHOLDER = '___LOGS_PARENT_PLACEHOLDER___';
 export const EXEC_PARENT_PLACEHOLDER = '___EXEC_PARENT_PLACEHOLDER___';
@@ -30,7 +31,11 @@ export const SEARCH_BREADCRUMB_PLACEHOLDER = '___SEARCH_BREADCRUMB_PLACEHOLDER__
 export class BreadcrumbsComponent implements OnInit {
   breadcrumbs: Breadcrumb[];
 
-  constructor(private readonly _router: Router, private readonly _activatedRoute: ActivatedRoute) {}
+  constructor(
+    private readonly _router: Router,
+    private readonly _activatedRoute: ActivatedRoute,
+    private readonly _tenantService: TenantService,
+  ) {}
 
   ngOnInit(): void {
     this._initBreadcrumbs();
@@ -53,6 +58,11 @@ export class BreadcrumbsComponent implements OnInit {
     let routeParamsCount = currentRoute.routeConfig.data.routeParamsCount
       ? +currentRoute.routeConfig.data.routeParamsCount
       : currentRoute.routeConfig.path.split('/').length;
+
+    const tenant = {
+      label: this._tenantService.current(),
+      stateLink: [''],
+    };
 
     this.breadcrumbs = [
       {
@@ -108,6 +118,7 @@ export class BreadcrumbsComponent implements OnInit {
       }
     }
 
+    this.breadcrumbs.push(tenant);
     this.breadcrumbs.reverse();
   }
 

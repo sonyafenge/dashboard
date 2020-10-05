@@ -1,4 +1,5 @@
 // Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,6 +22,7 @@ import {publishReplay, refCount, switchMap, switchMapTo} from 'rxjs/operators';
 import {ResourceBase} from '../../resources/resource';
 import {GlobalSettingsService} from '../global/globalsettings';
 import {NamespaceService} from '../global/namespace';
+import {TenantService} from '../global/tenant';
 
 @Injectable()
 export class ResourceService<T> extends ResourceBase<T> {
@@ -28,20 +30,40 @@ export class ResourceService<T> extends ResourceBase<T> {
    * We need to provide HttpClient here since the base is not annotated with
    * @Injectable
    */
-  constructor(readonly http: HttpClient, private readonly settings_: GlobalSettingsService) {
+  constructor(
+    readonly http: HttpClient,
+    private readonly tenant_: TenantService,
+    private readonly settings_: GlobalSettingsService,
+  ) {
     super(http);
   }
 
-  get(endpoint: string, name?: string, params?: HttpParams): Observable<T> {
+  private isSystem_(): boolean {
+    return this.tenant_.isSystem();
+  }
+
+  private getTenant_(): string {
+    return this.tenant_.current();
+  }
+
+  get(endpoint: string, name?: string, params?: HttpParams, tenant?: string): Observable<T> {
     if (name) {
       endpoint = endpoint.replace(':name', name);
+    }
+
+    if (tenant) {
+      endpoint = endpoint.replace(':tenant', tenant);
+    } else if (this.isSystem_()) {
+      endpoint = endpoint.replace(':tenant', this.getTenant_());
+    } else {
+      endpoint = endpoint.replace('/:tenant', '');
     }
 
     return this.settings_.onSettingsUpdate
       .pipe(
         switchMap(() => {
           let interval = this.settings_.getResourceAutoRefreshTimeInterval();
-          interval = interval === 0 ? undefined : interval * 1000;
+          interval = interval === 0 ? undefined : interval * 1000000;
           return timer(0, interval);
         }),
       )
@@ -55,10 +77,19 @@ export class ResourceService<T> extends ResourceBase<T> {
 export class NamespacedResourceService<T> extends ResourceBase<T> {
   constructor(
     readonly http: HttpClient,
+    private readonly tenant_: TenantService,
     private readonly namespace_: NamespaceService,
     private readonly settings_: GlobalSettingsService,
   ) {
     super(http);
+  }
+
+  private isSystem_(): boolean {
+    return this.tenant_.isSystem();
+  }
+
+  private getTenant_(): string {
+    return this.tenant_.current();
   }
 
   private getNamespace_(): string {
@@ -66,7 +97,13 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
     return this.namespace_.isMultiNamespace(currentNamespace) ? ' ' : currentNamespace;
   }
 
-  get(endpoint: string, name?: string, namespace?: string, params?: HttpParams): Observable<T> {
+  get(
+    endpoint: string,
+    name?: string,
+    namespace?: string,
+    params?: HttpParams,
+    tenant?: string,
+  ): Observable<T> {
     if (namespace) {
       endpoint = endpoint.replace(':namespace', namespace);
     } else {
@@ -77,11 +114,19 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
       endpoint = endpoint.replace(':name', name);
     }
 
+    if (tenant) {
+      endpoint = endpoint.replace(':tenant', tenant);
+    } else if (this.isSystem_()) {
+      endpoint = endpoint.replace(':tenant', this.getTenant_());
+    } else {
+      endpoint = endpoint.replace('/:tenant', '');
+    }
+
     return this.settings_.onSettingsUpdate
       .pipe(
         switchMap(() => {
           let interval = this.settings_.getResourceAutoRefreshTimeInterval();
-          interval = interval === 0 ? undefined : interval * 1000;
+          interval = interval === 0 ? undefined : interval * 1000000;
           return timer(0, interval);
         }),
       )

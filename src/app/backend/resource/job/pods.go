@@ -51,9 +51,29 @@ func GetJobPods(client k8sClient.Interface, metricClient metricapi.MetricClient,
 	return &podList, nil
 }
 
+// GetJobPodsWithMultiTenancy return list of pods targeting job.
+func GetJobPodsWithMultiTenancy(client k8sClient.Interface, metricClient metricapi.MetricClient,
+	dsQuery *dataselect.DataSelectQuery, tenant, namespace string, jobName string) (*pod.PodList, error) {
+	log.Printf("Getting replication controller %s pods in namespace %s", jobName, namespace)
+
+	pods, err := getRawJobPodsWithMultiTenancy(client, tenant, jobName, namespace)
+	if err != nil {
+		return pod.EmptyPodList, err
+	}
+
+	events, err := event.GetPodsEventsWithMultiTenancy(client, tenant, namespace, pods)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return pod.EmptyPodList, criticalError
+	}
+
+	podList := pod.ToPodList(pods, events, nonCriticalErrors, dsQuery, metricClient)
+	return &podList, nil
+}
+
 // Returns array of api pods targeting job with given name.
 func getRawJobPods(client k8sClient.Interface, petSetName, namespace string) ([]v1.Pod, error) {
-	job, err := client.BatchV1().Jobs(namespace).Get(petSetName, metaV1.GetOptions{})
+	job, err := client.BatchV1().JobsWithMultiTenancy(namespace, "").Get(petSetName, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -75,11 +95,61 @@ func getRawJobPods(client k8sClient.Interface, petSetName, namespace string) ([]
 	return podList.Items, nil
 }
 
+// Returns array of api pods targeting job with given name.
+func getRawJobPodsWithMultiTenancy(client k8sClient.Interface, tenant, petSetName, namespace string) ([]v1.Pod, error) {
+	job, err := client.BatchV1().JobsWithMultiTenancy(namespace, tenant).Get(petSetName, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	labelSelector := labels.SelectorFromSet(job.Spec.Selector.MatchLabels)
+	channels := &common.ResourceChannels{
+		PodList: common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant, common.NewSameNamespaceQuery(namespace),
+			metaV1.ListOptions{
+				LabelSelector: labelSelector.String(),
+				FieldSelector: fields.Everything().String(),
+			}, 1),
+	}
+
+	podList := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return nil, err
+	}
+
+	return podList.Items, nil
+}
+
 // Returns simple info about pods(running, desired, failing, etc.) related to given job.
 func getJobPodInfo(client k8sClient.Interface, job *batch.Job) (*common.PodInfo, error) {
 	labelSelector := labels.SelectorFromSet(job.Spec.Selector.MatchLabels)
 	channels := &common.ResourceChannels{
 		PodList: common.GetPodListChannelWithOptions(client, common.NewSameNamespaceQuery(
+			job.Namespace),
+			metaV1.ListOptions{
+				LabelSelector: labelSelector.String(),
+				FieldSelector: fields.Everything().String(),
+			}, 1),
+	}
+
+	pods := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return nil, err
+	}
+
+	podInfo := common.GetPodInfo(job.Status.Active, job.Spec.Completions, pods.Items)
+
+	// This pod info for jobs should be get from job status, similar to kubectl describe logic.
+	podInfo.Running = job.Status.Active
+	podInfo.Succeeded = job.Status.Succeeded
+	podInfo.Failed = job.Status.Failed
+	return &podInfo, nil
+}
+
+// Returns simple info about pods(running, desired, failing, etc.) related to given job.
+func getJobPodInfoWithMultiTenancy(client k8sClient.Interface, job *batch.Job, tenant string) (*common.PodInfo, error) {
+	labelSelector := labels.SelectorFromSet(job.Spec.Selector.MatchLabels)
+	channels := &common.ResourceChannels{
+		PodList: common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant, common.NewSameNamespaceQuery(
 			job.Namespace),
 			metaV1.ListOptions{
 				LabelSelector: labelSelector.String(),

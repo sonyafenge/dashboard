@@ -42,12 +42,30 @@ type ServiceDetail struct {
 // GetServiceDetail gets service details.
 func GetServiceDetail(client k8sClient.Interface, namespace, name string) (*ServiceDetail, error) {
 	log.Printf("Getting details of %s service in %s namespace", name, namespace)
-	serviceData, err := client.CoreV1().Services(namespace).Get(name, metaV1.GetOptions{})
+	serviceData, err := client.CoreV1().ServicesWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	endpointList, err := endpoint.GetServiceEndpoints(client, namespace, name)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	service := toServiceDetail(serviceData, *endpointList, nonCriticalErrors)
+	return &service, nil
+}
+
+// GetServiceDetailWithMultiTenancy gets service details.
+func GetServiceDetailWithMultiTenancy(client k8sClient.Interface, tenant, namespace, name string) (*ServiceDetail, error) {
+	log.Printf("Getting details of %s service in %s namespace", name, namespace)
+	serviceData, err := client.CoreV1().ServicesWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	endpointList, err := endpoint.GetServiceEndpointsWithMultiTenancy(client, tenant, namespace, name)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return nil, criticalError

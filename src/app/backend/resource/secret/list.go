@@ -85,7 +85,21 @@ type SecretList struct {
 func GetSecretList(client kubernetes.Interface, namespace *common.NamespaceQuery,
 	dsQuery *dataselect.DataSelectQuery) (*SecretList, error) {
 	log.Printf("Getting list of secrets in %s namespace\n", namespace)
-	secretList, err := client.CoreV1().Secrets(namespace.ToRequestParam()).List(api.ListEverything)
+	secretList, err := client.CoreV1().SecretsWithMultiTenancy(namespace.ToRequestParam(), "").List(api.ListEverything)
+
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	return toSecretList(secretList.Items, nonCriticalErrors, dsQuery), nil
+}
+
+// GetSecretListWithMultiTenancy returns all secrets in the given namespace.
+func GetSecretListWithMultiTenancy(client kubernetes.Interface, tenant string, namespace *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery) (*SecretList, error) {
+	log.Printf("Getting list of secrets in %s namespace for %s\n", namespace, tenant)
+	secretList, err := client.CoreV1().SecretsWithMultiTenancy(namespace.ToRequestParam(), tenant).List(api.ListEverything)
 
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
@@ -106,7 +120,23 @@ func CreateSecret(client kubernetes.Interface, spec SecretSpec) (*Secret, error)
 		Type: spec.GetType(),
 		Data: spec.GetData(),
 	}
-	_, err := client.CoreV1().Secrets(namespace).Create(secret)
+	_, err := client.CoreV1().SecretsWithMultiTenancy(namespace, "").Create(secret)
+	result := toSecret(secret)
+	return &result, err
+}
+
+// CreateSecretWithMultiTenancy creates a single secret using the cluster API client
+func CreateSecretWithMultiTenancy(client kubernetes.Interface, tenant string, spec SecretSpec) (*Secret, error) {
+	namespace := spec.GetNamespace()
+	secret := &v1.Secret{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      spec.GetName(),
+			Namespace: namespace,
+		},
+		Type: spec.GetType(),
+		Data: spec.GetData(),
+	}
+	_, err := client.CoreV1().SecretsWithMultiTenancy(namespace, tenant).Create(secret)
 	result := toSecret(secret)
 	return &result, err
 }

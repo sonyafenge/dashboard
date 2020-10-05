@@ -15,6 +15,7 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuard} from '../common/services/guard/auth';
+import {SystemGuard} from '../common/services/guard/system';
 import {ChromeComponent} from './component';
 
 const routes: Routes = [
@@ -35,6 +36,11 @@ const routes: Routes = [
         loadChildren: 'resource/cluster/module#ClusterModule',
       },
       {
+        path: 'tenant',
+        loadChildren: 'resource/cluster/tenant/module#TenantModule',
+        canActivate: [SystemGuard],
+      },
+      {
         path: 'clusterrole',
         loadChildren: 'resource/cluster/clusterrole/module#ClusterRoleModule',
       },
@@ -45,6 +51,7 @@ const routes: Routes = [
       {
         path: 'node',
         loadChildren: 'resource/cluster/node/module#NodeModule',
+        canActivate: [SystemGuard],
       },
       {
         path: 'persistentvolume',

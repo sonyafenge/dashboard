@@ -34,6 +34,7 @@ import {ThemeService} from './theme';
 import {TitleService} from './title';
 import {VerberService} from './verber';
 import {PinnerService} from './pinner';
+import {TenantService} from './tenant';
 
 @NgModule({
   providers: [
@@ -55,6 +56,7 @@ import {PinnerService} from './pinner';
     HistoryService,
     LogService,
     ParamsService,
+    TenantService,
     {
       provide: APP_INITIALIZER,
       useFactory: init,

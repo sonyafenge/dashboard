@@ -54,6 +54,18 @@ func GetStorageClassList(client kubernetes.Interface, dsQuery *dataselect.DataSe
 	return GetStorageClassListFromChannels(channels, dsQuery)
 }
 
+// GetStorageClassListWithMultiTenancy returns a list of all storage class objects in the cluster.
+func GetStorageClassListWithMultiTenancy(client kubernetes.Interface, dsQuery *dataselect.DataSelectQuery, tenant string) (
+	*StorageClassList, error) {
+	log.Printf("Getting list of storage classes in the cluster for %s", tenant)
+
+	channels := &common.ResourceChannels{
+		StorageClassList: common.GetStorageClassListChannelWithMultiTenancy(client, tenant, 1),
+	}
+
+	return GetStorageClassListFromChannels(channels, dsQuery)
+}
+
 // GetStorageClassListFromChannels returns a list of all storage class objects in the cluster.
 func GetStorageClassListFromChannels(channels *common.ResourceChannels,
 	dsQuery *dataselect.DataSelectQuery) (*StorageClassList, error) {

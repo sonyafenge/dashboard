@@ -40,7 +40,7 @@ var emptyJobList = &job.JobList{
 func GetCronJobJobs(client client.Interface, metricClient metricapi.MetricClient,
 	dsQuery *dataselect.DataSelectQuery, namespace, name string, active bool) (*job.JobList, error) {
 
-	cronJob, err := client.BatchV1beta1().CronJobs(namespace).Get(name, metaV1.GetOptions{})
+	cronJob, err := client.BatchV1beta1().CronJobsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return emptyJobList, err
 	}
@@ -78,11 +78,53 @@ func GetCronJobJobs(client client.Interface, metricClient metricapi.MetricClient
 	return job.ToJobList(jobs.Items, pods.Items, events.Items, nonCriticalErrors, dsQuery, metricClient), nil
 }
 
+// GetCronJobJobsWithMultiTenancy returns list of jobs owned by cron job.
+func GetCronJobJobsWithMultiTenancy(client client.Interface, metricClient metricapi.MetricClient,
+	dsQuery *dataselect.DataSelectQuery, tenant, namespace, name string, active bool) (*job.JobList, error) {
+
+	cronJob, err := client.BatchV1beta1().CronJobsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return emptyJobList, err
+	}
+
+	channels := &common.ResourceChannels{
+		JobList:   common.GetJobListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+		PodList:   common.GetPodListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+		EventList: common.GetEventListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	jobs := <-channels.JobList.List
+	err = <-channels.JobList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return emptyJobList, nil
+	}
+
+	pods := <-channels.PodList.List
+	err = <-channels.PodList.Error
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return emptyJobList, criticalError
+	}
+
+	events := <-channels.EventList.List
+	err = <-channels.EventList.Error
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return emptyJobList, criticalError
+	}
+
+	jobs.Items = filterJobsByOwnerUID(cronJob.UID, jobs.Items)
+	jobs.Items = filterJobsByState(active, jobs.Items)
+
+	return job.ToJobList(jobs.Items, pods.Items, events.Items, nonCriticalErrors, dsQuery, metricClient), nil
+}
+
 // TriggerCronJob manually triggers a cron job and creates a new job.
 func TriggerCronJob(client client.Interface,
 	namespace, name string) error {
 
-	cronJob, err := client.BatchV1beta1().CronJobs(namespace).Get(name, metaV1.GetOptions{})
+	cronJob, err := client.BatchV1beta1().CronJobsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 
 	if err != nil {
 		return err
@@ -114,7 +156,52 @@ func TriggerCronJob(client client.Interface,
 		Spec: cronJob.Spec.JobTemplate.Spec,
 	}
 
-	_, err = client.BatchV1().Jobs(namespace).Create(jobToCreate)
+	_, err = client.BatchV1().JobsWithMultiTenancy(namespace, "").Create(jobToCreate)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TriggerCronJobWithMultiTenancy manually triggers a cron job and creates a new job.
+func TriggerCronJobWithMultiTenancy(client client.Interface, tenant,
+	namespace, name string) error {
+
+	cronJob, err := client.BatchV1beta1().CronJobsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+
+	if err != nil {
+		return err
+	}
+
+	annotations := make(map[string]string)
+	annotations["cronjob.kubernetes.io/instantiate"] = "manual"
+
+	labels := make(map[string]string)
+	for k, v := range cronJob.Spec.JobTemplate.Labels {
+		labels[k] = v
+	}
+
+	//job name cannot exceed DNS1053LabelMaxLength (52 characters)
+	var newJobName string
+	if len(cronJob.Name) < 42 {
+		newJobName = cronJob.Name + "-manual-" + rand.String(3)
+	} else {
+		newJobName = cronJob.Name[0:41] + "-manual-" + rand.String(3)
+	}
+
+	jobToCreate := &batch.Job{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:        newJobName,
+			Namespace:   namespace,
+			Annotations: annotations,
+			Labels:      labels,
+		},
+		Spec: cronJob.Spec.JobTemplate.Spec,
+	}
+
+	_, err = client.BatchV1().JobsWithMultiTenancy(namespace, tenant).Create(jobToCreate)
 
 	if err != nil {
 		return err

@@ -25,13 +25,13 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/replicaset"
 )
 
-//GetDeploymentOldReplicaSets returns old replica sets targeting Deployment with given name
+//GetDeploymentNewReplicaSet returns old replica sets targeting Deployment with given name
 func GetDeploymentNewReplicaSet(client client.Interface, dsQuery *dataselect.DataSelectQuery,
 	namespace string, deploymentName string) (*replicaset.ReplicaSet, error) {
 
 	newReplicaSet := &replicaset.ReplicaSet{}
 
-	deployment, err := client.AppsV1().Deployments(namespace).Get(deploymentName, metaV1.GetOptions{})
+	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, "").Get(deploymentName, metaV1.GetOptions{})
 	if err != nil {
 		return newReplicaSet, err
 	}
@@ -48,6 +48,63 @@ func GetDeploymentNewReplicaSet(client client.Interface, dsQuery *dataselect.Dat
 		PodList: common.GetPodListChannelWithOptions(client,
 			common.NewSameNamespaceQuery(namespace), options, 1),
 		EventList: common.GetEventListChannelWithOptions(client,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+	}
+
+	rawRs := <-channels.ReplicaSetList.List
+	if err := <-channels.ReplicaSetList.Error; err != nil {
+		return newReplicaSet, err
+	}
+
+	rawPods := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return newReplicaSet, err
+	}
+
+	rawEvents := <-channels.EventList.List
+	err = <-channels.EventList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return newReplicaSet, criticalError
+	}
+
+	rawRepSets := make([]*apps.ReplicaSet, 0)
+	for i := range rawRs.Items {
+		rawRepSets = append(rawRepSets, &rawRs.Items[i])
+	}
+	newRS := FindNewReplicaSet(deployment, rawRepSets)
+	if newRS == nil {
+		return newReplicaSet, err
+	}
+
+	newReplicaSetList := replicaset.ToReplicaSetList([]apps.ReplicaSet{*newRS}, rawPods.Items, rawEvents.Items,
+		nonCriticalErrors, dsQuery, nil)
+	return &newReplicaSetList.ReplicaSets[0], nil
+}
+
+//GetDeploymentNewReplicaSetWithMultiTenancy returns old replica sets targeting Deployment with given name
+func GetDeploymentNewReplicaSetWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant string,
+	namespace string, deploymentName string) (*replicaset.ReplicaSet, error) {
+
+	newReplicaSet := &replicaset.ReplicaSet{}
+
+	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, metaV1.TenantAll).Get(deploymentName, metaV1.GetOptions{})
+	if err != nil {
+		return newReplicaSet, err
+	}
+
+	selector, err := metaV1.LabelSelectorAsSelector(deployment.Spec.Selector)
+	if err != nil {
+		return newReplicaSet, err
+	}
+	options := metaV1.ListOptions{LabelSelector: selector.String()}
+
+	channels := &common.ResourceChannels{
+		ReplicaSetList: common.GetReplicaSetListChannelWithMultiTenancyAndOptions(client, tenant,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+		PodList: common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+		EventList: common.GetEventListChannelWithMultiTenancyAndOptions(client, tenant,
 			common.NewSameNamespaceQuery(namespace), options, 1),
 	}
 

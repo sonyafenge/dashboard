@@ -32,7 +32,7 @@ export class ReplicationControllerListComponent extends ResourceListWithStatuses
   ReplicationControllerList,
   ReplicationController
 > {
-  @Input() endpoint = EndpointManager.resource(Resource.replicationController, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.replicationController, true, true).list();
 
   constructor(
     private readonly replicationController_: NamespacedResourceService<ReplicationControllerList>,

@@ -29,7 +29,7 @@ import {ResourceService} from '../../../../common/services/resource/resource';
 })
 export class StorageClassDetailComponent implements OnInit, OnDestroy {
   private storageClassSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.storageClass);
+  private readonly endpoint_ = EndpointManager.resource(Resource.storageClass, false, true);
   storageClass: StorageClassDetail;
   pvListEndpoint: string;
   isInitialized = false;

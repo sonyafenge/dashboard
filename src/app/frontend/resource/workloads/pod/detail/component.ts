@@ -29,7 +29,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class PodDetailComponent implements OnInit, OnDestroy {
   private podSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.pod, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.pod, true, true);
   pod: PodDetail;
   isInitialized = false;
   eventListEndpoint: string;

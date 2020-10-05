@@ -63,6 +63,20 @@ func GetStatefulSetList(client kubernetes.Interface, nsQuery *common.NamespaceQu
 	return GetStatefulSetListFromChannels(channels, dsQuery, metricClient)
 }
 
+// GetStatefulSetListWithMultiTenancy returns a list of all Stateful Sets in the cluster.
+func GetStatefulSetListWithMultiTenancy(client kubernetes.Interface, tenant string, nsQuery *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient) (*StatefulSetList, error) {
+	log.Printf("Getting list of all pet sets in the cluster for %s", tenant)
+
+	channels := &common.ResourceChannels{
+		StatefulSetList: common.GetStatefulSetListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		PodList:         common.GetPodListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		EventList:       common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetStatefulSetListFromChannels(channels, dsQuery, metricClient)
+}
+
 // GetStatefulSetListFromChannels returns a list of all Stateful Sets in the cluster reading
 // required resource list once from the channels.
 func GetStatefulSetListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery,

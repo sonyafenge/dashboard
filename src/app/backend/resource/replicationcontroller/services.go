@@ -28,13 +28,39 @@ import (
 func GetReplicationControllerServices(client client.Interface, dsQuery *dataselect.DataSelectQuery,
 	namespace, rcName string) (*service.ServiceList, error) {
 
-	replicationController, err := client.CoreV1().ReplicationControllers(namespace).Get(rcName, metaV1.GetOptions{})
+	replicationController, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, "").Get(rcName, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	channels := &common.ResourceChannels{
 		ServiceList: common.GetServiceListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	services := <-channels.ServiceList.List
+	err = <-channels.ServiceList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	matchingServices := common.FilterNamespacedServicesBySelector(services.Items, namespace,
+		replicationController.Spec.Selector)
+	return service.CreateServiceList(matchingServices, nonCriticalErrors, dsQuery), nil
+}
+
+// GetReplicationControllerServicesWithMultiTenancy returns list of services that are related to replication
+// controller targeted by given name.
+func GetReplicationControllerServicesWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant,
+	namespace, rcName string) (*service.ServiceList, error) {
+
+	replicationController, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, tenant).Get(rcName, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		ServiceList: common.GetServiceListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
 	}
 
 	services := <-channels.ServiceList.List

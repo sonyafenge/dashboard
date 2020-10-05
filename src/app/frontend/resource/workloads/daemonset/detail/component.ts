@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class DaemonSetDetailComponent implements OnInit, OnDestroy {
   private daemonSetSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.daemonSet, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.daemonSet, true, true);
   daemonSet: DaemonSetDetail;
   isInitialized = false;
   eventListEndpoint: string;

@@ -83,6 +83,20 @@ func GetReplicaSetList(client client.Interface, nsQuery *common.NamespaceQuery,
 	return GetReplicaSetListFromChannels(channels, dsQuery, metricClient)
 }
 
+// GetReplicaSetListWithMultiTenancy returns a list of all Replica Sets in the cluster.
+func GetReplicaSetListWithMultiTenancy(client client.Interface, tenant string, nsQuery *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient) (*ReplicaSetList, error) {
+	log.Print("Getting list of all replica sets in the cluster")
+
+	channels := &common.ResourceChannels{
+		ReplicaSetList: common.GetReplicaSetListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		PodList:        common.GetPodListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		EventList:      common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetReplicaSetListFromChannels(channels, dsQuery, metricClient)
+}
+
 // GetReplicaSetListFromChannels returns a list of all Replica Sets in the cluster
 // reading required resource list once from the channels.
 func GetReplicaSetListFromChannels(channels *common.ResourceChannels,

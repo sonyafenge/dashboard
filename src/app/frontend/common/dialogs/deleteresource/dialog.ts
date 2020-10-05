@@ -17,7 +17,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {ResourceMeta} from '../../services/global/actionbar';
 
 @Component({
-  selector: 'kd-delete-resource-dialog',
+  selector: '',
   templateUrl: 'template.html',
 })
 export class DeleteResourceDialog {

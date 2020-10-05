@@ -34,7 +34,7 @@ func GetDeploymentOldReplicaSets(client client.Interface, dsQuery *dataselect.Da
 		ListMeta:    api.ListMeta{TotalItems: 0},
 	}
 
-	deployment, err := client.AppsV1().Deployments(namespace).Get(deploymentName, metaV1.GetOptions{})
+	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, "").Get(deploymentName, metaV1.GetOptions{})
 	if err != nil {
 		return oldReplicaSetList, err
 	}
@@ -51,6 +51,71 @@ func GetDeploymentOldReplicaSets(client client.Interface, dsQuery *dataselect.Da
 		PodList: common.GetPodListChannelWithOptions(client,
 			common.NewSameNamespaceQuery(namespace), options, 1),
 		EventList: common.GetEventListChannelWithOptions(client,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+	}
+
+	rawRs := <-channels.ReplicaSetList.List
+	if err := <-channels.ReplicaSetList.Error; err != nil {
+		return oldReplicaSetList, err
+	}
+
+	rawPods := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return oldReplicaSetList, err
+	}
+
+	rawEvents := <-channels.EventList.List
+	err = <-channels.EventList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return oldReplicaSetList, criticalError
+	}
+
+	rawRepSets := make([]*apps.ReplicaSet, 0)
+	for i := range rawRs.Items {
+		rawRepSets = append(rawRepSets, &rawRs.Items[i])
+	}
+	oldRs, _, err := FindOldReplicaSets(deployment, rawRepSets)
+	if err != nil {
+		return oldReplicaSetList, err
+	}
+
+	oldReplicaSets := make([]apps.ReplicaSet, len(oldRs))
+	for i, replicaSet := range oldRs {
+		oldReplicaSets[i] = *replicaSet
+	}
+
+	oldReplicaSetList = replicaset.ToReplicaSetList(oldReplicaSets, rawPods.Items, rawEvents.Items,
+		nonCriticalErrors, dsQuery, nil)
+	return oldReplicaSetList, nil
+}
+
+//GetDeploymentOldReplicaSetsWithMultiTenancy returns old replica sets targeting Deployment with given name
+func GetDeploymentOldReplicaSetsWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant string,
+	namespace string, deploymentName string) (*replicaset.ReplicaSetList, error) {
+
+	oldReplicaSetList := &replicaset.ReplicaSetList{
+		ReplicaSets: make([]replicaset.ReplicaSet, 0),
+		ListMeta:    api.ListMeta{TotalItems: 0},
+	}
+
+	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, tenant).Get(deploymentName, metaV1.GetOptions{})
+	if err != nil {
+		return oldReplicaSetList, err
+	}
+
+	selector, err := metaV1.LabelSelectorAsSelector(deployment.Spec.Selector)
+	if err != nil {
+		return oldReplicaSetList, err
+	}
+	options := metaV1.ListOptions{LabelSelector: selector.String()}
+
+	channels := &common.ResourceChannels{
+		ReplicaSetList: common.GetReplicaSetListChannelWithMultiTenancyAndOptions(client, tenant,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+		PodList: common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant,
+			common.NewSameNamespaceQuery(namespace), options, 1),
+		EventList: common.GetEventListChannelWithMultiTenancyAndOptions(client, tenant,
 			common.NewSameNamespaceQuery(namespace), options, 1),
 	}
 

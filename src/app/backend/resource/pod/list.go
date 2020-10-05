@@ -92,6 +92,19 @@ func GetPodList(client k8sClient.Interface, metricClient metricapi.MetricClient,
 	return GetPodListFromChannels(channels, dsQuery, metricClient)
 }
 
+// GetPodListWithMultiTenancy returns a list of all Pods in the cluster with multi tenancy support.
+func GetPodListWithMultiTenancy(client k8sClient.Interface, metricClient metricapi.MetricClient, tenant string, nsQuery *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery) (*PodList, error) {
+	log.Print("Getting list of all pods in the cluster")
+
+	channels := &common.ResourceChannels{
+		PodList:   common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant, nsQuery, metaV1.ListOptions{}, 1),
+		EventList: common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetPodListFromChannels(channels, dsQuery, metricClient)
+}
+
 // GetPodListFromChannels returns a list of all Pods in the cluster
 // reading required resource list once from the channels.
 func GetPodListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery,

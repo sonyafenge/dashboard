@@ -28,7 +28,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   templateUrl: './template.html',
 })
 export class CronJobListComponent extends ResourceListWithStatuses<CronJobList, CronJob> {
-  @Input() endpoint = EndpointManager.resource(Resource.cronJob, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.cronJob, true, true).list();
   constructor(
     private readonly cronJob_: NamespacedResourceService<CronJobList>,
     notifications: NotificationsService,

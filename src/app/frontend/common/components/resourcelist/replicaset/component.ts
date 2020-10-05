@@ -31,7 +31,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 })
 export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSetList, ReplicaSet> {
   @Input() title: string;
-  @Input() endpoint = EndpointManager.resource(Resource.replicaSet, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.replicaSet, true, true).list();
 
   constructor(
     private readonly replicaSet_: NamespacedResourceService<ReplicaSetList>,

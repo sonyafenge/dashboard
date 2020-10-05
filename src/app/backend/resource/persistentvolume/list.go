@@ -57,6 +57,16 @@ func GetPersistentVolumeList(client kubernetes.Interface, dsQuery *dataselect.Da
 	return GetPersistentVolumeListFromChannels(channels, dsQuery)
 }
 
+// GetPersistentVolumeListWithMultiTenancy returns a list of all Persistent Volumes in the cluster.
+func GetPersistentVolumeListWithMultiTenancy(client kubernetes.Interface, dsQuery *dataselect.DataSelectQuery, tenant string) (*PersistentVolumeList, error) {
+	log.Print("Getting list persistent volumes")
+	channels := &common.ResourceChannels{
+		PersistentVolumeList: common.GetPersistentVolumeListChannelWithMultiTenancy(client, tenant, 1),
+	}
+
+	return GetPersistentVolumeListFromChannels(channels, dsQuery)
+}
+
 // GetPersistentVolumeListFromChannels returns a list of all Persistent Volumes in the cluster
 // reading required resource list once from the channels.
 func GetPersistentVolumeListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery) (*PersistentVolumeList, error) {

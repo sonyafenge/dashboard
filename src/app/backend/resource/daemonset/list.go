@@ -59,6 +59,19 @@ func GetDaemonSetList(client kubernetes.Interface, nsQuery *common.NamespaceQuer
 	return GetDaemonSetListFromChannels(channels, dsQuery, metricClient)
 }
 
+// GetDaemonSetListWithMultiTenancy returns a list of all Daemon Set in the cluster.
+func GetDaemonSetListWithMultiTenancy(client kubernetes.Interface, tenant string, nsQuery *common.NamespaceQuery, dsQuery *dataselect.DataSelectQuery,
+	metricClient metricapi.MetricClient) (*DaemonSetList, error) {
+	channels := &common.ResourceChannels{
+		DaemonSetList: common.GetDaemonSetListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		ServiceList:   common.GetServiceListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		PodList:       common.GetPodListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		EventList:     common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetDaemonSetListFromChannels(channels, dsQuery, metricClient)
+}
+
 // GetDaemonSetListFromChannels returns a list of all Daemon Set in the cluster
 // reading required resource list once from the channels.
 func GetDaemonSetListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery,

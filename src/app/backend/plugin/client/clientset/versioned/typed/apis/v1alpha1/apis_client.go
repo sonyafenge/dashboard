@@ -17,36 +17,60 @@
 package v1alpha1
 
 import (
+	rand "math/rand"
+	"time"
+
 	v1alpha1 "github.com/kubernetes/dashboard/src/app/backend/plugin/apis/v1alpha1"
 	"github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned/scheme"
+	apiserverupdate "k8s.io/client-go/apiserverupdate"
 	rest "k8s.io/client-go/rest"
+	klog "k8s.io/klog"
 )
 
 type DashboardV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	RESTClients() []rest.Interface
 	PluginsGetter
 }
 
 // DashboardV1alpha1Client is used to interact with features provided by the dashboard.k8s.io group.
 type DashboardV1alpha1Client struct {
-	restClient rest.Interface
+	restClients []rest.Interface
+	configs     *rest.Config
 }
 
 func (c *DashboardV1alpha1Client) Plugins(namespace string) PluginInterface {
-	return newPlugins(c, namespace)
+	return newPluginsWithMultiTenancy(c, namespace, "system")
+}
+
+func (c *DashboardV1alpha1Client) PluginsWithMultiTenancy(namespace string, tenant string) PluginInterface {
+	return newPluginsWithMultiTenancy(c, namespace, tenant)
 }
 
 // NewForConfig creates a new DashboardV1alpha1Client for the given config.
 func NewForConfig(c *rest.Config) (*DashboardV1alpha1Client, error) {
-	config := *c
-	if err := setConfigDefaults(&config); err != nil {
+	configs := rest.CopyConfigs(c)
+	if err := setConfigDefaults(configs); err != nil {
 		return nil, err
 	}
-	client, err := rest.RESTClientFor(&config)
-	if err != nil {
-		return nil, err
+
+	clients := make([]rest.Interface, len(configs.GetAllConfigs()))
+	for i, config := range configs.GetAllConfigs() {
+		client, err := rest.RESTClientFor(config)
+		if err != nil {
+			return nil, err
+		}
+		clients[i] = client
 	}
-	return &DashboardV1alpha1Client{client}, nil
+
+	obj := &DashboardV1alpha1Client{
+		restClients: clients,
+		configs:     configs,
+	}
+
+	obj.run()
+
+	return obj, nil
 }
 
 // NewForConfigOrDie creates a new DashboardV1alpha1Client for the given config and
@@ -61,17 +85,21 @@ func NewForConfigOrDie(c *rest.Config) *DashboardV1alpha1Client {
 
 // New creates a new DashboardV1alpha1Client for the given RESTClient.
 func New(c rest.Interface) *DashboardV1alpha1Client {
-	return &DashboardV1alpha1Client{c}
+	clients := []rest.Interface{c}
+	return &DashboardV1alpha1Client{restClients: clients}
 }
 
-func setConfigDefaults(config *rest.Config) error {
+func setConfigDefaults(configs *rest.Config) error {
 	gv := v1alpha1.SchemeGroupVersion
-	config.GroupVersion = &gv
-	config.APIPath = "/apis"
-	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
 
-	if config.UserAgent == "" {
-		config.UserAgent = rest.DefaultKubernetesUserAgent()
+	for _, config := range configs.GetAllConfigs() {
+		config.GroupVersion = &gv
+		config.APIPath = "/apis"
+		config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+
+		if config.UserAgent == "" {
+			config.UserAgent = rest.DefaultKubernetesUserAgent()
+		}
 	}
 
 	return nil
@@ -83,5 +111,50 @@ func (c *DashboardV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}
-	return c.restClient
+
+	max := len(c.restClients)
+	if max == 0 {
+		return nil
+	}
+	if max == 1 {
+		return c.restClients[0]
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	ran := rand.Intn(max)
+	return c.restClients[ran]
+}
+
+// RESTClients returns all RESTClient that are used to communicate
+// with all API servers by this client implementation.
+func (c *DashboardV1alpha1Client) RESTClients() []rest.Interface {
+	if c == nil {
+		return nil
+	}
+
+	return c.restClients
+}
+
+// run watch api server instance updates and recreate connections to new set of api servers
+func (c *DashboardV1alpha1Client) run() {
+	go func(c *DashboardV1alpha1Client) {
+		member := c.configs.WatchUpdate()
+		watcherForUpdateComplete := apiserverupdate.GetClientSetsWatcher()
+		watcherForUpdateComplete.AddWatcher()
+
+		for range member.Read {
+			// create new client
+			clients := make([]rest.Interface, len(c.configs.GetAllConfigs()))
+			for i, config := range c.configs.GetAllConfigs() {
+				client, err := rest.RESTClientFor(config)
+				if err != nil {
+					klog.Fatalf("Cannot create rest client for [%+v], err %v", config, err)
+					return
+				}
+				clients[i] = client
+			}
+			c.restClients = clients
+			watcherForUpdateComplete.NotifyDone()
+		}
+	}(c)
 }

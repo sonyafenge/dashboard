@@ -50,8 +50,30 @@ func GetReplicationControllerPods(client k8sClient.Interface,
 	return &podList, nil
 }
 
+// GetReplicationControllerPodsWithMultiTenancy return list of pods targeting replication controller associated
+// to given name.
+func GetReplicationControllerPodsWithMultiTenancy(client k8sClient.Interface,
+	metricClient metricapi.MetricClient,
+	dsQuery *dataselect.DataSelectQuery, tenant, rcName, namespace string) (*pod.PodList, error) {
+	log.Printf("Getting replication controller %s pods in namespace %s for %s", rcName, namespace, tenant)
+
+	pods, err := getRawReplicationControllerPodsWithMultitenancy(client, tenant, rcName, namespace)
+	if err != nil {
+		return pod.EmptyPodList, err
+	}
+
+	events, err := event.GetPodsEventsWithMultiTenancy(client, tenant, namespace, pods)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	podList := pod.ToPodList(pods, events, nonCriticalErrors, dsQuery, metricClient)
+	return &podList, nil
+}
+
 func getRawReplicationControllerPods(client k8sClient.Interface, rcName, namespace string) ([]v1.Pod, error) {
-	rc, err := client.CoreV1().ReplicationControllers(namespace).Get(rcName, metaV1.GetOptions{})
+	rc, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, "").Get(rcName, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +90,44 @@ func getRawReplicationControllerPods(client k8sClient.Interface, rcName, namespa
 	return common.FilterPodsByControllerRef(rc, podList.Items), nil
 }
 
+func getRawReplicationControllerPodsWithMultitenancy(client k8sClient.Interface, tenant, rcName, namespace string) ([]v1.Pod, error) {
+	rc, err := client.CoreV1().ReplicationControllersWithMultiTenancy(namespace, tenant).Get(rcName, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		PodList: common.GetPodListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	podList := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return nil, err
+	}
+
+	return common.FilterPodsByControllerRef(rc, podList.Items), nil
+}
+
 // getReplicationControllerPodInfo returns simple info about pods(running, desired, failing, etc.)
 // related to given replication controller.
 func getReplicationControllerPodInfo(client k8sClient.Interface, rc *v1.ReplicationController,
 	namespace string) (*common.PodInfo, error) {
 
 	pods, err := getRawReplicationControllerPods(client, rc.Name, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	podInfo := common.GetPodInfo(rc.Status.Replicas, rc.Spec.Replicas, pods)
+	return &podInfo, nil
+}
+
+// getReplicationControllerPodInfo returns simple info about pods(running, desired, failing, etc.)
+// related to given replication controller.
+func getReplicationControllerPodInfoWithMultiTenancy(client k8sClient.Interface, rc *v1.ReplicationController,
+	tenant, namespace string) (*common.PodInfo, error) {
+
+	pods, err := getRawReplicationControllerPodsWithMultitenancy(client, tenant, rc.Name, namespace)
 	if err != nil {
 		return nil, err
 	}

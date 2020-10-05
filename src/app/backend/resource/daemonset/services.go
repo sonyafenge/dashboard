@@ -28,13 +28,39 @@ import (
 func GetDaemonSetServices(client client.Interface, dsQuery *dataselect.DataSelectQuery,
 	namespace, name string) (*service.ServiceList, error) {
 
-	daemonSet, err := client.AppsV1().DaemonSets(namespace).Get(name, metaV1.GetOptions{})
+	daemonSet, err := client.AppsV1().DaemonSetsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	channels := &common.ResourceChannels{
 		ServiceList: common.GetServiceListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	services := <-channels.ServiceList.List
+	err = <-channels.ServiceList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	matchingServices := common.FilterNamespacedServicesBySelector(services.Items, namespace,
+		daemonSet.Spec.Selector.MatchLabels)
+	return service.CreateServiceList(matchingServices, nonCriticalErrors, dsQuery), nil
+}
+
+// GetDaemonSetServicesWithMultiTenancy returns list of services that are related to daemon set targeted by given
+// name.
+func GetDaemonSetServicesWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant,
+	namespace, name string) (*service.ServiceList, error) {
+
+	daemonSet, err := client.AppsV1().DaemonSetsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		ServiceList: common.GetServiceListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
 	}
 
 	services := <-channels.ServiceList.List

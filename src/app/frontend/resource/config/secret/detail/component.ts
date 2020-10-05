@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class SecretDetailComponent implements OnInit, OnDestroy {
   private secretSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.secret, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.secret, true, true);
   secret: SecretDetail;
   isInitialized = false;
 

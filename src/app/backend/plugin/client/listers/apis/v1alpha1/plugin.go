@@ -29,6 +29,7 @@ type PluginLister interface {
 	List(selector labels.Selector) (ret []*v1alpha1.Plugin, err error)
 	// Plugins returns an object that can list and get Plugins.
 	Plugins(namespace string) PluginNamespaceLister
+	PluginsWithMultiTenancy(namespace string, tenant string) PluginNamespaceLister
 	PluginListerExpansion
 }
 
@@ -52,14 +53,18 @@ func (s *pluginLister) List(selector labels.Selector) (ret []*v1alpha1.Plugin, e
 
 // Plugins returns an object that can list and get Plugins.
 func (s *pluginLister) Plugins(namespace string) PluginNamespaceLister {
-	return pluginNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return pluginNamespaceLister{indexer: s.indexer, namespace: namespace, tenant: "system"}
+}
+
+func (s *pluginLister) PluginsWithMultiTenancy(namespace string, tenant string) PluginNamespaceLister {
+	return pluginNamespaceLister{indexer: s.indexer, namespace: namespace, tenant: tenant}
 }
 
 // PluginNamespaceLister helps list and get Plugins.
 type PluginNamespaceLister interface {
-	// List lists all Plugins in the indexer for a given namespace.
+	// List lists all Plugins in the indexer for a given tenant/namespace.
 	List(selector labels.Selector) (ret []*v1alpha1.Plugin, err error)
-	// Get retrieves the Plugin from the indexer for a given namespace and name.
+	// Get retrieves the Plugin from the indexer for a given tenant/namespace and name.
 	Get(name string) (*v1alpha1.Plugin, error)
 	PluginNamespaceListerExpansion
 }
@@ -69,11 +74,12 @@ type PluginNamespaceLister interface {
 type pluginNamespaceLister struct {
 	indexer   cache.Indexer
 	namespace string
+	tenant    string
 }
 
 // List lists all Plugins in the indexer for a given namespace.
 func (s pluginNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.Plugin, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
+	err = cache.ListAllByNamespace(s.indexer, s.tenant, s.namespace, selector, func(m interface{}) {
 		ret = append(ret, m.(*v1alpha1.Plugin))
 	})
 	return ret, err
@@ -81,7 +87,11 @@ func (s pluginNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.P
 
 // Get retrieves the Plugin from the indexer for a given namespace and name.
 func (s pluginNamespaceLister) Get(name string) (*v1alpha1.Plugin, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
+	key := s.tenant + "/" + s.namespace + "/" + name
+	if s.tenant == "system" {
+		key = s.namespace + "/" + name
+	}
+	obj, exists, err := s.indexer.GetByKey(key)
 	if err != nil {
 		return nil, err
 	}

@@ -31,7 +31,7 @@ export class StatefulSetListComponent extends ResourceListWithStatuses<
   StatefulSetList,
   StatefulSet
 > {
-  @Input() endpoint = EndpointManager.resource(Resource.statefulSet, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.statefulSet, true, true).list();
 
   constructor(
     private readonly statefulSet_: NamespacedResourceService<StatefulSetList>,

@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class ConfigMapDetailComponent implements OnInit, OnDestroy {
   private configMapSubscription_: Subscription;
-  private endpoint_ = EndpointManager.resource(Resource.configMap, true);
+  private endpoint_ = EndpointManager.resource(Resource.configMap, true, true);
   configMap: ConfigMapDetail;
   isInitialized = false;
 

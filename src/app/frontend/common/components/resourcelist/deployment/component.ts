@@ -28,7 +28,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   templateUrl: './template.html',
 })
 export class DeploymentListComponent extends ResourceListWithStatuses<DeploymentList, Deployment> {
-  @Input() endpoint = EndpointManager.resource(Resource.deployment, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.deployment, true, true).list();
 
   constructor(
     private readonly deployment_: NamespacedResourceService<DeploymentList>,

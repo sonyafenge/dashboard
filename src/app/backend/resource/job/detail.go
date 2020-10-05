@@ -36,12 +36,29 @@ type JobDetail struct {
 
 // GetJobDetail gets job details.
 func GetJobDetail(client k8sClient.Interface, namespace, name string) (*JobDetail, error) {
-	jobData, err := client.BatchV1().Jobs(namespace).Get(name, metaV1.GetOptions{})
+	jobData, err := client.BatchV1().JobsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	podInfo, err := getJobPodInfo(client, jobData)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	job := toJobDetail(jobData, *podInfo, nonCriticalErrors)
+	return &job, nil
+}
+
+// GetJobDetailWithMultiTenancy gets job details.
+func GetJobDetailWithMultiTenancy(client k8sClient.Interface, tenant, namespace, name string) (*JobDetail, error) {
+	jobData, err := client.BatchV1().JobsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	podInfo, err := getJobPodInfoWithMultiTenancy(client, jobData, tenant)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return nil, criticalError

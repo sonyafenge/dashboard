@@ -52,7 +52,7 @@ func GetStatefulSetPods(client kubernetes.Interface, metricClient metricapi.Metr
 
 // getRawStatefulSetPods return array of api pods targeting pet set with given name.
 func getRawStatefulSetPods(client kubernetes.Interface, name, namespace string) ([]v1.Pod, error) {
-	statefulSet, err := client.AppsV1().StatefulSets(namespace).Get(name, metaV1.GetOptions{})
+	statefulSet, err := client.AppsV1().StatefulSetsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +69,39 @@ func getRawStatefulSetPods(client kubernetes.Interface, name, namespace string) 
 	return common.FilterPodsByControllerRef(statefulSet, podList.Items), nil
 }
 
+// getRawStatefulSetPodsWithMultiTenancy return array of api pods targeting pet set with given name.
+func getRawStatefulSetPodsWithMultiTenancy(client kubernetes.Interface, tenant, name, namespace string) ([]v1.Pod, error) {
+	statefulSet, err := client.AppsV1().StatefulSetsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		PodList: common.GetPodListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	podList := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return nil, err
+	}
+
+	return common.FilterPodsByControllerRef(statefulSet, podList.Items), nil
+}
+
 // Returns simple info about pods(running, desired, failing, etc.) related to given pet set.
 func getStatefulSetPodInfo(client kubernetes.Interface, statefulSet *apps.StatefulSet) (*common.PodInfo, error) {
 	pods, err := getRawStatefulSetPods(client, statefulSet.Name, statefulSet.Namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	podInfo := common.GetPodInfo(statefulSet.Status.Replicas, statefulSet.Spec.Replicas, pods)
+	return &podInfo, nil
+}
+
+// Returns simple info about pods(running, desired, failing, etc.) related to given pet set.
+func getStatefulSetPodInfoWithMultiTenancy(client kubernetes.Interface, tenant string, statefulSet *apps.StatefulSet) (*common.PodInfo, error) {
+	pods, err := getRawStatefulSetPodsWithMultiTenancy(client, tenant, statefulSet.Name, statefulSet.Namespace)
 	if err != nil {
 		return nil, err
 	}

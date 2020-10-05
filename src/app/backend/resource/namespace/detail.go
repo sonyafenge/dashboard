@@ -46,7 +46,7 @@ type NamespaceDetail struct {
 func GetNamespaceDetail(client k8sClient.Interface, name string) (*NamespaceDetail, error) {
 	log.Printf("Getting details of %s namespace\n", name)
 
-	namespace, err := client.CoreV1().Namespaces().Get(name, metaV1.GetOptions{})
+	namespace, err := client.CoreV1().NamespacesWithMultiTenancy("").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +58,31 @@ func GetNamespaceDetail(client k8sClient.Interface, name string) (*NamespaceDeta
 	}
 
 	resourceLimits, err := getLimitRanges(client, *namespace)
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	namespaceDetails := toNamespaceDetail(*namespace, resourceQuotaList, resourceLimits, nonCriticalErrors)
+	return &namespaceDetails, nil
+}
+
+// GetNamespaceDetailWithMultiTenancy gets namespace details.
+func GetNamespaceDetailWithMultiTenancy(client k8sClient.Interface, tenant string, name string) (*NamespaceDetail, error) {
+	log.Printf("Getting details of %s namespace\n", name)
+
+	namespace, err := client.CoreV1().NamespacesWithMultiTenancy(tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	resourceQuotaList, err := getResourceQuotasWithMultiTenancy(client, tenant, *namespace)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	resourceLimits, err := getLimitRangesWithMultiTenancy(client, tenant, *namespace)
 	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
 	if criticalError != nil {
 		return nil, criticalError
@@ -79,7 +104,23 @@ func toNamespaceDetail(namespace v1.Namespace, resourceQuotaList *rq.ResourceQuo
 }
 
 func getResourceQuotas(client k8sClient.Interface, namespace v1.Namespace) (*rq.ResourceQuotaDetailList, error) {
-	list, err := client.CoreV1().ResourceQuotas(namespace.Name).List(api.ListEverything)
+	list, err := client.CoreV1().ResourceQuotasWithMultiTenancy(namespace.Name, "").List(api.ListEverything)
+
+	result := &rq.ResourceQuotaDetailList{
+		Items:    make([]rq.ResourceQuotaDetail, 0),
+		ListMeta: api.ListMeta{TotalItems: len(list.Items)},
+	}
+
+	for _, item := range list.Items {
+		detail := rq.ToResourceQuotaDetail(&item)
+		result.Items = append(result.Items, *detail)
+	}
+
+	return result, err
+}
+
+func getResourceQuotasWithMultiTenancy(client k8sClient.Interface, tenant string, namespace v1.Namespace) (*rq.ResourceQuotaDetailList, error) {
+	list, err := client.CoreV1().ResourceQuotasWithMultiTenancy(namespace.Name, tenant).List(api.ListEverything)
 
 	result := &rq.ResourceQuotaDetailList{
 		Items:    make([]rq.ResourceQuotaDetail, 0),
@@ -95,7 +136,22 @@ func getResourceQuotas(client k8sClient.Interface, namespace v1.Namespace) (*rq.
 }
 
 func getLimitRanges(client k8sClient.Interface, namespace v1.Namespace) ([]limitrange.LimitRangeItem, error) {
-	list, err := client.CoreV1().LimitRanges(namespace.Name).List(api.ListEverything)
+	list, err := client.CoreV1().LimitRangesWithMultiTenancy(namespace.Name, "").List(api.ListEverything)
+	if err != nil {
+		return nil, err
+	}
+
+	resourceLimits := make([]limitrange.LimitRangeItem, 0)
+	for _, item := range list.Items {
+		list := limitrange.ToLimitRanges(&item)
+		resourceLimits = append(resourceLimits, list...)
+	}
+
+	return resourceLimits, nil
+}
+
+func getLimitRangesWithMultiTenancy(client k8sClient.Interface, tenant string, namespace v1.Namespace) ([]limitrange.LimitRangeItem, error) {
+	list, err := client.CoreV1().LimitRangesWithMultiTenancy(namespace.Name, tenant).List(api.ListEverything)
 	if err != nil {
 		return nil, err
 	}

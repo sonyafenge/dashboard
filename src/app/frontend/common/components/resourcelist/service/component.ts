@@ -26,7 +26,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({selector: 'kd-service-list', templateUrl: './template.html'})
 export class ServiceListComponent extends ResourceListWithStatuses<ServiceList, Service> {
-  @Input() endpoint = EndpointManager.resource(Resource.service, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.service, true, true).list();
 
   constructor(
     private readonly service_: NamespacedResourceService<ServiceList>,

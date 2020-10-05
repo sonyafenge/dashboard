@@ -25,7 +25,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({selector: 'kd-secret-list', templateUrl: './template.html'})
 export class SecretListComponent extends ResourceListBase<SecretList, Secret> {
-  @Input() endpoint = EndpointManager.resource(Resource.secret, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.secret, true, true).list();
 
   constructor(
     private readonly secret_: NamespacedResourceService<SecretList>,

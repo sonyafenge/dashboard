@@ -62,6 +62,18 @@ func GetCronJobList(client client.Interface, nsQuery *common.NamespaceQuery,
 	return GetCronJobListFromChannels(channels, dsQuery, metricClient)
 }
 
+// GetCronJobListWithMultiTenancy returns a list of all CronJobs in the cluster.
+func GetCronJobListWithMultiTenancy(client client.Interface, tenant string, nsQuery *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient) (*CronJobList, error) {
+	log.Print("Getting list of all cron jobs in the cluster")
+
+	channels := &common.ResourceChannels{
+		CronJobList: common.GetCronJobListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetCronJobListFromChannels(channels, dsQuery, metricClient)
+}
+
 // GetCronJobListFromChannels returns a list of all CronJobs in the cluster reading required resource
 // list once from the channels.
 func GetCronJobListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery,

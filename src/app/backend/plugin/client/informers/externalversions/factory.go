@@ -35,6 +35,7 @@ type SharedInformerOption func(*sharedInformerFactory) *sharedInformerFactory
 
 type sharedInformerFactory struct {
 	client           versioned.Interface
+	tenant           string
 	namespace        string
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	lock             sync.Mutex
@@ -67,8 +68,13 @@ func WithTweakListOptions(tweakListOptions internalinterfaces.TweakListOptionsFu
 
 // WithNamespace limits the SharedInformerFactory to the specified namespace.
 func WithNamespace(namespace string) SharedInformerOption {
+	return WithNamespaceWithMultiTenancy(namespace, "$.DefaultTenant$")
+}
+
+func WithNamespaceWithMultiTenancy(namespace string, tenant string) SharedInformerOption {
 	return func(factory *sharedInformerFactory) *sharedInformerFactory {
 		factory.namespace = namespace
+		factory.tenant = tenant
 		return factory
 	}
 }
@@ -83,13 +89,18 @@ func NewSharedInformerFactory(client versioned.Interface, defaultResync time.Dur
 // as specified here.
 // Deprecated: Please use NewSharedInformerFactoryWithOptions instead
 func NewFilteredSharedInformerFactory(client versioned.Interface, defaultResync time.Duration, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) SharedInformerFactory {
-	return NewSharedInformerFactoryWithOptions(client, defaultResync, WithNamespace(namespace), WithTweakListOptions(tweakListOptions))
+	return NewFilteredSharedInformerFactoryWithMultiTenancy(client, defaultResync, namespace, tweakListOptions, "$.DefaultTenant$")
+}
+
+func NewFilteredSharedInformerFactoryWithMultiTenancy(client versioned.Interface, defaultResync time.Duration, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc, tenant string) SharedInformerFactory {
+	return NewSharedInformerFactoryWithOptions(client, defaultResync, WithNamespaceWithMultiTenancy(namespace, tenant), WithTweakListOptions(tweakListOptions))
 }
 
 // NewSharedInformerFactoryWithOptions constructs a new instance of a SharedInformerFactory with additional options.
 func NewSharedInformerFactoryWithOptions(client versioned.Interface, defaultResync time.Duration, options ...SharedInformerOption) SharedInformerFactory {
 	factory := &sharedInformerFactory{
 		client:           client,
+		tenant:           v1.TenantAll,
 		namespace:        v1.NamespaceAll,
 		defaultResync:    defaultResync,
 		informers:        make(map[reflect.Type]cache.SharedIndexInformer),
@@ -174,5 +185,5 @@ type SharedInformerFactory interface {
 }
 
 func (f *sharedInformerFactory) Dashboard() apis.Interface {
-	return apis.New(f, f.namespace, f.tweakListOptions)
+	return apis.NewWithMultiTenancy(f, f.namespace, f.tweakListOptions, f.tenant)
 }

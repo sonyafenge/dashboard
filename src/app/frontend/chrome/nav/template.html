@@ -17,10 +17,24 @@ limitations under the License.
 <mat-drawer-container class="kd-nav">
   <mat-drawer class="kd-nav"
               mode="side">
+    
+    <kd-nav-item *ngIf="isSystem" 
+                 class="kd-nav-group-item"
+                 state="/tenant"
+                 i18n>System Control
+    </kd-nav-item>
+    <kd-tenant-selector *ngIf="isSystem"></kd-tenant-selector>
+    <mat-divider></mat-divider>
+
     <div class="kd-nav-group">
       <kd-nav-item class="kd-nav-group-item"
                    state="/cluster"
                    i18n>Cluster
+      </kd-nav-item>
+      <kd-nav-item *ngIf="isCurrentSystem" 
+                   class="kd-nav-item"
+                   state="/tenant"
+                   i18n>Tenants
       </kd-nav-item>
       <kd-nav-item class="kd-nav-item"
                    state="/clusterrole"
@@ -30,7 +44,8 @@ limitations under the License.
                    state="/namespace"
                    i18n>Namespaces
       </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
+      <kd-nav-item *ngIf="isCurrentSystem" 
+                   class="kd-nav-item"
                    state="/node"
                    i18n>Nodes
       </kd-nav-item>

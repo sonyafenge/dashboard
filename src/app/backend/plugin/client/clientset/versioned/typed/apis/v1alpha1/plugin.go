@@ -17,20 +17,27 @@
 package v1alpha1
 
 import (
+	fmt "fmt"
+	strings "strings"
+	sync "sync"
 	"time"
 
 	v1alpha1 "github.com/kubernetes/dashboard/src/app/backend/plugin/apis/v1alpha1"
 	scheme "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned/scheme"
+	errors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
+	diff "k8s.io/apimachinery/pkg/util/diff"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
+	klog "k8s.io/klog"
 )
 
 // PluginsGetter has a method to return a PluginInterface.
 // A group's client should implement this interface.
 type PluginsGetter interface {
 	Plugins(namespace string) PluginInterface
+	PluginsWithMultiTenancy(namespace string, tenant string) PluginInterface
 }
 
 // PluginInterface has methods to work with Plugin resources.
@@ -41,22 +48,30 @@ type PluginInterface interface {
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1alpha1.Plugin, error)
 	List(opts v1.ListOptions) (*v1alpha1.PluginList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
+	Watch(opts v1.ListOptions) watch.AggregatedWatchInterface
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Plugin, err error)
 	PluginExpansion
 }
 
 // plugins implements PluginInterface
 type plugins struct {
-	client rest.Interface
-	ns     string
+	client  rest.Interface
+	clients []rest.Interface
+	ns      string
+	te      string
 }
 
 // newPlugins returns a Plugins
 func newPlugins(c *DashboardV1alpha1Client, namespace string) *plugins {
+	return newPluginsWithMultiTenancy(c, namespace, "system")
+}
+
+func newPluginsWithMultiTenancy(c *DashboardV1alpha1Client, namespace string, tenant string) *plugins {
 	return &plugins{
-		client: c.RESTClient(),
-		ns:     namespace,
+		client:  c.RESTClient(),
+		clients: c.RESTClients(),
+		ns:      namespace,
+		te:      tenant,
 	}
 }
 
@@ -64,12 +79,14 @@ func newPlugins(c *DashboardV1alpha1Client, namespace string) *plugins {
 func (c *plugins) Get(name string, options v1.GetOptions) (result *v1alpha1.Plugin, err error) {
 	result = &v1alpha1.Plugin{}
 	err = c.client.Get().
+		Tenant(c.te).
 		Namespace(c.ns).
 		Resource("plugins").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
 		Into(result)
+
 	return
 }
 
@@ -80,59 +97,201 @@ func (c *plugins) List(opts v1.ListOptions) (result *v1alpha1.PluginList, err er
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
 	result = &v1alpha1.PluginList{}
+
+	wgLen := 1
+	// When resource version is not empty, it reads from api server local cache
+	// Need to check all api server partitions
+	if opts.ResourceVersion != "" && len(c.clients) > 1 {
+		wgLen = len(c.clients)
+	}
+
+	if wgLen > 1 {
+		var listLock sync.Mutex
+
+		var wg sync.WaitGroup
+		wg.Add(wgLen)
+		results := make(map[int]*v1alpha1.PluginList)
+		errs := make(map[int]error)
+		for i, client := range c.clients {
+			go func(c *plugins, ci rest.Interface, opts v1.ListOptions, lock *sync.Mutex, pos int, resultMap map[int]*v1alpha1.PluginList, errMap map[int]error) {
+				r := &v1alpha1.PluginList{}
+				err := ci.Get().
+					Tenant(c.te).Namespace(c.ns).
+					Resource("plugins").
+					VersionedParams(&opts, scheme.ParameterCodec).
+					Timeout(timeout).
+					Do().
+					Into(r)
+
+				lock.Lock()
+				resultMap[pos] = r
+				errMap[pos] = err
+				lock.Unlock()
+				wg.Done()
+			}(c, client, opts, &listLock, i, results, errs)
+		}
+		wg.Wait()
+
+		// consolidate list result
+		itemsMap := make(map[string]v1alpha1.Plugin)
+		for j := 0; j < wgLen; j++ {
+			currentErr, isOK := errs[j]
+			if isOK && currentErr != nil {
+				if !(errors.IsForbidden(currentErr) && strings.Contains(currentErr.Error(), "no relationship found between node")) {
+					err = currentErr
+					return
+				} else {
+					continue
+				}
+			}
+
+			currentResult, _ := results[j]
+			if result.ResourceVersion == "" {
+				result.TypeMeta = currentResult.TypeMeta
+				result.ListMeta = currentResult.ListMeta
+			} else {
+				isNewer, errCompare := diff.RevisionStrIsNewer(currentResult.ResourceVersion, result.ResourceVersion)
+				if errCompare != nil {
+					err = errors.NewInternalError(fmt.Errorf("Invalid resource version [%v]", errCompare))
+					return
+				} else if isNewer {
+					// Since the lists are from different api servers with different partition. When used in list and watch,
+					// we cannot watch from the biggest resource version. Leave it to watch for adjustment.
+					result.ResourceVersion = currentResult.ResourceVersion
+				}
+			}
+			for _, item := range currentResult.Items {
+				if _, exist := itemsMap[item.ResourceVersion]; !exist {
+					itemsMap[item.ResourceVersion] = item
+				}
+			}
+		}
+
+		for _, item := range itemsMap {
+			result.Items = append(result.Items, item)
+		}
+		return
+	}
+
+	// The following is used for single api server partition and/or resourceVersion is empty
+	// When resourceVersion is empty, objects are read from ETCD directly and will get full
+	// list of data if no permission issue. The list needs to done sequential to avoid increasing
+	// system load.
 	err = c.client.Get().
-		Namespace(c.ns).
+		Tenant(c.te).Namespace(c.ns).
 		Resource("plugins").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do().
 		Into(result)
+	if err == nil {
+		return
+	}
+
+	if !(errors.IsForbidden(err) && strings.Contains(err.Error(), "no relationship found between node")) {
+		return
+	}
+
+	// Found api server that works with this list, keep the client
+	for _, client := range c.clients {
+		if client == c.client {
+			continue
+		}
+
+		err = client.Get().
+			Tenant(c.te).Namespace(c.ns).
+			Resource("plugins").
+			VersionedParams(&opts, scheme.ParameterCodec).
+			Timeout(timeout).
+			Do().
+			Into(result)
+
+		if err == nil {
+			c.client = client
+			return
+		}
+
+		if err != nil && errors.IsForbidden(err) &&
+			strings.Contains(err.Error(), "no relationship found between node") {
+			klog.V(6).Infof("Skip error %v in list", err)
+			continue
+		}
+	}
+
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested plugins.
-func (c *plugins) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *plugins) Watch(opts v1.ListOptions) watch.AggregatedWatchInterface {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
 	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("plugins").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Watch()
+	aggWatch := watch.NewAggregatedWatcher()
+	for _, client := range c.clients {
+		watcher, err := client.Get().
+			Tenant(c.te).
+			Namespace(c.ns).
+			Resource("plugins").
+			VersionedParams(&opts, scheme.ParameterCodec).
+			Timeout(timeout).
+			Watch()
+		if err != nil && opts.AllowPartialWatch && errors.IsForbidden(err) {
+			// watch error was not returned properly in error message. Skip when partial watch is allowed
+			klog.V(6).Infof("Watch error for partial watch %v. options [%+v]", err, opts)
+			continue
+		}
+		aggWatch.AddWatchInterface(watcher, err)
+	}
+	return aggWatch
 }
 
 // Create takes the representation of a plugin and creates it.  Returns the server's representation of the plugin, and an error, if there is any.
 func (c *plugins) Create(plugin *v1alpha1.Plugin) (result *v1alpha1.Plugin, err error) {
 	result = &v1alpha1.Plugin{}
+
+	objectTenant := plugin.ObjectMeta.Tenant
+	if objectTenant == "" {
+		objectTenant = c.te
+	}
+
 	err = c.client.Post().
+		Tenant(objectTenant).
 		Namespace(c.ns).
 		Resource("plugins").
 		Body(plugin).
 		Do().
 		Into(result)
+
 	return
 }
 
 // Update takes the representation of a plugin and updates it. Returns the server's representation of the plugin, and an error, if there is any.
 func (c *plugins) Update(plugin *v1alpha1.Plugin) (result *v1alpha1.Plugin, err error) {
 	result = &v1alpha1.Plugin{}
+
+	objectTenant := plugin.ObjectMeta.Tenant
+	if objectTenant == "" {
+		objectTenant = c.te
+	}
+
 	err = c.client.Put().
+		Tenant(objectTenant).
 		Namespace(c.ns).
 		Resource("plugins").
 		Name(plugin.Name).
 		Body(plugin).
 		Do().
 		Into(result)
+
 	return
 }
 
 // Delete takes name of the plugin and deletes it. Returns an error if one occurs.
 func (c *plugins) Delete(name string, options *v1.DeleteOptions) error {
 	return c.client.Delete().
+		Tenant(c.te).
 		Namespace(c.ns).
 		Resource("plugins").
 		Name(name).
@@ -148,6 +307,7 @@ func (c *plugins) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Lis
 		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
+		Tenant(c.te).
 		Namespace(c.ns).
 		Resource("plugins").
 		VersionedParams(&listOptions, scheme.ParameterCodec).
@@ -161,6 +321,7 @@ func (c *plugins) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Lis
 func (c *plugins) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.Plugin, err error) {
 	result = &v1alpha1.Plugin{}
 	err = c.client.Patch(pt).
+		Tenant(c.te).
 		Namespace(c.ns).
 		Resource("plugins").
 		SubResource(subresources...).
@@ -168,5 +329,6 @@ func (c *plugins) Patch(name string, pt types.PatchType, data []byte, subresourc
 		Body(data).
 		Do().
 		Into(result)
+
 	return
 }

@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class ReplicationControllerDetailComponent implements OnInit, OnDestroy {
   private replicationControllerSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.replicationController, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.replicationController, true, true);
   replicationController: ReplicationControllerDetail;
   isInitialized = false;
   eventListEndpoint: string;

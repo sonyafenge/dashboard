@@ -25,7 +25,7 @@ import {EndpointManager, Resource} from '../../common/services/resource/endpoint
 @Component({selector: 'kd-crd-detail', templateUrl: './template.html'})
 export class CRDDetailComponent implements OnInit, OnDestroy {
   private crdSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.crd);
+  private readonly endpoint_ = EndpointManager.resource(Resource.crd, false, true);
   crd: CRDDetail;
   crdObjectEndpoint: string;
   isInitialized = false;
@@ -39,7 +39,7 @@ export class CRDDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const {crdName} = this.activatedRoute_.snapshot.params;
-    this.crdObjectEndpoint = EndpointManager.resource(Resource.crd, true).child(
+    this.crdObjectEndpoint = EndpointManager.resource(Resource.crd, false, true).child(
       crdName,
       Resource.crdObject,
     );

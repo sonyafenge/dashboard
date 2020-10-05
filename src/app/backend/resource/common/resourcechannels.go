@@ -137,7 +137,34 @@ func GetServiceListChannel(client client.Interface, nsQuery *NamespaceQuery,
 		Error: make(chan error, numReads),
 	}
 	go func() {
-		list, err := client.CoreV1().Services(nsQuery.ToRequestParam()).List(api.ListEverything)
+		list, err := client.CoreV1().ServicesWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		var filteredItems []v1.Service
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetServiceListChannelWithMultiTenancy returns a pair of channels to a Service list and errors that both
+// must be read numReads times.
+func GetServiceListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	numReads int) ServiceListChannel {
+
+	channel := ServiceListChannel{
+		List:  make(chan *v1.ServiceList, numReads),
+		Error: make(chan error, numReads),
+	}
+	go func() {
+		list, err := client.CoreV1().ServicesWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []v1.Service
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -287,7 +314,40 @@ func GetEventListChannelWithOptions(client client.Interface,
 	}
 
 	go func() {
-		list, err := client.CoreV1().Events(nsQuery.ToRequestParam()).List(options)
+		list, err := client.CoreV1().EventsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(options)
+		var filteredItems []v1.Event
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetEventListChannelWithMultiTenancy returns a pair of channels to an Event list and errors that both must be read
+// numReads times.
+func GetEventListChannelWithMultiTenancy(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, numReads int) EventListChannel {
+	return GetEventListChannelWithMultiTenancyAndOptions(client, tenant, nsQuery, api.ListEverything, numReads)
+}
+
+// GetEventListChannelWithMultiTenancyAndOptions is GetEventListChannel plus list options.
+func GetEventListChannelWithMultiTenancyAndOptions(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, options metaV1.ListOptions, numReads int) EventListChannel {
+	channel := EventListChannel{
+		List:  make(chan *v1.EventList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().EventsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(options)
 		var filteredItems []v1.Event
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -323,7 +383,31 @@ func GetEndpointListChannelWithOptions(client client.Interface,
 	}
 
 	go func() {
-		list, err := client.CoreV1().Endpoints(nsQuery.ToRequestParam()).List(opt)
+		list, err := client.CoreV1().EndpointsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(opt)
+
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+func GetEndpointListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery, numReads int) EndpointListChannel {
+	return GetEndpointListChannelWithMultiTenancyAndOptions(client, tenant, nsQuery, api.ListEverything, numReads)
+}
+
+// GetEndpointListChannelWithMultiTenancyAndOptions is GetEndpointListChannel plus list options.
+func GetEndpointListChannelWithMultiTenancyAndOptions(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, opt metaV1.ListOptions, numReads int) EndpointListChannel {
+	channel := EndpointListChannel{
+		List:  make(chan *v1.EndpointsList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().EndpointsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(opt)
 
 		for i := 0; i < numReads; i++ {
 			channel.List <- list
@@ -357,7 +441,41 @@ func GetPodListChannelWithOptions(client client.Interface, nsQuery *NamespaceQue
 	}
 
 	go func() {
-		list, err := client.CoreV1().Pods(nsQuery.ToRequestParam()).List(options)
+		list, err := client.CoreV1().PodsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(options)
+		var filteredItems []v1.Pod
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetPodListChannelWithMultiTenancy returns a pair of channels to a Pod list and errors that both must be read
+// numReads times.
+func GetPodListChannelWithMultiTenancy(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, numReads int) PodListChannel {
+	return GetPodListChannelWithMultiTenancyAndOptions(client, tenant, nsQuery, api.ListEverything, numReads)
+}
+
+// GetPodListChannelWithMultiTenancyAndOptions is GetPodListChannel plus listing options.
+func GetPodListChannelWithMultiTenancyAndOptions(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	options metaV1.ListOptions, numReads int) PodListChannel {
+
+	channel := PodListChannel{
+		List:  make(chan *v1.PodList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().PodsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(options)
 		var filteredItems []v1.Pod
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -392,7 +510,37 @@ func GetReplicationControllerListChannel(client client.Interface,
 	}
 
 	go func() {
-		list, err := client.CoreV1().ReplicationControllers(nsQuery.ToRequestParam()).
+		list, err := client.CoreV1().ReplicationControllersWithMultiTenancy(nsQuery.ToRequestParam(), "").
+			List(api.ListEverything)
+		var filteredItems []v1.ReplicationController
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetReplicationControllerListChannelWithMultiTenancy Returns a pair of channels to a
+// Replication Controller list and errors that both must be read
+// numReads times.
+func GetReplicationControllerListChannelWithMultiTenancy(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, numReads int) ReplicationControllerListChannel {
+
+	channel := ReplicationControllerListChannel{
+		List:  make(chan *v1.ReplicationControllerList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().ReplicationControllersWithMultiTenancy(nsQuery.ToRequestParam(), tenant).
 			List(api.ListEverything)
 		var filteredItems []v1.ReplicationController
 		for _, item := range list.Items {
@@ -420,14 +568,41 @@ type DeploymentListChannel struct {
 // that both must be read numReads times.
 func GetDeploymentListChannel(client client.Interface,
 	nsQuery *NamespaceQuery, numReads int) DeploymentListChannel {
-
 	channel := DeploymentListChannel{
 		List:  make(chan *apps.DeploymentList, numReads),
 		Error: make(chan error, numReads),
 	}
 
 	go func() {
-		list, err := client.AppsV1().Deployments(nsQuery.ToRequestParam()).
+		list, err := client.AppsV1().DeploymentsWithMultiTenancy(nsQuery.ToRequestParam(), "").
+			List(api.ListEverything)
+		var filteredItems []apps.Deployment
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetDeploymentListChannelWithMultiTenancy returns a pair of channels to a Deployment list and errors
+// that both must be read numReads times.
+func GetDeploymentListChannelWithMultiTenancy(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, numReads int) DeploymentListChannel {
+	channel := DeploymentListChannel{
+		List:  make(chan *apps.DeploymentList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.AppsV1().DeploymentsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).
 			List(api.ListEverything)
 		var filteredItems []apps.Deployment
 		for _, item := range list.Items {
@@ -468,7 +643,42 @@ func GetReplicaSetListChannelWithOptions(client client.Interface, nsQuery *Names
 	}
 
 	go func() {
-		list, err := client.AppsV1().ReplicaSets(nsQuery.ToRequestParam()).
+		list, err := client.AppsV1().ReplicaSetsWithMultiTenancy(nsQuery.ToRequestParam(), "").
+			List(options)
+		var filteredItems []apps.ReplicaSet
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetReplicaSetListChannelWithMultiTenancy returns a pair of channels to a ReplicaSet list and
+// errors that both must be read numReads times.
+func GetReplicaSetListChannelWithMultiTenancy(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, numReads int) ReplicaSetListChannel {
+	return GetReplicaSetListChannelWithMultiTenancyAndOptions(client, tenant, nsQuery, api.ListEverything, numReads)
+}
+
+// GetReplicaSetListChannelWithMultiTenancyAndOptions returns a pair of channels to a ReplicaSet list filtered
+// by provided options and errors that both must be read numReads times.
+func GetReplicaSetListChannelWithMultiTenancyAndOptions(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	options metaV1.ListOptions, numReads int) ReplicaSetListChannel {
+	channel := ReplicaSetListChannel{
+		List:  make(chan *apps.ReplicaSetList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.AppsV1().ReplicaSetsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).
 			List(options)
 		var filteredItems []apps.ReplicaSet
 		for _, item := range list.Items {
@@ -501,7 +711,33 @@ func GetDaemonSetListChannel(client client.Interface, nsQuery *NamespaceQuery, n
 	}
 
 	go func() {
-		list, err := client.AppsV1().DaemonSets(nsQuery.ToRequestParam()).List(api.ListEverything)
+		list, err := client.AppsV1().DaemonSetsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		var filteredItems []apps.DaemonSet
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetDaemonSetListChannelWithMultiTenancy returns a pair of channels to a DaemonSet list and errors that both must be read
+// numReads times.
+func GetDaemonSetListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery, numReads int) DaemonSetListChannel {
+	channel := DaemonSetListChannel{
+		List:  make(chan *apps.DaemonSetList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.AppsV1().DaemonSetsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []apps.DaemonSet
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -533,7 +769,33 @@ func GetJobListChannel(client client.Interface,
 	}
 
 	go func() {
-		list, err := client.BatchV1().Jobs(nsQuery.ToRequestParam()).List(api.ListEverything)
+		list, err := client.BatchV1().JobsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		var filteredItems []batch.Job
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetJobListChannelWithMultiTenancy returns a pair of channels to a Job list and errors that both must be read numReads times.
+func GetJobListChannelWithMultiTenancy(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, numReads int) JobListChannel {
+	channel := JobListChannel{
+		List:  make(chan *batch.JobList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.BatchV1().JobsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []batch.Job
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -564,7 +826,32 @@ func GetCronJobListChannel(client client.Interface, nsQuery *NamespaceQuery, num
 	}
 
 	go func() {
-		list, err := client.BatchV1beta1().CronJobs(nsQuery.ToRequestParam()).List(api.ListEverything)
+		list, err := client.BatchV1beta1().CronJobsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		var filteredItems []batch2.CronJob
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetCronJobListChannelWithMultiTenancy returns a pair of channels to a Cron Job list and errors that both must be read numReads times.
+func GetCronJobListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery, numReads int) CronJobListChannel {
+	channel := CronJobListChannel{
+		List:  make(chan *batch2.CronJobList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.BatchV1beta1().CronJobsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []batch2.CronJob
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -597,7 +884,34 @@ func GetStatefulSetListChannel(client client.Interface,
 	}
 
 	go func() {
-		statefulSets, err := client.AppsV1().StatefulSets(nsQuery.ToRequestParam()).List(api.ListEverything)
+		statefulSets, err := client.AppsV1().StatefulSetsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		var filteredItems []apps.StatefulSet
+		for _, item := range statefulSets.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		statefulSets.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- statefulSets
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetStatefulSetListChannelWithMultiTenancy returns a pair of channels to a StatefulSet list and errors that both must be read
+// numReads times.
+func GetStatefulSetListChannelWithMultiTenancy(client client.Interface, tenant string,
+	nsQuery *NamespaceQuery, numReads int) StatefulSetListChannel {
+	channel := StatefulSetListChannel{
+		List:  make(chan *apps.StatefulSetList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		statefulSets, err := client.AppsV1().StatefulSetsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []apps.StatefulSet
 		for _, item := range statefulSets.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -631,7 +945,35 @@ func GetConfigMapListChannel(client client.Interface, nsQuery *NamespaceQuery,
 	}
 
 	go func() {
-		list, err := client.CoreV1().ConfigMaps(nsQuery.ToRequestParam()).List(api.ListEverything)
+		list, err := client.CoreV1().ConfigMapsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		var filteredItems []v1.ConfigMap
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetConfigMapListChannelWithMultiTenancy returns a pair of channels to a ConfigMap list and errors that both must be read
+// numReads times.
+func GetConfigMapListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	numReads int) ConfigMapListChannel {
+
+	channel := ConfigMapListChannel{
+		List:  make(chan *v1.ConfigMapList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().ConfigMapsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []v1.ConfigMap
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -665,7 +1007,35 @@ func GetSecretListChannel(client client.Interface, nsQuery *NamespaceQuery,
 	}
 
 	go func() {
-		list, err := client.CoreV1().Secrets(nsQuery.ToRequestParam()).List(api.ListEverything)
+		list, err := client.CoreV1().SecretsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		var filteredItems []v1.Secret
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetSecretListChannelWithMultiTenancy returns a pair of channels to a Secret list and errors that
+// both must be read numReads times.
+func GetSecretListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	numReads int) SecretListChannel {
+
+	channel := SecretListChannel{
+		List:  make(chan *v1.SecretList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().SecretsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []v1.Secret
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
@@ -722,7 +1092,26 @@ func GetClusterRoleListChannel(client client.Interface, numReads int) ClusterRol
 	}
 
 	go func() {
-		list, err := client.RbacV1().ClusterRoles().List(api.ListEverything)
+		list, err := client.RbacV1().ClusterRolesWithMultiTenancy("").List(api.ListEverything)
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetClusterRoleListChannelWithMultiTenancy returns a pair of channels to a ClusterRole list and errors that
+// both must be read numReads times.
+func GetClusterRoleListChannelWithMultiTenancy(client client.Interface, tenant string, numReads int) ClusterRoleListChannel {
+	channel := ClusterRoleListChannel{
+		List:  make(chan *rbac.ClusterRoleList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.RbacV1().ClusterRolesWithMultiTenancy(tenant).List(api.ListEverything)
 		for i := 0; i < numReads; i++ {
 			channel.List <- list
 			channel.Error <- err
@@ -799,7 +1188,27 @@ func GetPersistentVolumeListChannel(client client.Interface,
 	}
 
 	go func() {
-		list, err := client.CoreV1().PersistentVolumes().List(api.ListEverything)
+		list, err := client.CoreV1().PersistentVolumesWithMultiTenancy("").List(api.ListEverything)
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetPersistentVolumeListChannelWithMultiTenancy returns a pair of channels to a PersistentVolume list and errors
+// that both must be read numReads times.
+func GetPersistentVolumeListChannelWithMultiTenancy(client client.Interface, tenant string,
+	numReads int) PersistentVolumeListChannel {
+	channel := PersistentVolumeListChannel{
+		List:  make(chan *v1.PersistentVolumeList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().PersistentVolumesWithMultiTenancy(tenant).List(api.ListEverything)
 		for i := 0; i < numReads; i++ {
 			channel.List <- list
 			channel.Error <- err
@@ -826,7 +1235,28 @@ func GetPersistentVolumeClaimListChannel(client client.Interface, nsQuery *Names
 	}
 
 	go func() {
-		list, err := client.CoreV1().PersistentVolumeClaims(nsQuery.ToRequestParam()).List(api.ListEverything)
+		list, err := client.CoreV1().PersistentVolumeClaimsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetPersistentVolumeClaimListChannelWithMultiTenancy returns a pair of channels to a PersistentVolumeClaim list
+// and errors that both must be read numReads times.
+func GetPersistentVolumeClaimListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	numReads int) PersistentVolumeClaimListChannel {
+
+	channel := PersistentVolumeClaimListChannel{
+		List:  make(chan *v1.PersistentVolumeClaimList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().PersistentVolumeClaimsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		for i := 0; i < numReads; i++ {
 			channel.List <- list
 			channel.Error <- err
@@ -851,7 +1281,26 @@ func GetCustomResourceDefinitionChannel(client apiextensionsclientset.Interface,
 	}
 
 	go func() {
-		list, err := client.ApiextensionsV1beta1().CustomResourceDefinitions().List(api.ListEverything)
+		list, err := client.ApiextensionsV1beta1().CustomResourceDefinitionsWithMultiTenancy("").List(api.ListEverything)
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetCustomResourceDefinitionChannelWithMultiTenancy returns a pair of channels to a CustomResourceDefinition list and errors
+// that both must be read numReads times.
+func GetCustomResourceDefinitionChannelWithMultiTenancy(client apiextensionsclientset.Interface, tenant string, numReads int) CustomResourceDefinitionChannel {
+	channel := CustomResourceDefinitionChannel{
+		List:  make(chan *apiextensions.CustomResourceDefinitionList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.ApiextensionsV1beta1().CustomResourceDefinitionsWithMultiTenancy(tenant).List(api.ListEverything)
 		for i := 0; i < numReads; i++ {
 			channel.List <- list
 			channel.Error <- err
@@ -894,7 +1343,7 @@ type HorizontalPodAutoscalerListChannel struct {
 	Error chan error
 }
 
-// GetPodListMetricsChannel returns a pair of channels to MetricsByPod and errors that
+// GetHorizontalPodAutoscalerListChannel returns a pair of channels to MetricsByPod and errors that
 // both must be read numReads times.
 func GetHorizontalPodAutoscalerListChannel(client client.Interface, nsQuery *NamespaceQuery,
 	numReads int) HorizontalPodAutoscalerListChannel {
@@ -904,7 +1353,28 @@ func GetHorizontalPodAutoscalerListChannel(client client.Interface, nsQuery *Nam
 	}
 
 	go func() {
-		list, err := client.AutoscalingV1().HorizontalPodAutoscalers(nsQuery.ToRequestParam()).
+		list, err := client.AutoscalingV1().HorizontalPodAutoscalersWithMultiTenancy(nsQuery.ToRequestParam(), "").
+			List(api.ListEverything)
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetHorizontalPodAutoscalerListChannelWithMultiTenancy returns a pair of channels to MetricsByPod and errors that
+// both must be read numReads times.
+func GetHorizontalPodAutoscalerListChannelWithMultiTenancy(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	numReads int) HorizontalPodAutoscalerListChannel {
+	channel := HorizontalPodAutoscalerListChannel{
+		List:  make(chan *autoscaling.HorizontalPodAutoscalerList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.AutoscalingV1().HorizontalPodAutoscalersWithMultiTenancy(nsQuery.ToRequestParam(), tenant).
 			List(api.ListEverything)
 		for i := 0; i < numReads; i++ {
 			channel.List <- list
@@ -930,7 +1400,26 @@ func GetStorageClassListChannel(client client.Interface, numReads int) StorageCl
 	}
 
 	go func() {
-		list, err := client.StorageV1().StorageClasses().List(api.ListEverything)
+		list, err := client.StorageV1().StorageClassesWithMultiTenancy("").List(api.ListEverything)
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+// GetStorageClassListChannelWithMultiTenancy returns a pair of channels to a storage class list and
+// errors that both must be read numReads times.
+func GetStorageClassListChannelWithMultiTenancy(client client.Interface, tenant string, numReads int) StorageClassListChannel {
+	channel := StorageClassListChannel{
+		List:  make(chan *storage.StorageClassList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.StorageV1().StorageClassesWithMultiTenancy(tenant).List(api.ListEverything)
 		for i := 0; i < numReads; i++ {
 			channel.List <- list
 			channel.Error <- err

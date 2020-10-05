@@ -1,4 +1,5 @@
 // Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -576,6 +577,7 @@ export interface ProtocolValiditySpec {
 export interface AuthResponse {
   jweToken: string;
   errors: K8sError[];
+  tenant: string;
 }
 
 export interface CanIResponse {
@@ -1125,4 +1127,16 @@ export interface SJSCloseEvent extends SockJSSimpleEvent {
 
 export interface SJSMessageEvent extends SockJSSimpleEvent {
   data: string;
+}
+
+export interface Tenant extends Resource {
+  phase: string;
+}
+
+export interface TenantList extends ResourceList {
+  tenants: Tenant[];
+}
+
+export interface TenantDetail extends ResourceDetail {
+  phase: string;
 }

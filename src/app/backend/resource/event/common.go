@@ -63,6 +63,34 @@ func GetEvents(client kubernetes.Interface, namespace, resourceName string) ([]v
 	return FillEventsType(eventList.Items), nil
 }
 
+// GetEventsWithMultiTenancy gets events associated to resource with given name.
+func GetEventsWithMultiTenancy(client kubernetes.Interface, tenant, namespace, resourceName string) ([]v1.Event, error) {
+	fieldSelector, err := fields.ParseSelector("involvedObject.name" + "=" + resourceName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		EventList: common.GetEventListChannelWithMultiTenancyAndOptions(
+			client,
+			tenant,
+			common.NewSameNamespaceQuery(namespace),
+			metaV1.ListOptions{
+				LabelSelector: labels.Everything().String(),
+				FieldSelector: fieldSelector.String(),
+			},
+			1),
+	}
+
+	eventList := <-channels.EventList.List
+	if err := <-channels.EventList.Error; err != nil {
+		return nil, err
+	}
+
+	return FillEventsType(eventList.Items), nil
+}
+
 // GetPodsEvents gets events targeting given list of pods.
 func GetPodsEvents(client kubernetes.Interface, namespace string, pods []v1.Pod) (
 	[]v1.Event, error) {
@@ -74,6 +102,29 @@ func GetPodsEvents(client kubernetes.Interface, namespace string, pods []v1.Pod)
 
 	channels := &common.ResourceChannels{
 		EventList: common.GetEventListChannel(client, nsQuery, 1),
+	}
+
+	eventList := <-channels.EventList.List
+	if err := <-channels.EventList.Error; err != nil {
+		return nil, err
+	}
+
+	events := filterEventsByPodsUID(eventList.Items, pods)
+
+	return events, nil
+}
+
+// GetPodsEventsWithMultiTenancy gets events targeting given list of pods.
+func GetPodsEventsWithMultiTenancy(client kubernetes.Interface, tenant, namespace string, pods []v1.Pod) (
+	[]v1.Event, error) {
+
+	nsQuery := common.NewSameNamespaceQuery(namespace)
+	if namespace == v1.NamespaceAll {
+		nsQuery = common.NewNamespaceQuery([]string{})
+	}
+
+	channels := &common.ResourceChannels{
+		EventList: common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
 	}
 
 	eventList := <-channels.EventList.List
@@ -127,13 +178,16 @@ func GetNodeEvents(client kubernetes.Interface, dsQuery *dataselect.DataSelectQu
 	groupVersion := schema.GroupVersion{Group: "", Version: "v1"}
 	scheme.AddKnownTypes(groupVersion, &v1.Node{})
 
-	mc := client.CoreV1().Nodes()
-	node, err := mc.Get(nodeName, metaV1.GetOptions{})
-	if err != nil {
-		return &eventList, err
-	}
+	// mc := client.CoreV1().Nodes()
+	// node, err := mc.Get(nodeName, metaV1.GetOptions{})
+	// if err != nil {
+	// 	return &eventList, err
+	// }
 
-	events, err := client.CoreV1().Events(v1.NamespaceAll).Search(scheme, node)
+	// TODO: clieng-go Search api causes unwanted errors
+	// events, err := client.CoreV1().Events(v1.NamespaceAll).Search(scheme, node)
+
+	events, err := client.CoreV1().Events(v1.NamespaceAll).List(metaV1.ListOptions{})
 	if err != nil {
 		return &eventList, err
 	}
@@ -144,7 +198,13 @@ func GetNodeEvents(client kubernetes.Interface, dsQuery *dataselect.DataSelectQu
 
 // GetNamespaceEvents gets events associated to a namespace with given name.
 func GetNamespaceEvents(client kubernetes.Interface, dsQuery *dataselect.DataSelectQuery, namespace string) (common.EventList, error) {
-	events, _ := client.CoreV1().Events(namespace).List(api.ListEverything)
+	events, _ := client.CoreV1().EventsWithMultiTenancy(namespace, "").List(api.ListEverything)
+	return CreateEventList(FillEventsType(events.Items), dsQuery), nil
+}
+
+// GetNamespaceEvents gets events associated to a namespace with given name.
+func GetNamespaceEventsWithMultiTenancy(client kubernetes.Interface, dsQuery *dataselect.DataSelectQuery, tenant, namespace string) (common.EventList, error) {
+	events, _ := client.CoreV1().EventsWithMultiTenancy(namespace, tenant).List(api.ListEverything)
 	return CreateEventList(FillEventsType(events.Items), dsQuery), nil
 }
 
@@ -187,6 +247,20 @@ func ToEvent(event v1.Event) common.Event {
 func GetResourceEvents(client kubernetes.Interface, dsQuery *dataselect.DataSelectQuery, namespace, name string) (
 	*common.EventList, error) {
 	resourceEvents, err := GetEvents(client, namespace, name)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return EmptyEventList, err
+	}
+
+	events := CreateEventList(resourceEvents, dsQuery)
+	events.Errors = nonCriticalErrors
+	return &events, nil
+}
+
+// GetResourceEventsWithMultiTenancy gets events associated to specified resource.
+func GetResourceEventsWithMultiTenancy(client kubernetes.Interface, dsQuery *dataselect.DataSelectQuery, tenant, namespace, name string) (
+	*common.EventList, error) {
+	resourceEvents, err := GetEventsWithMultiTenancy(client, tenant, namespace, name)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return EmptyEventList, err

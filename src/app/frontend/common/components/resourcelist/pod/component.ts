@@ -27,7 +27,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({selector: 'kd-pod-list', templateUrl: './template.html'})
 export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
-  @Input() endpoint = EndpointManager.resource(Resource.pod, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.pod, true, true).list();
 
   constructor(
     private readonly podList: NamespacedResourceService<PodList>,

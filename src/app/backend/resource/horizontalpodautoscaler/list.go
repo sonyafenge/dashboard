@@ -78,6 +78,27 @@ func GetHorizontalPodAutoscalerListForResource(client k8sClient.Interface, names
 	return toHorizontalPodAutoscalerList(filteredHpaList, nonCriticalErrors, dataselect.DefaultDataSelect), nil
 }
 
+func GetHorizontalPodAutoscalerListForResourceWithMultiTenancy(client k8sClient.Interface, tenant, namespace, kind, name string) (*HorizontalPodAutoscalerList, error) {
+	nsQuery := common.NewSameNamespaceQuery(namespace)
+	channel := common.GetHorizontalPodAutoscalerListChannelWithMultiTenancy(client, tenant, nsQuery, 1)
+	hpaList := <-channel.List
+	err := <-channel.Error
+
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	filteredHpaList := make([]autoscaling.HorizontalPodAutoscaler, 0)
+	for _, hpa := range hpaList.Items {
+		if hpa.Spec.ScaleTargetRef.Kind == kind && hpa.Spec.ScaleTargetRef.Name == name {
+			filteredHpaList = append(filteredHpaList, hpa)
+		}
+	}
+
+	return toHorizontalPodAutoscalerList(filteredHpaList, nonCriticalErrors, dataselect.DefaultDataSelect), nil
+}
+
 func toHorizontalPodAutoscalerList(hpas []autoscaling.HorizontalPodAutoscaler, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery) *HorizontalPodAutoscalerList {
 	hpaList := &HorizontalPodAutoscalerList{
 		HorizontalPodAutoscalers: make([]HorizontalPodAutoscaler, 0),

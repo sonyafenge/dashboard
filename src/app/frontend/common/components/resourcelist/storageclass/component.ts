@@ -29,7 +29,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   templateUrl: './template.html',
 })
 export class StorageClassListComponent extends ResourceListBase<StorageClassList, StorageClass> {
-  @Input() endpoint = EndpointManager.resource(Resource.storageClass).list();
+  @Input() endpoint = EndpointManager.resource(Resource.storageClass, false, true).list();
 
   constructor(
     private readonly sc_: ResourceService<StorageClassList>,

@@ -59,6 +59,20 @@ func GetCustomResourceDefinitionList(client apiextensionsclientset.Interface, ds
 	return toCustomResourceDefinitionList(crdList.Items, nonCriticalErrors, dsQuery), nil
 }
 
+// GetCustomResourceDefinitionListWithMultiTenancy returns all the custom resource definitions in the cluster.
+func GetCustomResourceDefinitionListWithMultiTenancy(client apiextensionsclientset.Interface, dsQuery *dataselect.DataSelectQuery, tenant string) (*CustomResourceDefinitionList, error) {
+	channel := common.GetCustomResourceDefinitionChannelWithMultiTenancy(client, tenant, 1)
+	crdList := <-channel.List
+	err := <-channel.Error
+
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	return toCustomResourceDefinitionList(crdList.Items, nonCriticalErrors, dsQuery), nil
+}
+
 func toCustomResourceDefinitionList(crds []apiextensions.CustomResourceDefinition, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery) *CustomResourceDefinitionList {
 	crdList := &CustomResourceDefinitionList{
 		Items:    make([]CustomResourceDefinition, 0),

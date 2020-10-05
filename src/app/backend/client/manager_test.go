@@ -229,9 +229,9 @@ func TestConfig(t *testing.T) {
 				c.request, err.Error())
 		}
 
-		if cfg.BearerToken != c.expected {
+		if cfg.GetConfig().BearerToken != c.expected {
 			t.Fatalf("Config(%v): Expected token to be %s but got %s",
-				c.request, c.expected, cfg.BearerToken)
+				c.request, c.expected, cfg.GetConfig().BearerToken)
 		}
 	}
 }
@@ -273,7 +273,7 @@ func TestClientCmdConfig(t *testing.T) {
 					" %s",
 					c.request, err.Error())
 			}
-			bearerToken = cfg.BearerToken
+			bearerToken = cfg.GetConfig().BearerToken
 		}
 
 		if bearerToken != c.expected {
@@ -339,14 +339,14 @@ func TestImpersonationUserClient(t *testing.T) {
 				c.request, err.Error())
 		}
 
-		if cfg.BearerToken != c.expected {
+		if cfg.GetConfig().BearerToken != c.expected {
 			t.Fatalf("Config(%v): Expected token to be %s but got %s",
-				c.request, c.expected, cfg.BearerToken)
+				c.request, c.expected, cfg.GetConfig().BearerToken)
 		}
 
-		if cfg.Impersonate.UserName != c.expectedImpersonationUser {
+		if cfg.GetConfig().Impersonate.UserName != c.expectedImpersonationUser {
 			t.Fatalf("Config(%v): Expected impersonated user to be %s but got %s",
-				c.request, c.expectedImpersonationUser, cfg.Impersonate.UserName)
+				c.request, c.expectedImpersonationUser, cfg.GetConfig().Impersonate.UserName)
 		}
 
 	}
@@ -377,14 +377,14 @@ func TestNoImpersonationUserWithNoBearerClient(t *testing.T) {
 				c.request, err.Error())
 		}
 
-		if len(cfg.BearerToken) > 0 {
+		if len(cfg.GetConfig().BearerToken) > 0 {
 			t.Fatalf("Config(%v): Expected no token but got %s",
-				c.request, cfg.BearerToken)
+				c.request, cfg.GetConfig().BearerToken)
 		}
 
-		if len(cfg.Impersonate.UserName) > 0 {
+		if len(cfg.GetConfig().Impersonate.UserName) > 0 {
 			t.Fatalf("Config(%v): Expected no impersonated user but got %s",
-				c.request, cfg.Impersonate.UserName)
+				c.request, cfg.GetConfig().Impersonate.UserName)
 		}
 
 	}
@@ -425,24 +425,24 @@ func TestImpersonationOneGroupClient(t *testing.T) {
 				c.request, err.Error())
 		}
 
-		if cfg.BearerToken != c.expected {
+		if cfg.GetConfig().BearerToken != c.expected {
 			t.Fatalf("Config(%v): Expected token to be %s but got %s",
-				c.request, c.expected, cfg.BearerToken)
+				c.request, c.expected, cfg.GetConfig().BearerToken)
 		}
 
-		if cfg.Impersonate.UserName != c.expectedImpersonationUser {
+		if cfg.GetConfig().Impersonate.UserName != c.expectedImpersonationUser {
 			t.Fatalf("Config(%v): Expected impersonated user to be %s but got %s",
-				c.request, c.expectedImpersonationUser, cfg.Impersonate.UserName)
+				c.request, c.expectedImpersonationUser, cfg.GetConfig().Impersonate.UserName)
 		}
 
-		if len(cfg.Impersonate.Groups) != 1 {
+		if len(cfg.GetConfig().Impersonate.Groups) != 1 {
 			t.Fatalf("Config(%v): Expected one impersonated group but got %d",
-				c.request, len(cfg.Impersonate.Groups))
+				c.request, len(cfg.GetConfig().Impersonate.Groups))
 		}
 
-		if cfg.Impersonate.Groups[0] != c.expectedImpersonationGroups[0] {
+		if cfg.GetConfig().Impersonate.Groups[0] != c.expectedImpersonationGroups[0] {
 			t.Fatalf("Config(%v): Expected impersonated group to be %s but got %s",
-				c.request, cfg.Impersonate.Groups[0], c.expectedImpersonationGroups[0])
+				c.request, cfg.GetConfig().Impersonate.Groups[0], c.expectedImpersonationGroups[0])
 		}
 	}
 }
@@ -482,29 +482,29 @@ func TestImpersonationTwoGroupClient(t *testing.T) {
 				c.request, err.Error())
 		}
 
-		if cfg.BearerToken != c.expected {
+		if cfg.GetConfig().BearerToken != c.expected {
 			t.Fatalf("Config(%v): Expected token to be %s but got %s",
-				c.request, c.expected, cfg.BearerToken)
+				c.request, c.expected, cfg.GetConfig().BearerToken)
 		}
 
-		if cfg.Impersonate.UserName != c.expectedImpersonationUser {
+		if cfg.GetConfig().Impersonate.UserName != c.expectedImpersonationUser {
 			t.Fatalf("Config(%v): Expected impersonated user to be %s but got %s",
-				c.request, c.expectedImpersonationUser, cfg.Impersonate.UserName)
+				c.request, c.expectedImpersonationUser, cfg.GetConfig().Impersonate.UserName)
 		}
 
-		if len(cfg.Impersonate.Groups) != 2 {
+		if len(cfg.GetConfig().Impersonate.Groups) != 2 {
 			t.Fatalf("Config(%v): Expected two impersonated group but got %d",
-				c.request, len(cfg.Impersonate.Groups))
+				c.request, len(cfg.GetConfig().Impersonate.Groups))
 		}
 
-		if cfg.Impersonate.Groups[0] != c.expectedImpersonationGroups[0] {
+		if cfg.GetConfig().Impersonate.Groups[0] != c.expectedImpersonationGroups[0] {
 			t.Fatalf("Config(%v): Expected impersonated group to be %s but got %s",
-				c.request, cfg.Impersonate.Groups[0], c.expectedImpersonationGroups[0])
+				c.request, cfg.GetConfig().Impersonate.Groups[0], c.expectedImpersonationGroups[0])
 		}
 
-		if cfg.Impersonate.Groups[1] != c.expectedImpersonationGroups[1] {
+		if cfg.GetConfig().Impersonate.Groups[1] != c.expectedImpersonationGroups[1] {
 			t.Fatalf("Config(%v): Expected impersonated group to be %s but got %s",
-				c.request, cfg.Impersonate.Groups[1], c.expectedImpersonationGroups[1])
+				c.request, cfg.GetConfig().Impersonate.Groups[1], c.expectedImpersonationGroups[1])
 		}
 	}
 }
@@ -546,49 +546,49 @@ func TestImpersonationExtrasClient(t *testing.T) {
 				c.request, err.Error())
 		}
 
-		if cfg.BearerToken != c.expected {
+		if cfg.GetConfig().BearerToken != c.expected {
 			t.Fatalf("Config(%v): Expected token to be %s but got %s",
-				c.request, c.expected, cfg.BearerToken)
+				c.request, c.expected, cfg.GetConfig().BearerToken)
 		}
 
-		if cfg.Impersonate.UserName != c.expectedImpersonationUser {
+		if cfg.GetConfig().Impersonate.UserName != c.expectedImpersonationUser {
 			t.Fatalf("Config(%v): Expected impersonated user to be %s but got %s",
-				c.request, c.expectedImpersonationUser, cfg.Impersonate.UserName)
+				c.request, c.expectedImpersonationUser, cfg.GetConfig().Impersonate.UserName)
 		}
 
-		if len(cfg.Impersonate.Extra) != 2 {
+		if len(cfg.GetConfig().Impersonate.Extra) != 2 {
 			t.Fatalf("Config(%v): Expected two impersonated extra but got %d",
-				c.request, len(cfg.Impersonate.Extra))
+				c.request, len(cfg.GetConfig().Impersonate.Extra))
 		}
 
-		if cfg.Impersonate.Extra["service"][0] != c.expectedImpersonationExtra["service"][0] {
+		if cfg.GetConfig().Impersonate.Extra["service"][0] != c.expectedImpersonationExtra["service"][0] {
 			t.Fatalf("Config(%v): Expected service extra to be %s but got %s",
-				c.request, cfg.Impersonate.Extra["service"][0], c.expectedImpersonationExtra["service"][0])
+				c.request, cfg.GetConfig().Impersonate.Extra["service"][0], c.expectedImpersonationExtra["service"][0])
 
 		}
 
 		//check multi value scope
 
-		if len(cfg.Impersonate.Extra["scope"]) != 2 {
+		if len(cfg.GetConfig().Impersonate.Extra["scope"]) != 2 {
 			t.Fatalf("Config(%v): Expected two scope impersonated extra but got %d",
-				c.request, len(cfg.Impersonate.Extra["scope"]))
+				c.request, len(cfg.GetConfig().Impersonate.Extra["scope"]))
 		}
 
-		if cfg.Impersonate.Extra["scope"][0] != c.expectedImpersonationExtra["scope"][0] {
+		if cfg.GetConfig().Impersonate.Extra["scope"][0] != c.expectedImpersonationExtra["scope"][0] {
 			t.Fatalf("Config(%v): Expected scope extra to be %s but got %s",
-				c.request, c.expectedImpersonationExtra["scope"][0], cfg.Impersonate.Extra["scope"][0])
+				c.request, c.expectedImpersonationExtra["scope"][0], cfg.GetConfig().Impersonate.Extra["scope"][0])
 
 		}
 
-		if cfg.Impersonate.Extra["scope"][1] != c.expectedImpersonationExtra["scope"][1] {
+		if cfg.GetConfig().Impersonate.Extra["scope"][1] != c.expectedImpersonationExtra["scope"][1] {
 			t.Fatalf("Config(%v): Expected scope extra to be %s but got %s",
-				c.request, c.expectedImpersonationExtra["scope"][1], cfg.Impersonate.Extra["scope"][1])
+				c.request, c.expectedImpersonationExtra["scope"][1], cfg.GetConfig().Impersonate.Extra["scope"][1])
 
 		}
 
-		if len(cfg.Impersonate.Extra["scope"]) != 2 {
+		if len(cfg.GetConfig().Impersonate.Extra["scope"]) != 2 {
 			t.Fatalf("Config(%v): Expected two scope impersonated extra but got %d",
-				c.request, len(cfg.Impersonate.Extra["scope"]))
+				c.request, len(cfg.GetConfig().Impersonate.Extra["scope"]))
 		}
 	}
 }

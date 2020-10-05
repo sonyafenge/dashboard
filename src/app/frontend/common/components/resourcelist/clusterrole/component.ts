@@ -29,7 +29,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   templateUrl: './template.html',
 })
 export class ClusterRoleListComponent extends ResourceListBase<ClusterRoleList, ClusterRole> {
-  @Input() endpoint = EndpointManager.resource(Resource.clusterRole).list();
+  @Input() endpoint = EndpointManager.resource(Resource.clusterRole, false, true).list();
 
   constructor(
     private readonly clusterRole_: ResourceService<ClusterRoleList>,

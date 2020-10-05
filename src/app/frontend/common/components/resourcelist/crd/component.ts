@@ -29,7 +29,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   templateUrl: './template.html',
 })
 export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
-  @Input() endpoint = EndpointManager.resource(Resource.crd).list();
+  @Input() endpoint = EndpointManager.resource(Resource.crd, false, true).list();
 
   constructor(
     private readonly crd_: ResourceService<CRDList>,

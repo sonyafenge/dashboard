@@ -30,7 +30,7 @@ import (
 func GetStorageClassPersistentVolumes(client client.Interface, storageClassName string,
 	dsQuery *dataselect.DataSelectQuery) (*PersistentVolumeList, error) {
 
-	storageClass, err := client.StorageV1().StorageClasses().Get(storageClassName, metaV1.GetOptions{})
+	storageClass, err := client.StorageV1().StorageClassesWithMultiTenancy("").Get(storageClassName, metaV1.GetOptions{})
 
 	if err != nil {
 		return nil, err
@@ -58,6 +58,41 @@ func GetStorageClassPersistentVolumes(client client.Interface, storageClassName 
 
 	log.Printf("Found %d persistentvolumes related to %s storageclass",
 		len(storagePersistentVolumes), storageClassName)
+
+	return toPersistentVolumeList(storagePersistentVolumes, nonCriticalErrors, dsQuery), nil
+}
+
+// GetStorageClassPersistentVolumesWithMultiTenancy gets persistentvolumes that are associated with this storageclass.
+func GetStorageClassPersistentVolumesWithMultiTenancy(client client.Interface, tenant string, storageClassName string,
+	dsQuery *dataselect.DataSelectQuery) (*PersistentVolumeList, error) {
+
+	storageClass, err := client.StorageV1().StorageClassesWithMultiTenancy(tenant).Get(storageClassName, metaV1.GetOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		PersistentVolumeList: common.GetPersistentVolumeListChannelWithMultiTenancy(client, tenant, 1),
+	}
+
+	persistentVolumeList := <-channels.PersistentVolumeList.List
+
+	err = <-channels.PersistentVolumeList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	storagePersistentVolumes := make([]v1.PersistentVolume, 0)
+	for _, pv := range persistentVolumeList.Items {
+		if strings.Compare(pv.Spec.StorageClassName, storageClass.Name) == 0 {
+			storagePersistentVolumes = append(storagePersistentVolumes, pv)
+		}
+	}
+
+	log.Printf("Found %d persistentvolumes related to %s storageclass for %s",
+		len(storagePersistentVolumes), storageClassName, tenant)
 
 	return toPersistentVolumeList(storagePersistentVolumes, nonCriticalErrors, dsQuery), nil
 }

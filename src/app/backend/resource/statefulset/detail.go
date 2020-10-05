@@ -39,12 +39,32 @@ func GetStatefulSetDetail(client kubernetes.Interface, metricClient metricapi.Me
 	name string) (*StatefulSetDetail, error) {
 	log.Printf("Getting details of %s statefulset in %s namespace", name, namespace)
 
-	ss, err := client.AppsV1().StatefulSets(namespace).Get(name, metaV1.GetOptions{})
+	ss, err := client.AppsV1().StatefulSetsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	podInfo, err := getStatefulSetPodInfo(client, ss)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	ssDetail := getStatefulSetDetail(ss, podInfo, nonCriticalErrors)
+	return &ssDetail, nil
+}
+
+// GetStatefulSetDetailWithMultiTenancy gets Stateful Set details.
+func GetStatefulSetDetailWithMultiTenancy(client kubernetes.Interface, metricClient metricapi.MetricClient, tenant, namespace,
+	name string) (*StatefulSetDetail, error) {
+	log.Printf("Getting details of %s statefulset in %s namespace for %s", name, namespace, tenant)
+
+	ss, err := client.AppsV1().StatefulSetsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	podInfo, err := getStatefulSetPodInfoWithMultiTenancy(client, tenant, ss)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return nil, criticalError

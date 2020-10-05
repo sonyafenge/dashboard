@@ -25,7 +25,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/pflag"
 
 	"github.com/kubernetes/dashboard/src/app/backend/args"
@@ -56,7 +56,7 @@ var (
 		"to connect to in the format of protocol://address:port, e.g., "+
 		"http://localhost:8080. If not specified, the assumption is that the binary runs inside a "+
 		"Kubernetes cluster and local discovery is attempted.")
-	argMetricsProvider = pflag.String("metrics-provider", "sidecar", "Select provider type for metrics. 'none' will not check metrics.")
+	argMetricsProvider = pflag.String("metrics-provider", "none", "Select provider type for metrics. 'none' will not check metrics.")
 	argHeapsterHost    = pflag.String("heapster-host", "", "The address of the Heapster Apiserver "+
 		"to connect to in the format of protocol://address:port, e.g., "+
 		"http://localhost:8082. If not specified, the assumption is that the binary runs inside a "+
@@ -174,7 +174,8 @@ func main() {
 	http.Handle("/api/", apiHandler)
 	http.Handle("/config", handler.AppHandler(handler.ConfigHandler))
 	http.Handle("/api/sockjs/", handler.CreateAttachHandler("/api/sockjs"))
-	http.Handle("/metrics", prometheus.Handler())
+	// TODO: something triggered this change, look into it
+	http.Handle("/metrics", promhttp.Handler())
 
 	// Listen for http or https
 	if servingCerts != nil {

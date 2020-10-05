@@ -82,6 +82,10 @@ func (self *fakeClientManager) HasAccess(authInfo api.AuthInfo) error {
 	return self.HasAccessError
 }
 
+func (self *fakeClientManager) GetTenant(authInfo api.AuthInfo) (string, error) {
+	return "system", nil
+}
+
 func (self *fakeClientManager) VerberClient(req *restful.Request, config *rest.Config) (clientapi.ResourceVerber, error) {
 	return client.NewResourceVerber(nil, nil, nil, nil, nil,
 		nil, nil, nil, nil, nil), nil

@@ -48,12 +48,18 @@ func (self authManager) Login(spec *authApi.LoginSpec) (*authApi.AuthResponse, e
 		return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
 	}
 
+	tenant, err := self.GetTenant(authInfo)
+	nonCriticalErrors, criticalError = errors.HandleError(err)
+	if criticalError != nil || len(nonCriticalErrors) > 0 {
+		return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
+	}
+
 	token, err := self.tokenManager.Generate(authInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	return &authApi.AuthResponse{JWEToken: token, Errors: nonCriticalErrors}, nil
+	return &authApi.AuthResponse{JWEToken: token, Errors: nonCriticalErrors, Tenant: tenant}, nil
 }
 
 // Refresh implements auth manager. See AuthManager interface for more information.
@@ -91,6 +97,11 @@ func (self authManager) getAuthenticator(spec *authApi.LoginSpec) (authApi.Authe
 // by K8S apiserver.
 func (self authManager) healthCheck(authInfo api.AuthInfo) error {
 	return self.clientManager.HasAccess(authInfo)
+}
+
+// Get the tenant name from the provided AuthInfo
+func (self authManager) GetTenant(authInfo api.AuthInfo) (string, error) {
+	return self.clientManager.GetTenant(authInfo)
 }
 
 // NewAuthManager creates auth manager.

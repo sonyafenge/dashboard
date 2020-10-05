@@ -32,7 +32,20 @@ type StorageClassDetail struct {
 func GetStorageClass(client kubernetes.Interface, name string) (*StorageClassDetail, error) {
 	log.Printf("Getting details of %s storage class", name)
 
-	sc, err := client.StorageV1().StorageClasses().Get(name, metaV1.GetOptions{})
+	sc, err := client.StorageV1().StorageClassesWithMultiTenancy("").Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	storageClass := toStorageClassDetail(sc)
+	return &storageClass, err
+}
+
+// GetStorageClassWithMultiTenancy returns Storage Class resource.
+func GetStorageClassWithMultiTenancy(client kubernetes.Interface, tenant, name string) (*StorageClassDetail, error) {
+	log.Printf("Getting details of %s storage class for %s", name, tenant)
+
+	sc, err := client.StorageV1().StorageClassesWithMultiTenancy(tenant).Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

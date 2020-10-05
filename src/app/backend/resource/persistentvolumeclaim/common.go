@@ -34,7 +34,7 @@ type PersistentVolumeClaimCell api.PersistentVolumeClaim
 func GetPodPersistentVolumeClaims(client client.Interface, namespace string, podName string,
 	dsQuery *dataselect.DataSelectQuery) (*PersistentVolumeClaimList, error) {
 
-	pod, err := client.CoreV1().Pods(namespace).Get(podName, metaV1.GetOptions{})
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, "").Get(podName, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +75,62 @@ func GetPodPersistentVolumeClaims(client client.Interface, namespace string, pod
 
 		log.Printf("Found %d persistentvolumeclaims related to %s pod",
 			len(podPersistentVolumeClaims), podName)
+
+		return toPersistentVolumeClaimList(podPersistentVolumeClaims,
+			nonCriticalErrors, dsQuery), nil
+	}
+
+	log.Printf("No persistentvolumeclaims found related to %s pod", podName)
+
+	// No ClaimNames found in Pod details, return empty response.
+	return &PersistentVolumeClaimList{}, nil
+}
+
+// GetPodPersistentVolumeClaimsWithMultiTenancy gets persistentvolumeclaims that are associated with this pod.
+func GetPodPersistentVolumeClaimsWithMultiTenancy(client client.Interface, tenant string, namespace string, podName string,
+	dsQuery *dataselect.DataSelectQuery) (*PersistentVolumeClaimList, error) {
+
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, tenant).Get(podName, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	claimNames := make([]string, 0)
+	if pod.Spec.Volumes != nil && len(pod.Spec.Volumes) > 0 {
+		for _, v := range pod.Spec.Volumes {
+			persistentVolumeClaim := v.PersistentVolumeClaim
+			if persistentVolumeClaim != nil {
+				claimNames = append(claimNames, persistentVolumeClaim.ClaimName)
+			}
+		}
+	}
+
+	if len(claimNames) > 0 {
+		channels := &common.ResourceChannels{
+			PersistentVolumeClaimList: common.GetPersistentVolumeClaimListChannelWithMultiTenancy(
+				client, tenant, common.NewSameNamespaceQuery(namespace), 1),
+		}
+
+		persistentVolumeClaimList := <-channels.PersistentVolumeClaimList.List
+
+		err = <-channels.PersistentVolumeClaimList.Error
+		nonCriticalErrors, criticalError := errors.HandleError(err)
+		if criticalError != nil {
+			return nil, criticalError
+		}
+
+		podPersistentVolumeClaims := make([]api.PersistentVolumeClaim, 0)
+		for _, pvc := range persistentVolumeClaimList.Items {
+			for _, claimName := range claimNames {
+				if strings.Compare(claimName, pvc.Name) == 0 {
+					podPersistentVolumeClaims = append(podPersistentVolumeClaims, pvc)
+					break
+				}
+			}
+		}
+
+		log.Printf("Found %d persistentvolumeclaims related to %s pod for %s",
+			len(podPersistentVolumeClaims), podName, tenant)
 
 		return toPersistentVolumeClaimList(podPersistentVolumeClaims,
 			nonCriticalErrors, dsQuery), nil

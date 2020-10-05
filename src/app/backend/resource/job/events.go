@@ -33,3 +33,16 @@ func GetJobEvents(client client.Interface, dsQuery *dataselect.DataSelectQuery, 
 	events := event.CreateEventList(jobEvents, dsQuery)
 	return &events, nil
 }
+
+// GetJobEventsWithMultiTenancy gets events associated to job.
+func GetJobEventsWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant, namespace, name string) (
+	*common.EventList, error) {
+
+	jobEvents, err := event.GetEventsWithMultiTenancy(client, tenant, namespace, name)
+	if err != nil {
+		return event.EmptyEventList, err
+	}
+
+	events := event.CreateEventList(jobEvents, dsQuery)
+	return &events, nil
+}

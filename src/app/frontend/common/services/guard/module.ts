@@ -16,8 +16,9 @@ import {NgModule} from '@angular/core';
 import {AuthGuard} from './auth';
 import {LoginGuard} from './login';
 import {SearchGuard} from './search';
+import {SystemGuard} from './system';
 
 @NgModule({
-  providers: [AuthGuard, SearchGuard, LoginGuard],
+  providers: [AuthGuard, SearchGuard, LoginGuard, SystemGuard],
 })
 export class GuardsModule {}

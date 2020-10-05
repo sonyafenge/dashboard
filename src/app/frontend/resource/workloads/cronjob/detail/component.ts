@@ -28,7 +28,7 @@ import {NamespacedResourceService} from '../../../../common/services/resource/re
 })
 export class CronJobDetailComponent implements OnInit, OnDestroy {
   private cronJobSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.cronJob, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.cronJob, true, true);
   cronJob: CronJobDetail;
   isInitialized = false;
   eventListEndpoint: string;

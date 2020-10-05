@@ -25,7 +25,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({selector: 'kd-config-map-list', templateUrl: './template.html'})
 export class ConfigMapListComponent extends ResourceListBase<ConfigMapList, ConfigMap> {
-  @Input() endpoint = EndpointManager.resource(Resource.configMap, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.configMap, true, true).list();
 
   constructor(
     private readonly configMap_: NamespacedResourceService<ConfigMapList>,

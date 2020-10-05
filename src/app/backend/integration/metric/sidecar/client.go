@@ -249,7 +249,11 @@ func CreateSidecarClient(host string, k8sClient kubernetes.Interface) (
 		return sidecarClient{client: c}, nil
 	}
 
-	cfg := &rest.Config{Host: host, QPS: client.DefaultQPS, Burst: client.DefaultBurst}
+	// cfg := &rest.Config{Host: host, QPS: client.DefaultQPS, Burst: client.DefaultBurst}
+	kubecfg := rest.KubeConfig{Host: host, QPS: client.DefaultQPS, Burst: client.DefaultBurst}
+	cfg := &rest.Config{}
+	cfg.AddConfig(&kubecfg)
+
 	restClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return sidecarClient{}, err

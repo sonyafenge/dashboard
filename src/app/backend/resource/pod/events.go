@@ -26,3 +26,9 @@ func GetEventsForPod(client client.Interface, dsQuery *dataselect.DataSelectQuer
 	podName string) (*common.EventList, error) {
 	return event.GetResourceEvents(client, dsQuery, namespace, podName)
 }
+
+// GetEventsForPodWithMultiTenancy gets events that are associated with this pod.
+func GetEventsForPodWithMultiTenancy(client client.Interface, dsQuery *dataselect.DataSelectQuery, tenant, namespace,
+	podName string) (*common.EventList, error) {
+	return event.GetResourceEventsWithMultiTenancy(client, dsQuery, tenant, namespace, podName)
+}

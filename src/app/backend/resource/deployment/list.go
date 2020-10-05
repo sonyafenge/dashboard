@@ -75,7 +75,22 @@ func GetDeploymentList(client client.Interface, nsQuery *common.NamespaceQuery, 
 	return GetDeploymentListFromChannels(channels, dsQuery, metricClient)
 }
 
-// GetDeploymentList returns a list of all Deployments in the cluster
+// GetDeploymentListWithMultiTenancy returns a list of all Deployments in the cluster.
+func GetDeploymentListWithMultiTenancy(client client.Interface, tenant string, nsQuery *common.NamespaceQuery, dsQuery *dataselect.DataSelectQuery,
+	metricClient metricapi.MetricClient) (*DeploymentList, error) {
+	log.Print("Getting list of all deployments in the cluster")
+
+	channels := &common.ResourceChannels{
+		DeploymentList: common.GetDeploymentListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		PodList:        common.GetPodListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		EventList:      common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		ReplicaSetList: common.GetReplicaSetListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetDeploymentListFromChannels(channels, dsQuery, metricClient)
+}
+
+// GetDeploymentListFromChannels returns a list of all Deployments in the cluster
 // reading required resource list once from the channels.
 func GetDeploymentListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery,
 	metricClient metricapi.MetricClient) (*DeploymentList, error) {

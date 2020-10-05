@@ -134,6 +134,7 @@ const (
 	ResourceKindStorageClass             = "storageclass"
 	ResourceKindClusterRole              = "clusterrole"
 	ResourceKindEndpoint                 = "endpoint"
+	ResourceKindTenant                   = "tenant"
 )
 
 // ClientType represents type of client that is used to perform generic operations on resources.

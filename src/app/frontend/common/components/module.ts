@@ -90,6 +90,8 @@ import {TextInputComponent} from './textinput/component';
 import {UploadFileComponent} from './uploadfile/component';
 import {WorkloadStatusComponent} from './workloadstatus/component';
 import {ZeroStateComponent} from './zerostate/component';
+import {TenantSelectorComponent} from './tenant/component';
+import {TenantListComponent} from './resourcelist/tenantlist/component';
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -183,6 +185,9 @@ const components = [
 
   ZeroStateComponent,
   WorkloadStatusComponent,
+
+  TenantSelectorComponent,
+  TenantListComponent,
 ];
 
 @NgModule({

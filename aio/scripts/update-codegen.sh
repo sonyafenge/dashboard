@@ -19,7 +19,8 @@ set -o nounset
 set -o pipefail
 
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/../..
-CODEGEN_PKG=${GOPATH}/src/k8s.io/code-generator
+## PATH to your local code-generator
+CODEGEN_PKG=${GOPATH}/src/github.com/arktos/staging/src/k8s.io/code-generator
 
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of

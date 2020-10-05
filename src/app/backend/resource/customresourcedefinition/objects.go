@@ -90,7 +90,7 @@ func GetCustomResourceObjectList(client apiextensionsclientset.Interface, config
 	var list *CustomResourceObjectList
 
 	customResourceDefinition, err := client.ApiextensionsV1beta1().
-		CustomResourceDefinitions().
+		CustomResourceDefinitionsWithMultiTenancy("").
 		Get(crdName, metav1.GetOptions{})
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
@@ -104,6 +104,55 @@ func GetCustomResourceObjectList(client apiextensionsclientset.Interface, config
 	}
 
 	raw, err := restClient.Get().
+		Tenant("").
+		NamespaceIfScoped(namespace.ToRequestParam(), customResourceDefinition.Spec.Scope == apiextensions.NamespaceScoped).
+		Resource(customResourceDefinition.Spec.Names.Plural).
+		Do().Raw()
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	err = json.Unmarshal(raw, &list)
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+	list.Errors = nonCriticalErrors
+
+	// Return only slice of data, pagination is done here.
+	crdObjectCells, filteredTotal := dataselect.GenericDataSelectWithFilter(toObjectCells(list.Items), dsQuery)
+	list.Items = fromObjectCells(crdObjectCells)
+	list.ListMeta = api.ListMeta{TotalItems: filteredTotal}
+
+	for i := range list.Items {
+		replaceCRDObjectKind(&list.Items[i], customResourceDefinition.Name)
+	}
+
+	return list, nil
+}
+
+// GetCustomResourceObjectListWithMultiTenancy gets objects for a CR.
+func GetCustomResourceObjectListWithMultiTenancy(client apiextensionsclientset.Interface, config *rest.Config, tenant string, namespace *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery, crdName string) (*CustomResourceObjectList, error) {
+	var list *CustomResourceObjectList
+
+	customResourceDefinition, err := client.ApiextensionsV1beta1().
+		CustomResourceDefinitionsWithMultiTenancy(tenant).
+		Get(crdName, metav1.GetOptions{})
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	restClient, err := NewRESTClient(config, customResourceDefinition)
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	raw, err := restClient.Get().
+		Tenant(tenant).
 		NamespaceIfScoped(namespace.ToRequestParam(), customResourceDefinition.Spec.Scope == apiextensions.NamespaceScoped).
 		Resource(customResourceDefinition.Spec.Names.Plural).
 		Do().Raw()
@@ -136,7 +185,7 @@ func GetCustomResourceObjectDetail(client apiextensionsclientset.Interface, name
 	var detail *CustomResourceObjectDetail
 
 	customResourceDefinition, err := client.ApiextensionsV1beta1().
-		CustomResourceDefinitions().
+		CustomResourceDefinitionsWithMultiTenancy("").
 		Get(crdName, metav1.GetOptions{})
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
@@ -150,6 +199,46 @@ func GetCustomResourceObjectDetail(client apiextensionsclientset.Interface, name
 	}
 
 	raw, err := restClient.Get().
+		Tenant("").
+		NamespaceIfScoped(namespace.ToRequestParam(), customResourceDefinition.Spec.Scope == apiextensions.NamespaceScoped).
+		Resource(customResourceDefinition.Spec.Names.Plural).
+		Name(name).Do().Raw()
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	err = json.Unmarshal(raw, &detail)
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+	detail.Errors = nonCriticalErrors
+
+	replaceCRDObjectKind(&detail.CustomResourceObject, customResourceDefinition.Name)
+	return detail, nil
+}
+
+// GetCustomResourceObjectDetailWithMultiTenancy returns details of a single object in a CR.
+func GetCustomResourceObjectDetailWithMultiTenancy(client apiextensionsclientset.Interface, tenant string, namespace *common.NamespaceQuery, config *rest.Config, crdName string, name string) (*CustomResourceObjectDetail, error) {
+	var detail *CustomResourceObjectDetail
+
+	customResourceDefinition, err := client.ApiextensionsV1beta1().
+		CustomResourceDefinitionsWithMultiTenancy(tenant).
+		Get(crdName, metav1.GetOptions{})
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	restClient, err := NewRESTClient(config, customResourceDefinition)
+	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	raw, err := restClient.Get().
+		Tenant(tenant).
 		NamespaceIfScoped(namespace.ToRequestParam(), customResourceDefinition.Spec.Scope == apiextensions.NamespaceScoped).
 		Resource(customResourceDefinition.Spec.Names.Plural).
 		Name(name).Do().Raw()

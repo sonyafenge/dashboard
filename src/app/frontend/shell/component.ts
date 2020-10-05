@@ -63,7 +63,7 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
   private debouncedFit_: Function;
   private connSubject_ = new ReplaySubject<ShellFrame>(100);
   private incommingMessage$_ = new Subject<ShellFrame>();
-  private readonly endpoint_ = EndpointManager.resource(Resource.pod, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.pod, true, true);
   private readonly unsubscribe_ = new Subject<void>();
   private readonly keyEvent$_ = new ReplaySubject<KeyboardEvent>(2);
 

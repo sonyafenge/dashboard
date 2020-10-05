@@ -40,6 +40,7 @@ type pluginInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
+	tenant           string
 }
 
 // NewPluginInformer constructs a new informer for Plugin type.
@@ -49,23 +50,31 @@ func NewPluginInformer(client versioned.Interface, namespace string, resyncPerio
 	return NewFilteredPluginInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
+func NewPluginInformerWithMultiTenancy(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tenant string) cache.SharedIndexInformer {
+	return NewFilteredPluginInformerWithMultiTenancy(client, namespace, resyncPeriod, indexers, nil, tenant)
+}
+
 // NewFilteredPluginInformer constructs a new informer for Plugin type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredPluginInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+	return NewFilteredPluginInformerWithMultiTenancy(client, namespace, resyncPeriod, indexers, tweakListOptions, "system")
+}
+
+func NewFilteredPluginInformerWithMultiTenancy(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc, tenant string) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.DashboardV1alpha1().Plugins(namespace).List(options)
+				return client.DashboardV1alpha1().PluginsWithMultiTenancy(namespace, tenant).List(options)
 			},
-			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
+			WatchFunc: func(options v1.ListOptions) watch.AggregatedWatchInterface {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.DashboardV1alpha1().Plugins(namespace).Watch(options)
+				return client.DashboardV1alpha1().PluginsWithMultiTenancy(namespace, tenant).Watch(options)
 			},
 		},
 		&apisv1alpha1.Plugin{},
@@ -75,7 +84,7 @@ func NewFilteredPluginInformer(client versioned.Interface, namespace string, res
 }
 
 func (f *pluginInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredPluginInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+	return NewFilteredPluginInformerWithMultiTenancy(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions, f.tenant)
 }
 
 func (f *pluginInformer) Informer() cache.SharedIndexInformer {

@@ -38,10 +38,10 @@ func NewRESTClient(config *rest.Config, crd *apiextensions.CustomResourceDefinit
 		return nil, err
 	}
 
-	config.GroupVersion = &groupVersion
-	config.APIPath = "/apis"
-	config.ContentType = runtime.ContentTypeJSON
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: serializer.NewCodecFactory(scheme)}
+	config.GetConfig().GroupVersion = &groupVersion
+	config.GetConfig().APIPath = "/apis"
+	config.GetConfig().ContentType = runtime.ContentTypeJSON
+	config.GetConfig().NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: serializer.NewCodecFactory(scheme)}
 
-	return rest.RESTClientFor(config)
+	return rest.RESTClientFor(config.GetConfig())
 }

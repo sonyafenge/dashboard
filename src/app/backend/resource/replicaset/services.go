@@ -27,13 +27,38 @@ import (
 func GetReplicaSetServices(client client.Interface, dsQuery *dataselect.DataSelectQuery,
 	namespace, name string) (*service.ServiceList, error) {
 
-	replicaSet, err := client.AppsV1().ReplicaSets(namespace).Get(name, metaV1.GetOptions{})
+	replicaSet, err := client.AppsV1().ReplicaSetsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	channels := &common.ResourceChannels{
 		ServiceList: common.GetServiceListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
+	}
+
+	services := <-channels.ServiceList.List
+	err = <-channels.ServiceList.Error
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return nil, criticalError
+	}
+
+	matchingServices := common.FilterNamespacedServicesBySelector(services.Items, namespace,
+		replicaSet.Spec.Selector.MatchLabels)
+	return service.CreateServiceList(matchingServices, nonCriticalErrors, dsQuery), nil
+}
+
+// GetReplicaSetServicesWithMultiTenancy returns list of services that are related to replica set targeted by given name.
+func GetReplicaSetServicesWithMultiTenancy(client client.Interface, tenant string, dsQuery *dataselect.DataSelectQuery,
+	namespace, name string) (*service.ServiceList, error) {
+
+	replicaSet, err := client.AppsV1().ReplicaSetsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	channels := &common.ResourceChannels{
+		ServiceList: common.GetServiceListChannelWithMultiTenancy(client, tenant, common.NewSameNamespaceQuery(namespace), 1),
 	}
 
 	services := <-channels.ServiceList.List

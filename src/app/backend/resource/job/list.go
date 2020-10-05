@@ -97,6 +97,20 @@ func GetJobList(client client.Interface, nsQuery *common.NamespaceQuery,
 	return GetJobListFromChannels(channels, dsQuery, metricClient)
 }
 
+// GetJobListWithMultiTenancy returns a list of all Jobs in the cluster.
+func GetJobListWithMultiTenancy(client client.Interface, tenant string, nsQuery *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient) (*JobList, error) {
+	log.Printf("Getting list of all jobs in the cluster for %s", tenant)
+
+	channels := &common.ResourceChannels{
+		JobList:   common.GetJobListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		PodList:   common.GetPodListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		EventList: common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetJobListFromChannels(channels, dsQuery, metricClient)
+}
+
 // GetJobListFromChannels returns a list of all Jobs in the cluster reading required resource list once from the channels.
 func GetJobListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery,
 	metricClient metricapi.MetricClient) (*JobList, error) {

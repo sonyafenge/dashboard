@@ -35,7 +35,7 @@ func GetServicePods(client k8sClient.Interface, metricClient metricapi.MetricCli
 		CumulativeMetrics: []metricapi.Metric{},
 	}
 
-	service, err := client.CoreV1().Services(namespace).Get(name, metaV1.GetOptions{})
+	service, err := client.CoreV1().ServicesWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return &podList, err
 	}
@@ -59,6 +59,47 @@ func GetServicePods(client k8sClient.Interface, metricClient metricapi.MetricCli
 	}
 
 	events, err := event.GetPodsEvents(client, namespace, apiPodList.Items)
+	nonCriticalErrors, criticalError := errors.HandleError(err)
+	if criticalError != nil {
+		return &podList, criticalError
+	}
+
+	podList = pod.ToPodList(apiPodList.Items, events, nonCriticalErrors, dsQuery, metricClient)
+	return &podList, nil
+}
+
+// GetServicePodsWithMultiTenancy gets list of pods targeted by given label selector in given namespace.
+func GetServicePodsWithMultiTenancy(client k8sClient.Interface, metricClient metricapi.MetricClient, tenant, namespace,
+	name string, dsQuery *dataselect.DataSelectQuery) (*pod.PodList, error) {
+	podList := pod.PodList{
+		Pods:              []pod.Pod{},
+		CumulativeMetrics: []metricapi.Metric{},
+	}
+
+	service, err := client.CoreV1().ServicesWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return &podList, err
+	}
+
+	if service.Spec.Selector == nil {
+		return &podList, nil
+	}
+
+	labelSelector := labels.SelectorFromSet(service.Spec.Selector)
+	channels := &common.ResourceChannels{
+		PodList: common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant, common.NewSameNamespaceQuery(namespace),
+			metaV1.ListOptions{
+				LabelSelector: labelSelector.String(),
+				FieldSelector: fields.Everything().String(),
+			}, 1),
+	}
+
+	apiPodList := <-channels.PodList.List
+	if err := <-channels.PodList.Error; err != nil {
+		return &podList, err
+	}
+
+	events, err := event.GetPodsEventsWithMultiTenancy(client, tenant, namespace, apiPodList.Items)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return &podList, criticalError

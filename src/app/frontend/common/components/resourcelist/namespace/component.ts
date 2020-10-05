@@ -29,7 +29,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   templateUrl: './template.html',
 })
 export class NamespaceListComponent extends ResourceListWithStatuses<NamespaceList, Namespace> {
-  @Input() endpoint = EndpointManager.resource(Resource.namespace).list();
+  @Input() endpoint = EndpointManager.resource(Resource.namespace, false, true).list();
 
   constructor(
     private readonly namespace_: ResourceService<NamespaceList>,

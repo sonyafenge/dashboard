@@ -35,7 +35,19 @@ type CronJobDetail struct {
 // GetCronJobDetail gets Cron Job details.
 func GetCronJobDetail(client k8sClient.Interface, namespace, name string) (*CronJobDetail, error) {
 
-	rawObject, err := client.BatchV1beta1().CronJobs(namespace).Get(name, metaV1.GetOptions{})
+	rawObject, err := client.BatchV1beta1().CronJobsWithMultiTenancy(namespace, "").Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	cj := toCronJobDetail(rawObject)
+	return &cj, nil
+}
+
+// GetCronJobDetailWithMultiTenancy gets Cron Job details.
+func GetCronJobDetailWithMultiTenancy(client k8sClient.Interface, tenant string, namespace, name string) (*CronJobDetail, error) {
+
+	rawObject, err := client.BatchV1beta1().CronJobsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

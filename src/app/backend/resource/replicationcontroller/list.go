@@ -72,6 +72,20 @@ func GetReplicationControllerList(client client.Interface, nsQuery *common.Names
 	return GetReplicationControllerListFromChannels(channels, dsQuery, metricClient)
 }
 
+// GetReplicationControllerListWithMultiTenancy returns a list of all Replication Controllers in the cluster.
+func GetReplicationControllerListWithMultiTenancy(client client.Interface, tenant string, nsQuery *common.NamespaceQuery,
+	dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient) (*ReplicationControllerList, error) {
+	log.Print("Getting list of all replication controllers in the cluster")
+
+	channels := &common.ResourceChannels{
+		ReplicationControllerList: common.GetReplicationControllerListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		PodList:                   common.GetPodListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+		EventList:                 common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
+	}
+
+	return GetReplicationControllerListFromChannels(channels, dsQuery, metricClient)
+}
+
 // GetReplicationControllerListFromChannels returns a list of all Replication Controllers in the cluster
 // reading required resource list once from the channels.
 func GetReplicationControllerListFromChannels(channels *common.ResourceChannels, dsQuery *dataselect.DataSelectQuery,

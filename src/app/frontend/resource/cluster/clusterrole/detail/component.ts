@@ -28,7 +28,7 @@ import {ResourceService} from '../../../../common/services/resource/resource';
 })
 export class ClusterRoleDetailComponent implements OnInit, OnDestroy {
   private clusterRoleSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.clusterRole);
+  private readonly endpoint_ = EndpointManager.resource(Resource.clusterRole, false, true);
   clusterRole: ClusterRoleDetail;
   isInitialized = false;
 

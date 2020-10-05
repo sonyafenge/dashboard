@@ -22,6 +22,7 @@ import (
 	pluginclientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
 	v1 "k8s.io/api/authorization/v1"
 	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -217,6 +218,30 @@ func (self *clientManager) CSRFKey() string {
 	return self.csrfKey
 }
 
+// GetTenant gets the tenant name using the provided AuthInfo
+func (self *clientManager) GetTenant(authInfo api.AuthInfo) (string, error) {
+	cfg, err := self.buildConfigFromFlags(self.apiserverHost, self.kubeConfigPath)
+	if err != nil {
+		return "", err
+	}
+
+	clientConfig := self.buildCmdConfig(&authInfo, cfg)
+	cfg, err = clientConfig.ClientConfig()
+	if err != nil {
+		return "", err
+	}
+
+	client, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return "", err
+	}
+
+	// Get the tenant name from default namespace.
+	result, err := client.CoreV1().NamespacesWithMultiTenancy("").Get("default", metaV1.GetOptions{})
+	tenant := result.ObjectMeta.Tenant
+	return tenant, err
+}
+
 // HasAccess configures K8S api client with provided auth info and executes a basic check against apiserver to see
 // if it is valid.
 func (self *clientManager) HasAccess(authInfo api.AuthInfo) error {
@@ -265,10 +290,10 @@ func (self *clientManager) SetTokenManager(manager authApi.TokenManager) {
 
 // Initializes config with default values
 func (self *clientManager) initConfig(cfg *rest.Config) {
-	cfg.QPS = DefaultQPS
-	cfg.Burst = DefaultBurst
-	cfg.ContentType = DefaultContentType
-	cfg.UserAgent = DefaultUserAgent + "/" + Version
+	cfg.GetConfig().QPS = DefaultQPS
+	cfg.GetConfig().Burst = DefaultBurst
+	cfg.GetConfig().ContentType = DefaultContentType
+	cfg.GetConfig().UserAgent = DefaultUserAgent + "/" + Version
 }
 
 // Returns rest Config based on provided apiserverHost and kubeConfigPath flags. If both are
@@ -292,10 +317,10 @@ func (self *clientManager) buildConfigFromFlags(apiserverHost, kubeConfigPath st
 func (self *clientManager) buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientConfig {
 	cmdCfg := api.NewConfig()
 	cmdCfg.Clusters[DefaultCmdConfigName] = &api.Cluster{
-		Server:                   cfg.Host,
-		CertificateAuthority:     cfg.TLSClientConfig.CAFile,
-		CertificateAuthorityData: cfg.TLSClientConfig.CAData,
-		InsecureSkipTLSVerify:    cfg.TLSClientConfig.Insecure,
+		Server:                   cfg.GetConfig().Host,
+		CertificateAuthority:     cfg.GetConfig().TLSClientConfig.CAFile,
+		CertificateAuthorityData: cfg.GetConfig().TLSClientConfig.CAData,
+		InsecureSkipTLSVerify:    cfg.GetConfig().TLSClientConfig.Insecure,
 	}
 	cmdCfg.AuthInfos[DefaultCmdConfigName] = authInfo
 	cmdCfg.Contexts[DefaultCmdConfigName] = &api.Context{
@@ -428,6 +453,7 @@ func (self *clientManager) securePluginClient(req *restful.Request) (pluginclien
 func (self *clientManager) secureConfig(req *restful.Request) (*rest.Config, error) {
 	cmdConfig, err := self.ClientCmdConfig(req)
 	if err != nil {
+		log.Println("ClientCmdConfig Failed")
 		return nil, err
 	}
 

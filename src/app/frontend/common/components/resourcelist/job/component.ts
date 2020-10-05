@@ -30,7 +30,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 })
 export class JobListComponent extends ResourceListWithStatuses<JobList, Job> {
   @Input() title: string;
-  @Input() endpoint = EndpointManager.resource(Resource.job, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.job, true, true).list();
 
   constructor(
     private readonly job_: NamespacedResourceService<JobList>,

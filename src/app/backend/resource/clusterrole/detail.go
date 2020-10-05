@@ -33,7 +33,18 @@ type ClusterRoleDetail struct {
 
 // GetClusterRoleDetail gets Cluster Role details.
 func GetClusterRoleDetail(client k8sClient.Interface, name string) (*ClusterRoleDetail, error) {
-	rawObject, err := client.RbacV1().ClusterRoles().Get(name, metaV1.GetOptions{})
+	rawObject, err := client.RbacV1().ClusterRolesWithMultiTenancy("").Get(name, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	cr := toClusterRoleDetail(*rawObject)
+	return &cr, nil
+}
+
+// GetClusterRoleDetailWithMultiTenancy gets Cluster Role details.
+func GetClusterRoleDetailWithMultiTenancy(client k8sClient.Interface, tenant string, name string) (*ClusterRoleDetail, error) {
+	rawObject, err := client.RbacV1().ClusterRolesWithMultiTenancy(tenant).Get(name, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

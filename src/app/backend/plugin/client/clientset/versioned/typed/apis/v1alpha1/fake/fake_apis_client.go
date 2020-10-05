@@ -27,7 +27,11 @@ type FakeDashboardV1alpha1 struct {
 }
 
 func (c *FakeDashboardV1alpha1) Plugins(namespace string) v1alpha1.PluginInterface {
-	return &FakePlugins{c, namespace}
+	return &FakePlugins{c, namespace, "system"}
+}
+
+func (c *FakeDashboardV1alpha1) PluginsWithMultiTenancy(namespace string, tenant string) v1alpha1.PluginInterface {
+	return &FakePlugins{c, namespace, tenant}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
@@ -35,4 +39,11 @@ func (c *FakeDashboardV1alpha1) Plugins(namespace string) v1alpha1.PluginInterfa
 func (c *FakeDashboardV1alpha1) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
+}
+
+// RESTClients returns all RESTClient that are used to communicate
+// with all API servers by this client implementation.
+func (c *FakeDashboardV1alpha1) RESTClients() []rest.Interface {
+	var ret *rest.RESTClient
+	return []rest.Interface{ret}
 }
