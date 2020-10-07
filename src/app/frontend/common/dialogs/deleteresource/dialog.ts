@@ -1,4 +1,5 @@
 // Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +18,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {ResourceMeta} from '../../services/global/actionbar';
 
 @Component({
-  selector: '',
+  selector: 'kd-delete-resource-dialog',
   templateUrl: 'template.html',
 })
 export class DeleteResourceDialog {

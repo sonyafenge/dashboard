@@ -242,6 +242,7 @@ func CreateHeapsterClient(host string, k8sClient kubernetes.Interface) (
 		return heapsterClient{client: c}, nil
 	}
 
+	// TODO: There could be a better way to create config.
 	kubecfg := rest.KubeConfig{Host: host, QPS: client.DefaultQPS, Burst: client.DefaultBurst}
 	cfg := rest.Config{}
 	cfg.AddConfig(&kubecfg)
