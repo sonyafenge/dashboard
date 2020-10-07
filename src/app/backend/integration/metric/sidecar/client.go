@@ -1,4 +1,5 @@
 // Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -249,7 +250,7 @@ func CreateSidecarClient(host string, k8sClient kubernetes.Interface) (
 		return sidecarClient{client: c}, nil
 	}
 
-	// cfg := &rest.Config{Host: host, QPS: client.DefaultQPS, Burst: client.DefaultBurst}
+	// TODO: There could be a better way create config.
 	kubecfg := rest.KubeConfig{Host: host, QPS: client.DefaultQPS, Burst: client.DefaultBurst}
 	cfg := &rest.Config{}
 	cfg.AddConfig(&kubecfg)

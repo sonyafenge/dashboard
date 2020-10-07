@@ -63,7 +63,7 @@ export class ResourceService<T> extends ResourceBase<T> {
       .pipe(
         switchMap(() => {
           let interval = this.settings_.getResourceAutoRefreshTimeInterval();
-          interval = interval === 0 ? undefined : interval * 1000000;
+          interval = interval === 0 ? undefined : interval * 1000;
           return timer(0, interval);
         }),
       )
@@ -126,7 +126,7 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
       .pipe(
         switchMap(() => {
           let interval = this.settings_.getResourceAutoRefreshTimeInterval();
-          interval = interval === 0 ? undefined : interval * 1000000;
+          interval = interval === 0 ? undefined : interval * 1000;
           return timer(0, interval);
         }),
       )

@@ -1,4 +1,5 @@
 // Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,8 +21,6 @@ import (
 	jose "gopkg.in/square/go-jose.v2"
 	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/client-go/tools/clientcmd/api"
-
-	// "encoding/json"
 
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
