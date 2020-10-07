@@ -1,6 +1,5 @@
 # Access control
 
-___It will be moved soon, for now you can [visit Wiki](https://github.com/kubernetes/dashboard/wiki/Access-control).___
+Read more about [Access control](https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/README.md).
 
-----
-_Copyright 2019 [The Kubernetes Dashboard Authors](https://github.com/kubernetes/dashboard/graphs/contributors)_
+To create a sample user, see [Creating sample user](creating-sample-user.md) guide.
