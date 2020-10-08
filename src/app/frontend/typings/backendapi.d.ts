@@ -600,6 +600,7 @@ export interface LoginStatus {
 export interface AppDeploymentContentSpec {
   name: string;
   namespace: string;
+  tenant: string;
   content: string;
   validate: boolean;
 }

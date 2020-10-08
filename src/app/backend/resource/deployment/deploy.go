@@ -99,6 +99,9 @@ type AppDeploymentFromFileSpec struct {
 	// Namespace that object should be deployed in
 	Namespace string `json:"namespace"`
 
+	// Tenant that object should be deployed in
+	Tenant string `json:"tenant"`
+
 	// File content
 	Content string `json:"content"`
 
@@ -353,9 +356,9 @@ func DeployAppFromFile(cfg *rest.Config, spec *AppDeploymentFromFileSpec) (bool,
 		groupVersionResource := schema.GroupVersionResource{Group: gv.Group, Version: gv.Version, Resource: resource.Name}
 
 		if strings.Compare(spec.Namespace, "_all") == 0 {
-			_, err = dynamicClient.Resource(groupVersionResource).Namespace(data.GetNamespace()).Create(&data, metaV1.CreateOptions{})
+			_, err = dynamicClient.Resource(groupVersionResource).NamespaceWithMultiTenancy(data.GetNamespace(), spec.Tenant).Create(&data, metaV1.CreateOptions{})
 		} else {
-			_, err = dynamicClient.Resource(groupVersionResource).Namespace(spec.Namespace).Create(&data, metaV1.CreateOptions{})
+			_, err = dynamicClient.Resource(groupVersionResource).NamespaceWithMultiTenancy(spec.Namespace, spec.Tenant).Create(&data, metaV1.CreateOptions{})
 		}
 
 		if err != nil {

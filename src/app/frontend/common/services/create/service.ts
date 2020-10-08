@@ -27,6 +27,7 @@ import {AlertDialog, AlertDialogConfig} from '../../dialogs/alert/dialog';
 import {NAMESPACE_STATE_PARAM} from '../../params/params';
 import {CsrfTokenService} from '../global/csrftoken';
 import {NamespaceService} from '../global/namespace';
+import {TenantService} from '../global/tenant';
 
 const i18n = {
   /** Text shown on failed deploy in error dialog. */
@@ -55,6 +56,7 @@ export class CreateService {
   constructor(
     private readonly http_: HttpClient,
     private readonly namespace_: NamespaceService,
+    private readonly tenant_: TenantService,
     private readonly csrfToken_: CsrfTokenService,
     private readonly matDialog_: MatDialog,
     private readonly router_: Router,
@@ -69,6 +71,7 @@ export class CreateService {
     const spec: AppDeploymentContentSpec = {
       name,
       namespace: this.namespace_.current(),
+      tenant: this.tenant_.current(),
       content,
       validate,
     };

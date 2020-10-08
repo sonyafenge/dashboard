@@ -29,6 +29,12 @@ export class TenantService {
     this.setAuthTenant(tenantCookie);
   }
 
+  resetTenant() {
+    this.currentTenant_ = '';
+    this.authTenant_ = '';
+    this.isSystemTenant_ = false;
+  }
+
   // Set to a differnet tenant when logged in as a system tenant.
   setCurrent(tenant: string) {
     if (this.isSystemTenant_) {
@@ -36,15 +42,15 @@ export class TenantService {
     }
   }
 
-  // Only system can set and return current tenant , otherwise return empty.
+  // Only system can set and return current tenant, otherwise return empty.
   current(): string {
     return this.currentTenant_ || '';
   }
 
   setAuthTenant(tenant: string) {
     this.authTenant_ = tenant;
-    this.currentTenant_ = tenant;
     this.isSystemTenant_ = tenant === CONFIG.systemTenantName;
+    this.setCurrent(tenant);
   }
 
   getAuthTenant(): string {
