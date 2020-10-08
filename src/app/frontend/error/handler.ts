@@ -16,6 +16,7 @@ import {HttpErrorResponse} from '@angular/common/http';
 import {ErrorHandler, Injectable, Injector, NgZone} from '@angular/core';
 import {Router} from '@angular/router';
 import {StateError} from '@api/frontendapi';
+import {TenantService} from 'common/services/global/tenant';
 import {YAMLException} from 'js-yaml';
 
 import {ApiError, AsKdError, KdError} from '../common/errors/errors';
@@ -31,6 +32,10 @@ export class GlobalErrorHandler implements ErrorHandler {
 
   private get auth_(): AuthService {
     return this.injector_.get(AuthService);
+  }
+
+  private get tenant_(): TenantService {
+    return this.injector_.get(TenantService);
   }
 
   handleError(error: HttpErrorResponse | YAMLException): void {
@@ -53,6 +58,7 @@ export class GlobalErrorHandler implements ErrorHandler {
           state: {error: AsKdError(error)} as StateError,
         });
         this.auth_.removeAuthCookies();
+        this.tenant_.resetTenant();
         return;
       }
 

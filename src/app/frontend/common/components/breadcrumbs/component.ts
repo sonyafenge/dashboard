@@ -61,7 +61,7 @@ export class BreadcrumbsComponent implements OnInit {
       : currentRoute.routeConfig.path.split('/').length;
 
     const tenant = {
-      label: this._tenantService.current(),
+      label: this._tenantService.current() || this._tenantService.getAuthTenant(),
       stateLink: [''],
     };
 

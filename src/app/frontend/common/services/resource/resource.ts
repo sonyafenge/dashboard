@@ -38,10 +38,6 @@ export class ResourceService<T> extends ResourceBase<T> {
     super(http);
   }
 
-  private isSystem_(): boolean {
-    return this.tenant_.isSystem();
-  }
-
   private getTenant_(): string {
     return this.tenant_.current();
   }
@@ -53,10 +49,10 @@ export class ResourceService<T> extends ResourceBase<T> {
 
     if (tenant) {
       endpoint = endpoint.replace(':tenant', tenant);
-    } else if (this.isSystem_()) {
+    } else if (this.getTenant_()) {
       endpoint = endpoint.replace(':tenant', this.getTenant_());
     } else {
-      endpoint = endpoint.replace('/:tenant', '');
+      endpoint = endpoint.replace('/:tenant', ''); // use shorthand api
     }
 
     return this.settings_.onSettingsUpdate
@@ -82,10 +78,6 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
     private readonly settings_: GlobalSettingsService,
   ) {
     super(http);
-  }
-
-  private isSystem_(): boolean {
-    return this.tenant_.isSystem();
   }
 
   private getTenant_(): string {
@@ -116,10 +108,10 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
 
     if (tenant) {
       endpoint = endpoint.replace(':tenant', tenant);
-    } else if (this.isSystem_()) {
+    } else if (this.getTenant_()) {
       endpoint = endpoint.replace(':tenant', this.getTenant_());
     } else {
-      endpoint = endpoint.replace('/:tenant', '');
+      endpoint = endpoint.replace('/:tenant', ''); // use shorthand api
     }
 
     return this.settings_.onSettingsUpdate
