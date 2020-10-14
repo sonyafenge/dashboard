@@ -38,7 +38,23 @@ type PodContainerList struct {
 
 // GetPodContainers returns containers that a pod has.
 func GetPodContainers(client kubernetes.Interface, namespace, podID string) (*PodContainerList, error) {
-	pod, err := client.CoreV1().Pods(namespace).Get(podID, metaV1.GetOptions{})
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, "").Get(podID, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	containers := &PodContainerList{Containers: make([]string, 0)}
+
+	for _, container := range pod.Spec.Containers {
+		containers.Containers = append(containers.Containers, container.Name)
+	}
+
+	return containers, nil
+}
+
+// GetPodContainersWithMultiTenancy returns containers that a pod has.
+func GetPodContainersWithMultiTenancy(client kubernetes.Interface, tenant, namespace, podID string) (*PodContainerList, error) {
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, tenant).Get(podID, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +72,7 @@ func GetPodContainers(client kubernetes.Interface, namespace, podID string) (*Po
 // are returned. Previous indicates to read archived logs created by log rotation or container crash
 func GetLogDetails(client kubernetes.Interface, namespace, podID string, container string,
 	logSelector *logs.Selection, usePreviousLogs bool) (*logs.LogDetails, error) {
-	pod, err := client.CoreV1().Pods(namespace).Get(podID, metaV1.GetOptions{})
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, "").Get(podID, metaV1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +83,28 @@ func GetLogDetails(client kubernetes.Interface, namespace, podID string, contain
 
 	logOptions := mapToLogOptions(container, logSelector, usePreviousLogs)
 	rawLogs, err := readRawLogs(client, namespace, podID, logOptions)
+	if err != nil {
+		return nil, err
+	}
+	details := ConstructLogDetails(podID, rawLogs, container, logSelector)
+	return details, nil
+}
+
+// GetLogDetailsWithMultiTenancy returns logs for particular pod and container. When container is null, logs for the first one
+// are returned. Previous indicates to read archived logs created by log rotation or container crash
+func GetLogDetailsWithMultiTenancy(client kubernetes.Interface, tenant, namespace, podID string, container string,
+	logSelector *logs.Selection, usePreviousLogs bool) (*logs.LogDetails, error) {
+	pod, err := client.CoreV1().PodsWithMultiTenancy(namespace, tenant).Get(podID, metaV1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(container) == 0 {
+		container = pod.Spec.Containers[0].Name
+	}
+
+	logOptions := mapToLogOptions(container, logSelector, usePreviousLogs)
+	rawLogs, err := readRawLogsWithMultiTenancy(client, tenant, namespace, podID, logOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +149,24 @@ func readRawLogs(client kubernetes.Interface, namespace, podID string, logOption
 	return string(result), nil
 }
 
+// Construct a request for getting the logs for a pod and retrieves the logs.
+func readRawLogsWithMultiTenancy(client kubernetes.Interface, tenant, namespace, podID string, logOptions *v1.PodLogOptions) (
+	string, error) {
+	readCloser, err := openStreamWithMultiTenancy(client, tenant, namespace, podID, logOptions)
+	if err != nil {
+		return err.Error(), nil
+	}
+
+	defer readCloser.Close()
+
+	result, err := ioutil.ReadAll(readCloser)
+	if err != nil {
+		return "", err
+	}
+
+	return string(result), nil
+}
+
 // GetLogFile returns a stream to the log file which can be piped directly to the response. This avoids out of memory
 // issues. Previous indicates to read archived logs created by log rotation or container crash
 func GetLogFile(client kubernetes.Interface, namespace, podID string, container string, usePreviousLogs bool) (io.ReadCloser, error) {
@@ -124,8 +180,32 @@ func GetLogFile(client kubernetes.Interface, namespace, podID string, container 
 	return logStream, err
 }
 
+// GetLogFileWithMultiTenancy returns a stream to the log file which can be piped directly to the response. This avoids out of memory
+// issues. Previous indicates to read archived logs created by log rotation or container crash
+func GetLogFileWithMultiTenancy(client kubernetes.Interface, tenant, namespace, podID string, container string, usePreviousLogs bool) (io.ReadCloser, error) {
+	logOptions := &v1.PodLogOptions{
+		Container:  container,
+		Follow:     false,
+		Previous:   usePreviousLogs,
+		Timestamps: false,
+	}
+	logStream, err := openStreamWithMultiTenancy(client, tenant, namespace, podID, logOptions)
+	return logStream, err
+}
+
 func openStream(client kubernetes.Interface, namespace, podID string, logOptions *v1.PodLogOptions) (io.ReadCloser, error) {
 	return client.CoreV1().RESTClient().Get().
+		Tenant("").
+		Namespace(namespace).
+		Name(podID).
+		Resource("pods").
+		SubResource("log").
+		VersionedParams(logOptions, scheme.ParameterCodec).Stream()
+}
+
+func openStreamWithMultiTenancy(client kubernetes.Interface, tenant, namespace, podID string, logOptions *v1.PodLogOptions) (io.ReadCloser, error) {
+	return client.CoreV1().RESTClient().Get().
+		Tenant(tenant).
 		Namespace(namespace).
 		Name(podID).
 		Resource("pods").

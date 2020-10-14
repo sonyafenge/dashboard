@@ -218,6 +218,49 @@ func startProcess(k8sClient kubernetes.Interface, cfg *rest.Config, request *res
 	containerName := request.PathParameter("container")
 
 	req := k8sClient.CoreV1().RESTClient().Post().
+		Tenant("").
+		Resource("pods").
+		Name(podName).
+		Namespace(namespace).
+		SubResource("exec")
+
+	req.VersionedParams(&v1.PodExecOptions{
+		Container: containerName,
+		Command:   cmd,
+		Stdin:     true,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       true,
+	}, scheme.ParameterCodec)
+
+	exec, err := remotecommand.NewSPDYExecutor(cfg, "POST", req.URL())
+	if err != nil {
+		return err
+	}
+
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:             ptyHandler,
+		Stdout:            ptyHandler,
+		Stderr:            ptyHandler,
+		TerminalSizeQueue: ptyHandler,
+		Tty:               true,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// startProcess is called by handleAttach
+// Executed cmd in the container specified in request and connects it up with the ptyHandler (a session)
+func startProcessWithMultiTenancy(k8sClient kubernetes.Interface, cfg *rest.Config, request *restful.Request, cmd []string, ptyHandler PtyHandler, tenant string) error {
+	namespace := request.PathParameter("namespace")
+	podName := request.PathParameter("pod")
+	containerName := request.PathParameter("container")
+
+	req := k8sClient.CoreV1().RESTClient().Post().
+		Tenant(tenant).
 		Resource("pods").
 		Name(podName).
 		Namespace(namespace).
@@ -296,6 +339,41 @@ func WaitForTerminal(k8sClient kubernetes.Interface, cfg *rest.Config, request *
 			for _, testShell := range validShells {
 				cmd := []string{testShell}
 				if err = startProcess(k8sClient, cfg, request, cmd, terminalSessions.Get(sessionId)); err == nil {
+					break
+				}
+			}
+		}
+
+		if err != nil {
+			terminalSessions.Close(sessionId, 2, err.Error())
+			return
+		}
+
+		terminalSessions.Close(sessionId, 1, "Process exited")
+	}
+}
+
+// WaitForTerminalWithMultiTenancy is called from apihandler.handleAttach as a goroutine
+// Waits for the SockJS connection to be opened by the client the session to be bound in handleTerminalSession
+func WaitForTerminalWithMultiTenancy(k8sClient kubernetes.Interface, cfg *rest.Config, request *restful.Request, sessionId, tenant string) {
+	shell := request.QueryParameter("shell")
+
+	select {
+	case <-terminalSessions.Get(sessionId).bound:
+		close(terminalSessions.Get(sessionId).bound)
+
+		var err error
+		validShells := []string{"bash", "sh", "powershell", "cmd"}
+
+		if isValidShell(validShells, shell) {
+			cmd := []string{shell}
+			err = startProcessWithMultiTenancy(k8sClient, cfg, request, cmd, terminalSessions.Get(sessionId), tenant)
+		} else {
+			// No shell given or it was not valid: try some shells until one succeeds or all fail
+			// FIXME: if the first shell fails then the first keyboard event is lost
+			for _, testShell := range validShells {
+				cmd := []string{testShell}
+				if err = startProcessWithMultiTenancy(k8sClient, cfg, request, cmd, terminalSessions.Get(sessionId), tenant); err == nil {
 					break
 				}
 			}

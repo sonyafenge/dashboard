@@ -40,6 +40,7 @@ import {fit} from 'xterm/lib/addons/fit/fit';
 import {EndpointManager, Resource, Utility} from '../common/services/resource/endpoint';
 import {NamespacedResourceService} from '../common/services/resource/resource';
 import {UtilityService} from '../common/services/resource/utility';
+import {TenantService} from 'common/services/global/tenant';
 
 // tslint:disable-next-line:no-any
 declare let SockJS: any;
@@ -75,6 +76,7 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     private readonly matSnackBar_: MatSnackBar,
     private readonly cdr_: ChangeDetectorRef,
     private readonly _router: Router,
+    private readonly tenant_: TenantService,
   ) {
     this.namespace_ = this.activatedRoute_.snapshot.params.resourceNamespace;
     this.podName = this.activatedRoute_.snapshot.params.resourceName;
@@ -203,6 +205,7 @@ export class ShellComponent implements AfterViewInit, OnDestroy {
     const terminalSessionUrl = `${EndpointManager.utility(Utility.shell).shell(
       this.namespace_,
       this.podName,
+      this.tenant_.current(),
     )}/${this.selectedContainer}`;
     const {id} = await this.utility_.shell(terminalSessionUrl).toPromise();
 

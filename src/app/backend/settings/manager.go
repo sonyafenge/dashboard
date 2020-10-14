@@ -191,6 +191,35 @@ func (sm *SettingsManager) DeletePinnedResource(client kubernetes.Interface, r *
 	defer sm.load(client)
 	sm.pinnedResources = append(sm.pinnedResources[:index], sm.pinnedResources[index+1:]...)
 	cm.Data[api.PinnedResourcesKey] = api.MarshalPinnedResources(sm.pinnedResources)
-	_, err := client.CoreV1().ConfigMaps(args.Holder.GetNamespace()).Update(cm)
+	_, err := client.CoreV1().ConfigMapsWithMultiTenancy(args.Holder.GetNamespace(), "").Update(cm)
+	return err
+}
+
+func (sm *SettingsManager) DeletePinnedResourceWithMultiTenancy(client kubernetes.Interface, r *api.PinnedResource, tenant string) error {
+	cm, isDiff := sm.load(client)
+	if isDiff {
+		return errors.NewInvalid(api.ConcurrentSettingsChangeError)
+	}
+
+	// Data can be nil if the configMap exists but does not have any data
+	if cm.Data == nil {
+		return errors.NewNotFound(api.PinnedResourceNotFoundError)
+	}
+
+	index := len(sm.pinnedResources)
+	for i, pinnedResource := range sm.pinnedResources {
+		if pinnedResource.IsEqual(r) {
+			index = i
+		}
+	}
+
+	if index == len(sm.pinnedResources) {
+		return errors.NewNotFound(api.PinnedResourceNotFoundError)
+	}
+
+	defer sm.load(client)
+	sm.pinnedResources = append(sm.pinnedResources[:index], sm.pinnedResources[index+1:]...)
+	cm.Data[api.PinnedResourcesKey] = api.MarshalPinnedResources(sm.pinnedResources)
+	_, err := client.CoreV1().ConfigMapsWithMultiTenancy(args.Holder.GetNamespace(), tenant).Update(cm)
 	return err
 }

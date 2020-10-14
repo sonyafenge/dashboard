@@ -29,22 +29,17 @@ export class TenantService {
     this.setAuthTenant(tenantCookie);
   }
 
-  resetTenant() {
-    this.currentTenant_ = '';
-    this.authTenant_ = '';
-    this.isSystemTenant_ = false;
-  }
-
-  // Set to a differnet tenant when logged in as a system tenant.
   setCurrent(tenant: string) {
     if (this.isSystemTenant_) {
       this.currentTenant_ = tenant;
     }
   }
 
-  // Only system can set and return current tenant, otherwise return empty.
   current(): string {
-    return this.currentTenant_ || '';
+    if (this.isSystemTenant_) {
+      return this.currentTenant_;
+    }
+    return '';
   }
 
   setAuthTenant(tenant: string) {

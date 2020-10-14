@@ -26,6 +26,7 @@ import {NamespacedResourceService} from '../../common/services/resource/resource
 import {EndpointManager, Resource} from '../../common/services/resource/endpoint';
 import {NotificationsService} from '../../common/services/global/notifications';
 import {RawResource} from '../../common/resources/rawresource';
+import {TenantService} from 'common/services/global/tenant';
 
 enum Modes {
   JSON = 'json',
@@ -53,6 +54,7 @@ export class CRDObjectDetailComponent implements OnInit, OnDestroy {
     private readonly notifications_: NotificationsService,
     private readonly http_: HttpClient,
     private readonly renderer_: Renderer2,
+    private readonly tenant_: TenantService,
   ) {}
 
   ngOnInit(): void {
@@ -72,7 +74,11 @@ export class CRDObjectDetailComponent implements OnInit, OnDestroy {
         this.isInitialized = true;
 
         // Get raw resource
-        const url = RawResource.getUrl(this.object.typeMeta, this.object.objectMeta);
+        const url = RawResource.getUrl(
+          this.tenant_.current(),
+          this.object.typeMeta,
+          this.object.objectMeta,
+        );
         this.http_
           .get(url)
           .toPromise()
