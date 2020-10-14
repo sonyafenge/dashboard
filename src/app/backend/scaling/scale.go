@@ -41,7 +41,25 @@ func GetScaleSpec(cfg *rest.Config, kind, namespace, name string) (*ReplicaCount
 		return nil, err
 	}
 
-	res, err := sc.Scales(namespace).Get(appsv1beta2.Resource(kind), name)
+	res, err := sc.ScalesWithMultiTenancy(namespace, "").Get(appsv1beta2.Resource(kind), name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ReplicaCounts{
+		ActualReplicas:  res.Status.Replicas,
+		DesiredReplicas: res.Spec.Replicas,
+	}, nil
+}
+
+// GetScaleSpecWithMultiTenancy returns a populated ReplicaCounts object with desired and actual number of replicas.
+func GetScaleSpecWithMultiTenancy(cfg *rest.Config, tenant, kind, namespace, name string) (*ReplicaCounts, error) {
+	sc, err := getScaleGetter(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := sc.ScalesWithMultiTenancy(namespace, tenant).Get(appsv1beta2.Resource(kind), name)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +79,7 @@ func ScaleResource(cfg *rest.Config, kind, namespace, name, count string) (*Repl
 		return nil, err
 	}
 
-	res, err := sc.Scales(namespace).Get(appsv1beta2.Resource(kind), name)
+	res, err := sc.ScalesWithMultiTenancy(namespace, "").Get(appsv1beta2.Resource(kind), name)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +91,39 @@ func ScaleResource(cfg *rest.Config, kind, namespace, name, count string) (*Repl
 
 	res.Spec.Replicas = int32(c)
 
-	res, err = sc.Scales(namespace).Update(appsv1beta2.Resource(kind), res)
+	res, err = sc.ScalesWithMultiTenancy(namespace, "").Update(appsv1beta2.Resource(kind), res)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ReplicaCounts{
+		ActualReplicas:  res.Status.Replicas,
+		DesiredReplicas: res.Spec.Replicas,
+	}, nil
+}
+
+// ScaleResourceWithMultiTenancy scales the provided resource using the client scale method in the case of Deployment,
+// ReplicaSet, Replication Controller. In the case of a job we are using the jobs resource update
+// method since the client scale method does not provide one for the job.
+func ScaleResourceWithMultiTenancy(cfg *rest.Config, tenant, kind, namespace, name, count string) (*ReplicaCounts, error) {
+	sc, err := getScaleGetter(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := sc.ScalesWithMultiTenancy(namespace, tenant).Get(appsv1beta2.Resource(kind), name)
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := strconv.Atoi(count)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Spec.Replicas = int32(c)
+
+	res, err = sc.ScalesWithMultiTenancy(namespace, tenant).Update(appsv1beta2.Resource(kind), res)
 	if err != nil {
 		return nil, err
 	}

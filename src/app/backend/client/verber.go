@@ -142,6 +142,28 @@ func (verber *resourceVerber) Delete(kind string, namespaceSet bool, namespace s
 	return req.Do().Error()
 }
 
+// DeleteWithMultiTenancy deletes the resource of the given kind in the given namespace with the given name.
+func (verber *resourceVerber) DeleteWithMultiTenancy(kind string, tenant string, namespaceSet bool, namespace string, name string) error {
+	client, resourceSpec, err := verber.getResourceSpecFromKind(kind, namespaceSet)
+	if err != nil {
+		return err
+	}
+
+	// Do cascade delete by default, as this is what users typically expect.
+	defaultPropagationPolicy := v1.DeletePropagationForeground
+	defaultDeleteOptions := &v1.DeleteOptions{
+		PropagationPolicy: &defaultPropagationPolicy,
+	}
+
+	req := client.Delete().Tenant(tenant).Resource(resourceSpec.Resource).Name(name).Body(defaultDeleteOptions)
+
+	if resourceSpec.Namespaced {
+		req.Namespace(namespace)
+	}
+
+	return req.Do().Error()
+}
+
 // Put puts new resource version of the given kind in the given namespace with the given name.
 func (verber *resourceVerber) Put(kind string, namespaceSet bool, namespace string, name string,
 	object *runtime.Unknown) error {
@@ -164,6 +186,29 @@ func (verber *resourceVerber) Put(kind string, namespaceSet bool, namespace stri
 	return req.Do().Error()
 }
 
+// PutWithMultiTenancy puts new resource version of the given kind in the given namespace with the given name.
+func (verber *resourceVerber) PutWithMultiTenancy(kind string, tenant string, namespaceSet bool, namespace string, name string,
+	object *runtime.Unknown) error {
+
+	client, resourceSpec, err := verber.getResourceSpecFromKind(kind, namespaceSet)
+	if err != nil {
+		return err
+	}
+
+	req := client.Put().
+		Tenant(tenant).
+		Resource(resourceSpec.Resource).
+		Name(name).
+		SetHeader("Content-Type", "application/json").
+		Body([]byte(object.Raw))
+
+	if resourceSpec.Namespaced {
+		req.Namespace(namespace)
+	}
+
+	return req.Do().Error()
+}
+
 // Get gets the resource of the given kind in the given namespace with the given name.
 func (verber *resourceVerber) Get(kind string, namespaceSet bool, namespace string, name string) (runtime.Object, error) {
 	client, resourceSpec, err := verber.getResourceSpecFromKind(kind, namespaceSet)
@@ -173,6 +218,24 @@ func (verber *resourceVerber) Get(kind string, namespaceSet bool, namespace stri
 
 	result := &runtime.Unknown{}
 	req := client.Get().Resource(resourceSpec.Resource).Name(name).SetHeader("Accept", "application/json")
+
+	if resourceSpec.Namespaced {
+		req.Namespace(namespace)
+	}
+
+	err = req.Do().Into(result)
+	return result, err
+}
+
+// GetWithMultiTenancy gets the resource of the given kind in the given namespace with the given name.
+func (verber *resourceVerber) GetWithMultiTenancy(kind string, tenant string, namespaceSet bool, namespace string, name string) (runtime.Object, error) {
+	client, resourceSpec, err := verber.getResourceSpecFromKind(kind, namespaceSet)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &runtime.Unknown{}
+	req := client.Get().Tenant(tenant).Resource(resourceSpec.Resource).Name(name).SetHeader("Accept", "application/json")
 
 	if resourceSpec.Namespaced {
 		req.Namespace(namespace)

@@ -25,6 +25,7 @@ import {TriggerResourceDialog} from '../../dialogs/triggerresource/dialog';
 import {RawResource} from '../../resources/rawresource';
 
 import {ResourceMeta} from './actionbar';
+import {TenantService} from './tenant';
 
 @Injectable()
 export class VerberService {
@@ -33,7 +34,11 @@ export class VerberService {
   onScale = new EventEmitter<boolean>();
   onTrigger = new EventEmitter<boolean>();
 
-  constructor(private readonly dialog_: MatDialog, private readonly http_: HttpClient) {}
+  constructor(
+    private readonly dialog_: MatDialog,
+    private readonly http_: HttpClient,
+    private tenant_: TenantService,
+  ) {}
 
   showDeleteDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
@@ -42,7 +47,7 @@ export class VerberService {
       .afterClosed()
       .subscribe(doDelete => {
         if (doDelete) {
-          const url = RawResource.getUrl(typeMeta, objectMeta);
+          const url = RawResource.getUrl(this.tenant_.current(), typeMeta, objectMeta);
           this.http_
             .delete(url)
             .subscribe(() => this.onDelete.emit(true), this.handleErrorResponse_.bind(this));
@@ -57,7 +62,7 @@ export class VerberService {
       .afterClosed()
       .subscribe(result => {
         if (result) {
-          const url = RawResource.getUrl(typeMeta, objectMeta);
+          const url = RawResource.getUrl(this.tenant_.current(), typeMeta, objectMeta);
           this.http_
             .put(url, JSON.parse(result), {headers: this.getHttpHeaders_()})
             .subscribe(() => this.onEdit.emit(true), this.handleErrorResponse_.bind(this));
@@ -67,12 +72,16 @@ export class VerberService {
 
   showScaleDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    const current = this.tenant_.current();
     this.dialog_
       .open(ScaleResourceDialog, dialogConfig)
       .afterClosed()
       .subscribe(result => {
         if (Number.isInteger(result)) {
-          const url = `api/v1/scale/${typeMeta.kind}/${objectMeta.namespace}/${objectMeta.name}/`;
+          const url =
+            'api/v1' +
+            (current ? `/tenants/${current}` : '') +
+            `/scale/${typeMeta.kind}/${objectMeta.namespace}/${objectMeta.name}/`;
           this.http_
             .put(url, result, {
               params: {

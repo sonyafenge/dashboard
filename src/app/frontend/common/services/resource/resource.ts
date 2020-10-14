@@ -52,7 +52,7 @@ export class ResourceService<T> extends ResourceBase<T> {
     } else if (this.getTenant_()) {
       endpoint = endpoint.replace(':tenant', this.getTenant_());
     } else {
-      endpoint = endpoint.replace('/:tenant', ''); // use shorthand api
+      endpoint = endpoint.replace('/tenants/:tenant', ''); // use shorthand api
     }
 
     return this.settings_.onSettingsUpdate
@@ -111,7 +111,7 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
     } else if (this.getTenant_()) {
       endpoint = endpoint.replace(':tenant', this.getTenant_());
     } else {
-      endpoint = endpoint.replace('/:tenant', ''); // use shorthand api
+      endpoint = endpoint.replace('/tenants/:tenant', ''); // use shorthand api
     }
 
     return this.settings_.onSettingsUpdate

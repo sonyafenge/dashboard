@@ -20,6 +20,7 @@ import {LogDetails, LogLine, LogSelection, LogSources} from '@api/backendapi';
 import {GlobalSettingsService} from 'common/services/global/globalsettings';
 import {LogService} from 'common/services/global/logs';
 import {NotificationSeverity, NotificationsService} from 'common/services/global/notifications';
+import {TenantService} from 'common/services/global/tenant';
 import {Observable, Subscription} from 'rxjs';
 
 import {LogsDownloadDialog} from '../common/dialogs/download/dialog';
@@ -74,6 +75,7 @@ export class LogsComponent implements OnDestroy {
     private readonly dialog_: MatDialog,
     private readonly notifications_: NotificationsService,
     private readonly _router: Router,
+    private readonly tenant_: TenantService,
   ) {
     this.logService = logService;
     this.refreshInterval = this.settingsService_.getLogsAutoRefreshTimeInterval() * 1000;
@@ -85,7 +87,11 @@ export class LogsComponent implements OnDestroy {
     const containerName = this.activatedRoute_.snapshot.queryParams.container;
 
     this.sourceSubscription = logService
-      .getResource(`source/${namespace}/${resourceName}/${resourceType}`)
+      .getResource(
+        `source/${namespace}/${resourceName}/${resourceType}`,
+        undefined,
+        this.tenant_.current(),
+      )
       .subscribe((data: LogSources) => {
         this.logSources = data;
         this.pod = data.podNames[0]; // Pick first pod (cannot use resource name as it may
@@ -94,7 +100,11 @@ export class LogsComponent implements OnDestroy {
         this.appendContainerParam();
 
         this.logsSubscription = this.logService
-          .getResource(`${namespace}/${this.pod}/${this.container}`)
+          .getResource(
+            `${namespace}/${this.pod}/${this.container}`,
+            undefined,
+            this.tenant_.current(),
+          )
           .subscribe((data: LogDetails) => {
             this.updateUiModel(data);
             this.isLoading = false;
@@ -231,7 +241,7 @@ export class LogsComponent implements OnDestroy {
       .set('offsetTo', `${offsetTo}`)
       .set('previous', `${this.logService.getPrevious()}`);
     this.logsSubscription = this.logService
-      .getResource(`${namespace}/${this.pod}/${this.container}`, params)
+      .getResource(`${namespace}/${this.pod}/${this.container}`, params, this.tenant_.current())
       .subscribe((podLogs: LogDetails) => {
         this.updateUiModel(podLogs);
         if (onLoad) {
