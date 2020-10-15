@@ -34,10 +34,6 @@ export class GlobalErrorHandler implements ErrorHandler {
     return this.injector_.get(AuthService);
   }
 
-  private get tenant_(): TenantService {
-    return this.injector_.get(TenantService);
-  }
-
   handleError(error: HttpErrorResponse | YAMLException): void {
     if (error instanceof HttpErrorResponse) {
       this.handleHTTPError_(error);
@@ -58,7 +54,6 @@ export class GlobalErrorHandler implements ErrorHandler {
           state: {error: AsKdError(error)} as StateError,
         });
         this.auth_.removeAuthCookies();
-        this.tenant_.resetTenant();
         return;
       }
 

@@ -56,13 +56,13 @@ class ResourceEndpoint {
   ) {}
 
   list(): string {
-    return `${baseHref}${this.tenanted_ ? '/:tenant' : ''}/${this.resource_}${
+    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
       this.namespaced_ ? '/:namespace' : ''
     }`;
   }
 
   detail(): string {
-    return `${baseHref}${this.tenanted_ ? '/:tenant' : ''}/${this.resource_}${
+    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
       this.namespaced_ ? '/:namespace' : ''
     }/:name`;
   }
@@ -72,7 +72,7 @@ class ResourceEndpoint {
       resourceNamespace = ':namespace';
     }
 
-    return `${baseHref}${this.tenanted_ ? '/:tenant' : ''}/${this.resource_}${
+    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
       this.namespaced_ ? `/${resourceNamespace}` : ''
     }/${resourceName}/${relatedResource}`;
   }
@@ -81,8 +81,12 @@ class ResourceEndpoint {
 class UtilityEndpoint {
   constructor(private readonly utility_: Utility) {}
 
-  shell(namespace: string, resourceName: string): string {
-    return `${baseHref}/${Resource.pod}/${namespace}/${resourceName}/${this.utility_}`;
+  shell(namespace: string, resourceName: string, tenant?: string): string {
+    return (
+      baseHref +
+      (tenant ? `/tenants/${tenant}` : '') +
+      `/${Resource.pod}/${namespace}/${resourceName}/${this.utility_}`
+    );
   }
 }
 

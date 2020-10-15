@@ -16,6 +16,7 @@ import {HttpClient} from '@angular/common/http';
 import {Component, Inject, OnInit} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {ReplicaCounts} from '@api/backendapi';
+import {TenantService} from 'common/services/global/tenant';
 
 import {ResourceMeta} from '../../services/global/actionbar';
 
@@ -31,10 +32,15 @@ export class ScaleResourceDialog implements OnInit {
     public dialogRef: MatDialogRef<ScaleResourceDialog>,
     @Inject(MAT_DIALOG_DATA) public data: ResourceMeta,
     private readonly http_: HttpClient,
+    private readonly tenant_: TenantService,
   ) {}
 
   ngOnInit(): void {
-    const url = `api/v1/scale/${this.data.typeMeta.kind}/${this.data.objectMeta.namespace}/${this.data.objectMeta.name}/`;
+    const current = this.tenant_.current();
+    const url =
+      'api/v1' +
+      (current ? `/tenants/${current}` : '') +
+      `/scale/${this.data.typeMeta.kind}/${this.data.objectMeta.namespace}/${this.data.objectMeta.name}`;
     this.http_
       .get<ReplicaCounts>(url)
       .toPromise()

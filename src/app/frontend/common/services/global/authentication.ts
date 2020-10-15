@@ -116,7 +116,6 @@ export class AuthService {
 
   logout(): void {
     this.removeAuthCookies();
-    this.tenantService_.resetTenant();
     this.router_.navigate(['login']);
   }
 

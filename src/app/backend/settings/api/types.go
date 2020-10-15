@@ -61,6 +61,8 @@ type SettingsManager interface {
 	SavePinnedResource(client kubernetes.Interface, r *PinnedResource) error
 	// DeletePinnedResource removes a pinned resource from config map.
 	DeletePinnedResource(client kubernetes.Interface, r *PinnedResource) error
+	// DeletePinnedResourceWithMultiTenancy removes a pinned resource from config map.
+	DeletePinnedResourceWithMultiTenancy(client kubernetes.Interface, r *PinnedResource, tenant string) error
 }
 
 // PinnedResource represents a pinned resource.

@@ -19,6 +19,7 @@ import {dump as toYaml, load as fromYaml} from 'js-yaml';
 
 import {RawResource} from '../../resources/rawresource';
 import {ResourceMeta} from '../../services/global/actionbar';
+import {TenantService} from 'common/services/global/tenant';
 
 enum EditorMode {
   JSON = 'json',
@@ -40,10 +41,15 @@ export class EditResourceDialog implements OnInit {
     public dialogRef: MatDialogRef<EditResourceDialog>,
     @Inject(MAT_DIALOG_DATA) public data: ResourceMeta,
     private readonly http_: HttpClient,
+    private readonly tenant_: TenantService,
   ) {}
 
   ngOnInit(): void {
-    const url = RawResource.getUrl(this.data.typeMeta, this.data.objectMeta);
+    const url = RawResource.getUrl(
+      this.tenant_.current(),
+      this.data.typeMeta,
+      this.data.objectMeta,
+    );
     this.http_
       .get(url)
       .toPromise()

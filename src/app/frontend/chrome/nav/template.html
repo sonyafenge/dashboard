@@ -18,13 +18,13 @@ limitations under the License.
 <mat-drawer-container class="kd-nav">
   <mat-drawer class="kd-nav"
               mode="side">
-
+    
     <div *ngIf="isSystem"
          class="kd-nav-system-control">
       <kd-tenant-selector></kd-tenant-selector>
       <mat-divider></mat-divider>
     </div>
-
+    
     <div class="kd-nav-group">
       <kd-nav-item class="kd-nav-group-item"
                    state="/cluster"

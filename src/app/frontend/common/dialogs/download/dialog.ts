@@ -18,6 +18,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import * as FileSaver from 'file-saver';
 import {Subscription} from 'rxjs';
 
+import {TenantService} from 'common/services/global/tenant';
 import {LogService} from '../../services/global/logs';
 
 export interface LogsDownloadDialogMeta {
@@ -43,10 +44,15 @@ export class LogsDownloadDialog implements OnDestroy {
     @Inject(MAT_DIALOG_DATA) public data: LogsDownloadDialogMeta,
     private readonly logService: LogService,
     private readonly http_: HttpClient,
+    private readonly tenant_: TenantService,
   ) {
-    const logUrl = `api/v1/log/file/${data.namespace}/${data.pod}/${
-      data.container
-    }?previous=${this.logService.getPrevious()}`;
+    const current = this.tenant_.current();
+    const logUrl =
+      'api/v1' +
+      (current ? `/tenants/${current}` : '') +
+      `/log/file/${data.namespace}/${data.pod}/${
+        data.container
+      }?previous=${this.logService.getPrevious()}`;
 
     this.downloadSubscription = this.http_
       .request(new HttpRequest('GET', logUrl, {}, {reportProgress: true, responseType: 'blob'}))

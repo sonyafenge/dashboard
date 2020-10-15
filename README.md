@@ -10,7 +10,7 @@ Centaurus Dashboard is a web-based UI for Centaurus clusters. It is evolved from
 
 This project is based on [Kubernetes Dashboard v.2.0.0-beta4](https://github.com/kubernetes/dashboard/tree/v2.0.0-beta4). It's always recommended to follow the docs from the original project for guidance such as project overview, installation and trouble shooting, you can access them [here](https://github.com/kubernetes/dashboard/blob/master/README.md).
 
-## Project overview
+## Project Overview
 
 The Dashboard is a portal to connect and manage your centaurus clusters. A Centaurus cluster is composed of [Arktos](https://github.com/centaurus-cloud/arktos) and [Mizar](https://github.com/centaurus-cloud/mizar). Arktos is the cluster management system evolved from Kubernetes, it is the core module of the cluster and Mizar is a cloud networking module that works on top of that. The Dashboard interacts mostly with Arktos, and it's required to set up a working Arktos cluster.
 
