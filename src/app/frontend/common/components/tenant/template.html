@@ -29,8 +29,7 @@ limitations under the License.
              (keydown)="$event.keyCode === 13 ? selectTenant() : null">
     </div>
     <mat-optgroup label="SYSTEM"
-                  i18n-label
-                  *ngIf="(tenants | filterBy: selectTenantInput).length">
+                  i18n-label>
       <mat-option [value]="systemTenantName">{{systemTenantName}}</mat-option>
     </mat-optgroup>
     <mat-optgroup label="TENANTS"
