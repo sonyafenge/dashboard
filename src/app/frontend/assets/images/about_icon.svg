@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="13px" height="13px" viewBox="0 0 13 13" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <g id="About" transform="translate(0.5 0.5)">
+    <g id="document-text">
+      <path d="M12 4.8L12 7.8C12 10.8 10.8 12 7.8 12L4.2 12C1.2 12 0 10.8 0 7.8L0 4.2C0 1.2 1.2 0 4.2 0L7.2 0" id="Vector" fill="none" fill-rule="evenodd" stroke="#1F263E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M9.60019 4.8C7.8002 4.8 7.2002 4.2 7.2002 2.4L7.2002 0L12.0002 4.8L9.60019 4.8Z" id="Vector" fill="none" fill-rule="evenodd" stroke="#1F263E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M3 6.59998L6.6 6.59998" id="Vector" fill="none" fill-rule="evenodd" stroke="#1F263E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M3 9L5.4 9" id="Vector" fill="none" fill-rule="evenodd" stroke="#1F263E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </g>
+</svg>

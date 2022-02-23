@@ -1,165 +1,192 @@
-<!--
-Copyright 2017 The Kubernetes Authors.
-Copyright 2020 Authors of Arktos - file modified.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
 
 <mat-drawer-container class="kd-nav">
-  <mat-drawer class="kd-nav"
-              mode="side">
-    
-    <div *ngIf="isSystem"
-         class="kd-nav-system-control">
+  <mat-drawer class="kd-nav" mode="side">
+    <div class="kd-nav-system-control">
       <kd-tenant-selector></kd-tenant-selector>
       <mat-divider></mat-divider>
     </div>
-    
-    <div class="kd-nav-group">
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/cluster"
-                   i18n>Cluster
-      </kd-nav-item>
-      <kd-nav-item *ngIf="isCurrentSystem"
-                   class="kd-nav-item"
-                   state="/tenant"
-                   i18n>Tenants
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/clusterrole"
-                   i18n>Cluster Roles
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/namespace"
-                   i18n>Namespaces
-      </kd-nav-item>
-      <kd-nav-item *ngIf="isCurrentSystem"
-                   class="kd-nav-item"
-                   state="/node"
-                   i18n>Nodes
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/persistentvolume"
-                   i18n>Persistent Volumes
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/storageclass"
-                   i18n>Storage Classes
-      </kd-nav-item>
+    <div>
+      <kd-namespace-selector></kd-namespace-selector>
+      <mat-divider></mat-divider>
     </div>
 
-    <mat-divider></mat-divider>
-
-    <kd-namespace-selector></kd-namespace-selector>
-
-    <div class="kd-nav-group">
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/overview"
-                   i18n>Overview
-      </kd-nav-item>
-
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/workloads"
-                   i18n>Workloads
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/cronjob"
-                   i18n>Cron Jobs
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/daemonset"
-                   i18n>Daemon Sets
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/deployment"
-                   i18n>Deployments
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/job"
-                   i18n>Jobs
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/pod"
-                   i18n>Pods
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/replicaset"
-                   i18n>Replica Sets
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/replicationcontroller"
-                   i18n>Replication Controllers
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/statefulset"
-                   i18n>Stateful Sets
-      </kd-nav-item>
-
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/discovery"
-                   i18n>Discovery and Load Balancing
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/ingress"
-                   i18n>Ingresses
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/service"
-                   i18n>Services
-      </kd-nav-item>
-
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/config"
-                   i18n>Config and Storage
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/configmap"
-                   i18n>Config Maps
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/persistentvolumeclaim"
-                   i18n>Persistent Volume Claims
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/secret"
-                   i18n>Secrets
-      </kd-nav-item>
+    <div>
+      <mat-accordion>
+        <mat-expansion-panel [expanded]="true" >
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <kd-nav-item class="kd-nav-group-item" state="/partition" i18n>
+                <img class="menu_icon" src="assets/images/cluster_management_icon.svg" alt="" style="height: 18px; width: 18px">
+                <strong>Cluster Management</strong>
+              </kd-nav-item>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div  class="kd-nav-group">
+            <kd-nav-item  class="kd-nav-item" state="/partition" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Cluster Monitoring
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/clusterrole" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Cluster roles
+            </kd-nav-item>
+            <kd-nav-item  class="kd-nav-item" state="/tenant" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Tenants
+            </kd-nav-item>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-divider></mat-divider>
     </div>
 
-    <mat-divider></mat-divider>
+    <div>
+      <mat-accordion>
+        <mat-expansion-panel [expanded]="true" i18n>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <kd-nav-item class="kd-nav-group-item" state="/overview" i18n>
+                <img class="menu_icon" src="assets/images/cluster_management_icon.svg" alt="" style="height: 15px; width: 15px" >
+                <strong>Tenant Management</strong>
+              </kd-nav-item>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="kd-nav-group">
+            <kd-nav-item class="kd-nav-item" state="/overview" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Tenant Monitoring
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/role" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Roles
+            </kd-nav-item>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-divider></mat-divider>
+    </div>
+
+    <div>
+      <mat-accordion>
+        <mat-expansion-panel [expanded]="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <kd-nav-item class="kd-nav-group-item" state="/workloadoverview" i18n>
+                <img class="menu_icon" src="assets/images/workloads_icon.svg" alt="" style="height: 18px; width: 18px">
+                <strong>Workloads</strong>
+              </kd-nav-item>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="kd-nav-group">
+            <kd-nav-item class="kd-nav-item" state="/workloadoverview" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Overview
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/cronjob" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Cron Jobs
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/deployment" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Deployments
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/job" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Jobs
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/namespace" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Namespaces
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/pod" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Pods
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/replicaset" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Replica Sets
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/statefulset" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Stateful Sets
+            </kd-nav-item>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-divider></mat-divider>
+
+      <mat-accordion>
+        <mat-expansion-panel [expanded]="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <kd-nav-item class="kd-nav-group-item" state="/ingress" i18n>
+                <img class="menu_icon" src="assets/images/discovery_load_balancing_icon.svg" alt="" style="height: 18px; width: 18px">
+                <strong>Discovery and Load Balancing</strong>
+              </kd-nav-item>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="kd-nav-group">
+            <kd-nav-item class="kd-nav-item" state="/ingress" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Ingresses
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/service" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Services
+            </kd-nav-item>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-divider></mat-divider>
+
+      <mat-accordion>
+        <mat-expansion-panel [expanded]="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <kd-nav-item class="kd-nav-group-item" state="/configmap" i18n>
+                <img class="menu_icon" src="assets/images/config_storage_icon.svg" alt="" style="height: 16px; width: 16px">
+                <strong>Config and Storage</strong>
+              </kd-nav-item>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="kd-nav-group">
+            <kd-nav-item class="kd-nav-item" state="/configmap" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Config Maps
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/secret" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Secrets
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/storageclass" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Storage Classes
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/persistentvolume" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Persistent Volumes
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/persistentvolumeclaim" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Persistent Volume Claims
+            </kd-nav-item>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-divider></mat-divider>
+    </div>
 
     <div class="kd-nav-group">
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/customresourcedefinition"
-                   [exact]="true"
-                   i18n>Custom Resource Definitions
-      </kd-nav-item>
-
+      <mat-panel-title>
+        <kd-nav-item class="kd-nav-group-item" state="/customresourcedefinition" [exact]="true" i18n>
+          <img class="menu_icon" src="assets/images/custom_resource_definitions.svg" alt="" style="height: 22px; width: 22px">
+          <strong>Custom Resource Definitions</strong>
+        </kd-nav-item>
+      </mat-panel-title>
       <kd-pinner-nav kind="customresourcedefinition"></kd-pinner-nav>
+      <mat-divider></mat-divider>
     </div>
 
-    <mat-divider></mat-divider>
-
-    <div class="kd-nav-group">
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/settings"
-                   i18n>Settings
-      </kd-nav-item>
-
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/about"
-                   i18n>About
-      </kd-nav-item>
-    </div>
   </mat-drawer>
 </mat-drawer-container>
