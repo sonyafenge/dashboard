@@ -646,4 +646,19 @@ router-outlet::after {
 .mat-row {
   min-height: 30px !important;
 }
+.mat-form-field-flex {
+  background-color: #fff !important;
+}
+.mat-form-field-appearance-fill .mat-form-field-infix {
+  padding: 0em 0 .5em 0 !important;
+}
 
+.mat-form-field {
+  display: flex !important;
+  flex-direction: column !important;
+  font-size: 14px !important;
+}
+.mat-dialog-container {
+  width: 65% !important;
+  margin: 0px auto;
+}

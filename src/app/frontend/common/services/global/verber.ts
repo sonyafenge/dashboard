@@ -13,6 +13,7 @@ import {TenantService} from './tenant';
 import {CreateNodeDialog} from "../../dialogs/createNode/dialog";
 import {CreateNamespaceDialog} from "../../dialogs/createNamespace/dialog";
 import {CreateTenantDialog} from "../../dialogs/createTenant/dialog";
+import {CreateClusterroleDialog} from "../../dialogs/createClusterrole/dialog";
 
 @Injectable()
 export class VerberService {
@@ -55,6 +56,18 @@ export class VerberService {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
       .open(CreateTenantDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
+
+  // create Clusterrole
+  showClusterroleCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateClusterroleDialog, dialogConfig)
       .afterClosed()
       .subscribe(result => {
         if (result) {

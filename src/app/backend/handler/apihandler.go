@@ -1,15 +1,8 @@
 package handler
 
 import (
+	er "errors"
 	"fmt"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/partition"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
-	"log"
-	"net/http"
-	"strconv"
-	"strings"
-
 	restful "github.com/emicklei/go-restful"
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/auth"
@@ -36,6 +29,7 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/logs"
 	ns "github.com/kubernetes/dashboard/src/app/backend/resource/namespace"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/node"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/partition"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolume"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolumeclaim"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/pod"
@@ -53,7 +47,13 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/validation"
 	"golang.org/x/net/xsrftoken"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/remotecommand"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -858,7 +858,20 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 		apiV1Ws.GET("/clusterrole/{name}").
 			To(apiHandler.handleGetClusterRoleDetail).
 			Writes(clusterrole.ClusterRoleDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.POST("/clusterrole").
+			To(apiHandler.handleCreateCreateClusterRole).
+			Reads(clusterrole.ClusterRoleSpec{}).
+			Writes(clusterrole.ClusterRoleSpec{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/clusterrole/{clusterrole}").
+			To(apiHandler.handleDeleteClusterRole))
 
+	apiV1Ws.Route(
+		apiV1Ws.POST("/clusterroles").
+			To(apiHandler.handleCreateCreateClusterRolesWithMultiTenancy).
+			Reads(clusterrole.ClusterRoleSpec{}).
+			Writes(clusterrole.ClusterRoleSpec{}))
 	apiV1Ws.Route(
 		apiV1Ws.GET("/tenants/{tenant}/clusterrole").
 			To(apiHandler.handleGetClusterRoleListWithMultiTenancy).
@@ -1035,6 +1048,12 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 	return wsContainer, nil
 }
 
+type Error struct {
+	// Name of the tenant.
+	Msg        string `json:"msg"`
+	StatusCode int    `json:"statusCode"`
+}
+
 func (apiHandler *APIHandlerV2) handleGetResourcePartitionDetail(request *restful.Request, response *restful.Response) {
 	//For rpclients
 	if len(apiHandler.rpManager) == 0 {
@@ -1189,22 +1208,6 @@ func (apiHandler *APIHandler) handleGetClusterRoleListWithMultiTenancy(request *
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
-func (apiHandler *APIHandler) handleGetClusterRoleDetail(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.tpManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
-	name := request.PathParameter("name")
-	result, err := clusterrole.GetClusterRoleDetail(k8sClient, name)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
-}
-
 func (apiHandler *APIHandler) handleGetClusterRoleDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.tpManager.Client(request)
 	if err != nil {
@@ -1221,6 +1224,99 @@ func (apiHandler *APIHandler) handleGetClusterRoleDetailWithMultiTenancy(request
 	}
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
+
+func (apiHandler *APIHandler) handleGetClusterRoleDetail(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("name")
+	result, err := clusterrole.GetClusterRoleDetail(k8sClient, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleCreateCreateClusterRole(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	clusterRoleSpec := new(clusterrole.ClusterRoleSpec)
+	if err := request.ReadEntity(clusterRoleSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	if err := clusterrole.CreateClusterRole(clusterRoleSpec, k8sClient); err != nil {
+		if strings.Contains(err.Error(), "already exists") {
+			msg := "clusterroles '" + clusterRoleSpec.Name + "' already exists"
+			err = er.New(msg)
+		}
+		errorMsg := Error{Msg: err.Error(), StatusCode: http.StatusConflict}
+		response.WriteHeaderAndEntity(http.StatusConflict, errorMsg)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleSpec)
+}
+
+func (apiHandler *APIHandler) handleDeleteClusterRole(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	clusterroleName := request.PathParameter("clusterrole")
+	if err := clusterrole.DeleteClusterRole(clusterroleName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+}
+
+func (apiHandler *APIHandler) handleCreateCreateClusterRolesWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	clusterRoleSpec := new(clusterrole.ClusterRoleSpec)
+	if err := request.ReadEntity(clusterRoleSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	if err := clusterrole.CreateClusterRolesWithMultiTenancy(clusterRoleSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleSpec)
+}
+
+//func (apiHandler *APIHandler) handleGetClusterRoleDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
+//	k8sClient, err := apiHandler.tpManager.Client(request)
+//	if err != nil {
+//		errors.HandleInternalError(response, err)
+//		return
+//	}
+//
+//	tenant := request.PathParameter("tenant")
+//	name := request.PathParameter("name")
+//	result, err := clusterrole.GetClusterRoleDetailWithMultiTenancy(k8sClient, tenant, name)
+//	if err != nil {
+//		errors.HandleInternalError(response, err)
+//		return
+//	}
+//	response.WriteHeaderAndEntity(http.StatusOK, result)
+//}
 
 func (apiHandler *APIHandler) handleGetCsrfToken(request *restful.Request, response *restful.Response) {
 	action := request.PathParameter("action")
