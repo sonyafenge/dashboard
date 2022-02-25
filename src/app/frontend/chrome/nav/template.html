@@ -6,6 +6,8 @@
          class="kd-nav-system-control">
       <kd-tenant-selector></kd-tenant-selector>
       <mat-divider></mat-divider>
+      <kd-namespace-selector></kd-namespace-selector>
+      <mat-divider></mat-divider>
     </div>
 
     <div>
@@ -38,9 +40,31 @@
       <mat-divider></mat-divider>
     </div>
 
-    <mat-divider></mat-divider>
-
-    <kd-namespace-selector></kd-namespace-selector>
+    <div>
+      <mat-accordion>
+        <mat-expansion-panel [expanded]="true" i18n>
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <kd-nav-item class="kd-nav-group-item" state="/overview" i18n>
+                <img class="menu_icon" src="assets/images/cluster_management_icon.svg" alt="" style="height: 15px; width: 15px" >
+                <strong>Tenant Management</strong>
+              </kd-nav-item>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="kd-nav-group">
+            <kd-nav-item class="kd-nav-item" state="/overview" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Tenant Monitoring
+            </kd-nav-item>
+            <kd-nav-item class="kd-nav-item" state="/role" i18n>
+              <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+              Roles
+            </kd-nav-item>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-divider></mat-divider>
+    </div>
 
     <div class="kd-nav-group">
       <kd-nav-item class="kd-nav-group-item"

@@ -53,6 +53,15 @@ const routes: Routes = [
         path: 'storageclass',
         loadChildren: 'resource/cluster/storageclass/module#StorageClassModule',
       },
+      {
+        path: 'tenantmanagement',
+        loadChildren: 'resource/tenantmanagement/module#TenantManagementModule',
+      },
+      {
+        path: 'tenantmonitoring',
+        loadChildren: 'resource/tenantmanagement/tenantmonitoring/module#TenantMonitoringModule',
+      },
+
 
       // Overview
       {
