@@ -22,6 +22,7 @@ export enum Resource {
   configMap = 'configmap',
   persistentVolumeClaim = 'persistentvolumeclaim',
   resourcePartition = 'resourcepartition',
+  role = 'role',
   tenantPartition = 'tenantpartition',
   secret = 'secret',
   ingress = 'ingress',

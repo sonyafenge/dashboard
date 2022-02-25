@@ -80,6 +80,7 @@ import {ResourcePartitionListComponent} from "./resourcelist/resourcepartition/c
 import {TenantPartitionListComponent} from "./resourcelist/tenantpartition/component";
 import {TpTenantListComponent} from "./resourcelist/tptenants/component";
 import {PartitionListComponent} from "./resourcelist/partitionlist/component";
+import {RoleListComponent} from "./resourcelist/role/component";
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -159,6 +160,7 @@ const components = [
   ReplicationControllerListComponent,
   RowDetailComponent,
   ResourcePartitionListComponent,
+  RoleListComponent,
 
   StorageClassListComponent,
   StatefulSetListComponent,

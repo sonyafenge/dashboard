@@ -14,6 +14,7 @@ import {CreateNodeDialog} from "../../dialogs/createNode/dialog";
 import {CreateNamespaceDialog} from "../../dialogs/createNamespace/dialog";
 import {CreateTenantDialog} from "../../dialogs/createTenant/dialog";
 import {CreateClusterroleDialog} from "../../dialogs/createClusterrole/dialog";
+import {CreateRoleDialog} from "../../dialogs/createRole/dialog";
 
 @Injectable()
 export class VerberService {
@@ -68,6 +69,18 @@ export class VerberService {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
       .open(CreateClusterroleDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
+
+  // create Role
+  showRoleCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateRoleDialog, dialogConfig)
       .afterClosed()
       .subscribe(result => {
         if (result) {

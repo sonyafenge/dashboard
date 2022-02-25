@@ -11,6 +11,7 @@ import {CreateTenantDialog} from "./createTenant/dialog";
 import {CreateNamespaceDialog} from "./createNamespace/dialog";
 import {CreateNodeDialog} from "./createNode/dialog";
 import {CreateClusterroleDialog} from "./createClusterrole/dialog";
+import {CreateRoleDialog} from "./createRole/dialog";
 
 @NgModule({
   imports: [SharedModule, ComponentsModule],
@@ -25,6 +26,7 @@ import {CreateClusterroleDialog} from "./createClusterrole/dialog";
     CreateNamespaceDialog,
     CreateNodeDialog,
     CreateClusterroleDialog,
+    CreateRoleDialog,
   ],
   exports: [
     AlertDialog,
@@ -37,6 +39,7 @@ import {CreateClusterroleDialog} from "./createClusterrole/dialog";
     CreateNamespaceDialog,
     CreateNodeDialog,
     CreateClusterroleDialog,
+    CreateRoleDialog,
   ],
   entryComponents: [
     AlertDialog,
@@ -49,6 +52,7 @@ import {CreateClusterroleDialog} from "./createClusterrole/dialog";
     CreateNamespaceDialog,
     CreateNodeDialog,
     CreateClusterroleDialog,
+    CreateRoleDialog,
   ],
 })
 export class DialogsModule {}

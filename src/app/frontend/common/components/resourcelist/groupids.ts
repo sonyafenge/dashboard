@@ -1,4 +1,5 @@
 export enum ListIdentifier {
+  role = 'roleList',
   clusterRole = 'clusterRoleList',
   namespace = 'namespaceList',
   node = 'nodeList',

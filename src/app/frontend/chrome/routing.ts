@@ -61,7 +61,10 @@ const routes: Routes = [
         path: 'tenantmonitoring',
         loadChildren: 'resource/tenantmanagement/tenantmonitoring/module#TenantMonitoringModule',
       },
-
+      {
+        path: 'role',
+        loadChildren: 'resource/tenantmanagement/role/module#RoleModule',
+      },
 
       // Overview
       {

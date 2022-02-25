@@ -1,0 +1,50 @@
+<form [formGroup]="form1">
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <h2 mat-dialog-title>Create a new Role</h2>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Enter Role</mat-label>
+        <input matInput type="text"   formControlName="role" required autocomplete="off"/>
+        <mat-hint align="end"></mat-hint>
+      </mat-form-field>
+    </div>
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Enter Namespace</mat-label>
+        <input matInput type="text"   formControlName="namespace" required autocomplete="off"/>
+        <mat-hint align="end"></mat-hint>
+      </mat-form-field>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Apigroups</mat-label>
+        <input matInput formControlName="apigroups" placeholder="e.g. apps,extensions" required autocomplete="off"/>
+      </mat-form-field>
+    </div>
+
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Resources</mat-label>
+        <input matInput formControlName="resources" placeholder="e.g. pods,deployments" required autocomplete="off"/>
+      </mat-form-field>
+    </div>
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Verbs</mat-label>
+        <input matInput formControlName="verbs" placeholder="e.g. get,list,create" required autocomplete="off"/>
+      </mat-form-field>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button mat-button [mat-dialog-close]="true" type="submit" (click)="createrole()" >Create</button>
+      </mat-dialog-actions>
+    </div>
+  </div>
+</form>
