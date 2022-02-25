@@ -153,6 +153,14 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 		apiV1Ws.GET("/tenant/{name}").
 			To(apiHandler1.handleGetTenantDetail).
 			Writes(tenant.TenantDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.POST("/tenant").
+			To(apiHandler1.handleCreateTenant).
+			Reads(tenant.TenantSpec{}).
+			Writes(tenant.TenantSpec{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/tenants/{tenant}").
+			To(apiHandler.handleDeleteTenant))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/tptenant").
@@ -1173,6 +1181,47 @@ func (apiHandler *APIHandlerV2) handleGetTenantDetail(request *restful.Request, 
 	}
 
 	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+//for tenant handlerCreateTenant method
+func (apiHandler *APIHandlerV2) handleCreateTenant(request *restful.Request, response *restful.Response) {
+	tenantSpec := new(tenant.TenantSpec)
+	if err := request.ReadEntity(tenantSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if len(apiHandler.tpManager) == 0 {
+		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
+	}
+	client := ResourceAllocator(tenantSpec.Name, apiHandler.tpManager)
+	k8sClient := client.InsecureClient()
+	//k8sClient, err := client.Client(request)
+	//if err != nil {
+	//	errors.HandleInternalError(response, err)
+	//	return
+	//}
+	if err := tenant.CreateTenant(tenantSpec, k8sClient, client.GetClusterName()); err != nil {
+		errorMsg := Error{Msg: err.Error(), StatusCode: http.StatusConflict}
+		response.WriteHeaderAndEntity(http.StatusConflict, errorMsg)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, tenantSpec)
+}
+
+//for delete tenant
+func (apiHandler *APIHandler) handleDeleteTenant(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	tenantName := request.PathParameter("tenant")
+	if err := tenant.DeleteTenant(tenantName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
 }
 
 func (apiHandler *APIHandler) handleGetClusterRoleList(request *restful.Request, response *restful.Response) {
