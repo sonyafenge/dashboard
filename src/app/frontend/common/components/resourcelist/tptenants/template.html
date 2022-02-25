@@ -1,0 +1,92 @@
+<div class="main_container">
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <div class="create_btn_sec" align="right">
+        <button mat-raised-button matTooltip="Add Tenant" color="primary" (click)="onClick()">
+          <img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
+          Add Tenant</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <kd-card role="table" [hidden]="isHidden()">
+        <div title fxLayout="row" i18n>Tenants</div>
+        <div description><span class="kd-muted-light" i18n>Items:&nbsp;</span>{{totalItems}}
+        </div>
+
+        <div content [hidden]="showZeroState()">
+          <div kdLoadingSpinner [isLoading]="isLoading"></div>
+
+          <mat-table [dataSource]="getData()"
+                     matSort
+                     [matSortActive]="getColumns()[4]"
+                     matSortDisableClear
+                     matSortDirection="asc">
+            <ng-container [matColumnDef]="getColumns()[0]">
+              <mat-header-cell *matHeaderCellDef></mat-header-cell>
+              <mat-cell *matCellDef="let tenant">
+                <mat-icon [ngClass]="getStatus(tenant).iconClass">
+                  {{getStatus(tenant).iconName}}
+                </mat-icon>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container [matColumnDef]="getColumns()[1]">
+              <mat-header-cell *matHeaderCellDef
+                               mat-sort-header
+                               disableClear="true"
+                               i18n>Name</mat-header-cell>
+              <mat-cell *matCellDef="let tenant">
+                <a [routerLink]="getDetailsHref(tenant.objectMeta.name)"
+                   queryParamsHandling="preserve">
+                  {{tenant.objectMeta.name}}
+                </a>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container [matColumnDef]="getColumns()[2]">
+              <mat-header-cell *matHeaderCellDef
+                               i18n>Phase</mat-header-cell>
+              <mat-cell *matCellDef="let tenant">{{tenant.phase}}</mat-cell>
+            </ng-container>
+
+            <ng-container [matColumnDef]="getColumns()[3]">
+              <mat-header-cell *matHeaderCellDef
+                               mat-sort-header
+                               disableClear="true"
+                               i18n>Age</mat-header-cell>
+              <mat-cell *matCellDef="let tenant">
+                <kd-date [date]="tenant.objectMeta.creationTimestamp"
+                         relative></kd-date>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container *ngFor="let col of getActionColumns()"
+                          [matColumnDef]="col.name">
+              <mat-header-cell *matHeaderCellDef></mat-header-cell>
+              <mat-cell *matCellDef="let tenant">
+                <kd-dynamic-cell [component]="col.component"
+                                 [resource]="tenant"></kd-dynamic-cell>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
+          </mat-table>
+
+          <mat-paginator [length]="totalItems"
+                         [pageSize]="itemsPerPage"
+                         [hidePageSize]="true"
+                           [showFirstLastButtons]="true"></mat-paginator>
+        </div>
+
+        <div content
+             [hidden]="!showZeroState()">
+          <kd-list-zero-state></kd-list-zero-state>
+        </div>
+      </kd-card>
+    </div>
+  </div>
+</div>

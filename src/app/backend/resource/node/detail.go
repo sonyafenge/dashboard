@@ -1,17 +1,3 @@
-// Copyright 2017 The Kubernetes Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package node
 
 import (
@@ -119,11 +105,14 @@ type NodeDetail struct {
 
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
+
+	// Cluster Name of Node
+	ClusterName string `json:"clusterName"`
 }
 
 // GetNodeDetail gets node details.
 func GetNodeDetail(client k8sClient.Interface, metricClient metricapi.MetricClient, name string,
-	dsQuery *dataselect.DataSelectQuery) (*NodeDetail, error) {
+	dsQuery *dataselect.DataSelectQuery, clusterName string) (*NodeDetail, error) {
 	log.Printf("Getting details of %s node", name)
 
 	node, err := client.CoreV1().Nodes().Get(name, metaV1.GetOptions{})
@@ -137,7 +126,7 @@ func GetNodeDetail(client k8sClient.Interface, metricClient metricapi.MetricClie
 		dsQuery,
 		metricapi.NoResourceCache, metricClient)
 
-	pods, err := getNodePods(client, *node)
+	pods, err := GetNodePodsDetails(client, *node)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return nil, criticalError
@@ -155,18 +144,18 @@ func GetNodeDetail(client k8sClient.Interface, metricClient metricapi.MetricClie
 		return nil, criticalError
 	}
 
-	allocatedResources, err := getNodeAllocatedResources(*node, pods)
+	allocatedResources, err := GetNodeAllocatedResources(*node, pods)
 	nonCriticalErrors, criticalError = errors.AppendError(err, nonCriticalErrors)
 	if criticalError != nil {
 		return nil, criticalError
 	}
 
 	metrics, _ := metricPromises.GetMetrics()
-	nodeDetails := toNodeDetail(*node, podList, eventList, allocatedResources, metrics, nonCriticalErrors)
+	nodeDetails := toNodeDetail(*node, podList, eventList, allocatedResources, metrics, nonCriticalErrors, clusterName)
 	return &nodeDetails, nil
 }
 
-func getNodeAllocatedResources(node v1.Node, podList *v1.PodList) (NodeAllocatedResources, error) {
+func GetNodeAllocatedResources(node v1.Node, podList *v1.PodList) (NodeAllocatedResources, error) {
 	reqs, limits := map[v1.ResourceName]resource.Quantity{}, map[v1.ResourceName]resource.Quantity{}
 
 	for _, pod := range podList.Items {
@@ -291,7 +280,7 @@ func GetNodePods(client k8sClient.Interface, metricClient metricapi.MetricClient
 		return &podList, err
 	}
 
-	pods, err := getNodePods(client, *node)
+	pods, err := GetNodePodsDetails(client, *node)
 	if err != nil {
 		return &podList, err
 	}
@@ -306,7 +295,7 @@ func GetNodePods(client k8sClient.Interface, metricClient metricapi.MetricClient
 	return &podList, nil
 }
 
-func getNodePods(client k8sClient.Interface, node v1.Node) (*v1.PodList, error) {
+func GetNodePodsDetails(client k8sClient.Interface, node v1.Node) (*v1.PodList, error) {
 	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + node.Name +
 		",status.phase!=" + string(v1.PodSucceeded) +
 		",status.phase!=" + string(v1.PodFailed))
@@ -321,13 +310,14 @@ func getNodePods(client k8sClient.Interface, node v1.Node) (*v1.PodList, error) 
 }
 
 func toNodeDetail(node v1.Node, pods *pod.PodList, eventList *common.EventList,
-	allocatedResources NodeAllocatedResources, metrics []metricapi.Metric, nonCriticalErrors []error) NodeDetail {
+	allocatedResources NodeAllocatedResources, metrics []metricapi.Metric, nonCriticalErrors []error, clusterName string) NodeDetail {
 	return NodeDetail{
 		Node: Node{
 			ObjectMeta:         api.NewObjectMeta(node.ObjectMeta),
 			TypeMeta:           api.NewTypeMeta(api.ResourceKindNode),
 			AllocatedResources: allocatedResources,
 		},
+		ClusterName:     clusterName,
 		Phase:           node.Status.Phase,
 		ProviderID:      node.Spec.ProviderID,
 		PodCIDR:         node.Spec.PodCIDR,

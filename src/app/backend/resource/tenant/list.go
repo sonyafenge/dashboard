@@ -1,18 +1,3 @@
-// Copyright 2020 Authors of Arktos.
-// Copyright 2020 Authors of Arktos - file modified.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package tenant
 
 import (
@@ -31,7 +16,8 @@ type Tenant struct {
 	TypeMeta   api.TypeMeta   `json:"typeMeta"`
 
 	// Phase is the current lifecycle phase of the tenant
-	Phase v1.TenantPhase `json:"phase"`
+	Phase       v1.TenantPhase `json:"phase"`
+	ClusterName string         `json:"clusterName"`
 }
 
 // TenantList contains a list of tenants in the cluster.
@@ -43,7 +29,7 @@ type TenantList struct {
 	Errors []error `json:"errors"`
 }
 
-func GetTenantList(client client.Interface, dsQuery *dataselect.DataSelectQuery) (*TenantList, error) {
+func GetTenantList(client client.Interface, dsQuery *dataselect.DataSelectQuery, clusterName string) (*TenantList, error) {
 	log.Println("Getting list of tenants")
 	tenants, err := client.CoreV1().Tenants().List(api.ListEverything)
 
@@ -52,10 +38,10 @@ func GetTenantList(client client.Interface, dsQuery *dataselect.DataSelectQuery)
 		return nil, criticalError
 	}
 
-	return toTenantList(tenants.Items, nonCriticalErrors, dsQuery), nil
+	return toTenantList(tenants.Items, nonCriticalErrors, dsQuery, clusterName), nil
 }
 
-func toTenantList(tenants []v1.Tenant, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery) *TenantList {
+func toTenantList(tenants []v1.Tenant, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery, clusterName string) *TenantList {
 	tenantList := &TenantList{
 		ListMeta: api.ListMeta{TotalItems: len(tenants)},
 		Tenants:  make([]Tenant, 0),
@@ -67,6 +53,8 @@ func toTenantList(tenants []v1.Tenant, nonCriticalErrors []error, dsQuery *datas
 	tenantList.Errors = nonCriticalErrors
 
 	for _, tenant := range tenants {
+
+		tenant.ClusterName = clusterName
 		tenantList.Tenants = append(tenantList.Tenants, toTenant(tenant))
 	}
 

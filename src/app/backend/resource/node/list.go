@@ -1,17 +1,3 @@
-// Copyright 2017 The Kubernetes Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package node
 
 import (
@@ -43,10 +29,11 @@ type Node struct {
 	TypeMeta           api.TypeMeta           `json:"typeMeta"`
 	Ready              v1.ConditionStatus     `json:"ready"`
 	AllocatedResources NodeAllocatedResources `json:"allocatedResources"`
+	ClusterName        string                 `json:"clusterName"`
 }
 
 // GetNodeList returns a list of all Nodes in the cluster.
-func GetNodeList(client client.Interface, dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient) (*NodeList, error) {
+func GetNodeList(client client.Interface, dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient, cLusterName string) (*NodeList, error) {
 	nodes, err := client.CoreV1().Nodes().List(api.ListEverything)
 
 	nonCriticalErrors, criticalError := errors.HandleError(err)
@@ -54,11 +41,11 @@ func GetNodeList(client client.Interface, dsQuery *dataselect.DataSelectQuery, m
 		return nil, criticalError
 	}
 
-	return toNodeList(client, nodes.Items, nonCriticalErrors, dsQuery, metricClient), nil
+	return toNodeList(client, nodes.Items, nonCriticalErrors, dsQuery, metricClient, cLusterName), nil
 }
 
 func toNodeList(client client.Interface, nodes []v1.Node, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery,
-	metricClient metricapi.MetricClient) *NodeList {
+	metricClient metricapi.MetricClient, clusterName string) *NodeList {
 	nodeList := &NodeList{
 		Nodes:    make([]Node, 0),
 		ListMeta: api.ListMeta{TotalItems: len(nodes)},
@@ -71,12 +58,13 @@ func toNodeList(client client.Interface, nodes []v1.Node, nonCriticalErrors []er
 	nodeList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 
 	for _, node := range nodes {
-		pods, err := getNodePods(client, node)
+		pods, err := GetNodePodsDetails(client, node)
 		if err != nil {
 			log.Printf("Couldn't get pods of %s node: %s\n", node.Name, err)
 		}
-
+		node.ClusterName = clusterName
 		nodeList.Nodes = append(nodeList.Nodes, toNode(node, pods))
+
 	}
 
 	cumulativeMetrics, err := metricPromises.GetMetrics()
@@ -89,7 +77,7 @@ func toNodeList(client client.Interface, nodes []v1.Node, nonCriticalErrors []er
 }
 
 func toNode(node v1.Node, pods *v1.PodList) Node {
-	allocatedResources, err := getNodeAllocatedResources(node, pods)
+	allocatedResources, err := GetNodeAllocatedResources(node, pods)
 	if err != nil {
 		log.Printf("Couldn't get allocated resources of %s node: %s\n", node.Name, err)
 	}
@@ -99,6 +87,7 @@ func toNode(node v1.Node, pods *v1.PodList) Node {
 		TypeMeta:           api.NewTypeMeta(api.ResourceKindNode),
 		Ready:              getNodeConditionStatus(node, v1.NodeReady),
 		AllocatedResources: allocatedResources,
+		ClusterName:        node.ClusterName,
 	}
 }
 

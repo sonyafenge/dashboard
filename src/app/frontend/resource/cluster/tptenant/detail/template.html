@@ -1,0 +1,27 @@
+<style>
+  :host ::ng-deep.detail_sec {
+    display: none !important;
+  }
+</style>
+
+<kd-object-meta [initialized]="isInitialized"
+                [objectMeta]="tenant?.objectMeta"></kd-object-meta>
+
+<kd-card [initialized]="isInitialized">
+  <div title
+       i18n>Resource information</div>
+  <div content
+       *ngIf="isInitialized"
+       fxLayout="row wrap">
+    <kd-property *ngIf="tenant?.phase">
+      <div key
+           i18n>Status</div>
+      <div value>{{tenant?.phase}}</div>
+    </kd-property>
+  </div>
+</kd-card>
+
+<kd-namespace-list></kd-namespace-list>
+<kd-deployment-list></kd-deployment-list>
+<kd-pod-list></kd-pod-list>
+<kd-replica-set-list></kd-replica-set-list>

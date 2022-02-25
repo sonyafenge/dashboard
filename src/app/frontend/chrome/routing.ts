@@ -1,10 +1,11 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuard} from '../common/services/guard/auth';
+import {SystemGuard} from '../common/services/guard/system';
 import {ChromeComponent} from './component';
 
 const routes: Routes = [
-  {path: '', redirectTo: '/tenantmonitoring', pathMatch: 'full'},
+  {path: '', redirectTo: '/overview', pathMatch: 'full'},
   {
     path: '',
     component: ChromeComponent,
@@ -15,7 +16,6 @@ const routes: Routes = [
         loadChildren: 'error/module#ErrorModule',
       },
 
-      // Cluster Management
       {
         path: 'cluster',
         loadChildren: 'resource/cluster/module#ClusterModule',
@@ -24,18 +24,34 @@ const routes: Routes = [
         path: 'clusterrole',
         loadChildren: 'resource/cluster/clusterrole/module#ClusterRoleModule',
       },
-
+      {
+        path: 'partition',
+        loadChildren: 'resource/cluster/partition/module#PartitionModule',
+      },
+      {
+        path: 'tptenant',
+        loadChildren: 'resource/cluster/tptenant/module#TpTenantModule',
+      },
       {
         path: 'tenant',
         loadChildren: 'resource/cluster/tenant/module#TenantModule',
       },
       {
-        path: 'node',
-        loadChildren: 'resource/cluster/node/module#NodeModule',
-      },
-      {
         path: 'namespace',
         loadChildren: 'resource/cluster/namespace/module#NamespaceModule',
+      },
+      {
+        path: 'node',
+        loadChildren: 'resource/cluster/node/module#NodeModule',
+        canActivate: [SystemGuard],
+      },
+      {
+        path: 'persistentvolume',
+        loadChildren: 'resource/cluster/persistentvolume/module#PersistentVolumeModule',
+      },
+      {
+        path: 'storageclass',
+        loadChildren: 'resource/cluster/storageclass/module#StorageClassModule',
       },
 
       // Overview
@@ -49,8 +65,7 @@ const routes: Routes = [
         path: 'workloads',
         loadChildren: 'resource/workloads/module#WorkloadsModule',
       },
-
-       {
+      {
         path: 'cronjob',
         loadChildren: 'resource/workloads/cronjob/module#CronJobModule',
       },
@@ -73,6 +88,10 @@ const routes: Routes = [
       {
         path: 'replicaset',
         loadChildren: 'resource/workloads/replicaset/module#ReplicaSetModule',
+      },
+      {
+        path: 'replicationcontroller',
+        loadChildren: 'resource/workloads/replicationcontroller/module#ReplicationControllerModule',
       },
       {
         path: 'statefulset',
@@ -103,14 +122,6 @@ const routes: Routes = [
         loadChildren: 'resource/config/configmap/module#ConfigMapModule',
       },
       {
-        path: 'persistentvolume',
-        loadChildren: 'resource/cluster/persistentvolume/module#PersistentVolumeModule',
-      },
-      {
-        path: 'storageclass',
-        loadChildren: 'resource/cluster/storageclass/module#StorageClassModule',
-      },
-      {
         path: 'persistentvolumeclaim',
         loadChildren: 'resource/config/persistentvolumeclaim/module#PersistentVolumeClaimModule',
       },
@@ -120,10 +131,7 @@ const routes: Routes = [
       },
 
       // Custom resource definitions
-      {
-        path: 'customresourcedefinition',
-        loadChildren: 'crd/module#CrdModule',
-      },
+      {path: 'customresourcedefinition', loadChildren: 'crd/module#CrdModule'},
 
       // Others
       {
@@ -135,7 +143,6 @@ const routes: Routes = [
         loadChildren: 'about/module#AboutModule',
       },
 
-      //here
       {
         path: 'create',
         loadChildren: 'create/module#CreateModule',

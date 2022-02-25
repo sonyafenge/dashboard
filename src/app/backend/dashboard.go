@@ -1,29 +1,20 @@
-// Copyright 2017 The Kubernetes Authors.
-// Copyright 2020 Authors of Arktos - file modified.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
 	"crypto/elliptic"
 	"crypto/tls"
+	"encoding/base64"
+	"errors"
 	"flag"
 	"fmt"
+	"k8s.io/client-go/informers"
+	"k8s.io/client-go/tools/cache"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -82,6 +73,9 @@ var (
 	localeConfig                 = pflag.String("locale-config", "./locale_conf.json", "File containing the configuration of locales")
 )
 
+const TENANTPARTITION = "TP"
+const RESOURCEPARTITION = "RP"
+
 func main() {
 	// Set logging output to standard console out
 	log.SetOutput(os.Stdout)
@@ -102,11 +96,37 @@ func main() {
 	if args.Holder.GetNamespace() != "" {
 		log.Printf("Using namespace: %s", args.Holder.GetNamespace())
 	}
+	log.Printf("Using locale config: %s", *localeConfig)
+	configs, err := CreateOrConfigureKubeconfig()
 
+	var tpclients []clientapi.ClientManager
+	var rpclients []clientapi.ClientManager
+	var tppodinformer []cache.SharedIndexInformer
 	clientManager := client.NewClientManager(args.Holder.GetKubeConfigFile(), args.Holder.GetApiServerHost())
 	versionInfo, err := clientManager.InsecureClient().Discovery().ServerVersion()
 	if err != nil {
+		log.Printf("Failed to get server version: %v", err)
 		handleFatalInitError(err)
+	}
+
+	log.Printf("Running in Kubernetes cluster version v%v.%v (%v)", versionInfo.Major, versionInfo.Minor, versionInfo.GitVersion)
+
+	for name, _ := range configs {
+		log.Printf("adding client for %s", name)
+		newclientmanager := client.NewClientManager(configs[name], args.Holder.GetApiServerHost())
+		if strings.Contains(name, strings.ToLower(RESOURCEPARTITION)) {
+			//For rpconfigs
+			rpclients = append(rpclients, newclientmanager)
+		} else if strings.Contains(name, strings.ToLower(TENANTPARTITION)) {
+			sharedoption := informers.WithNamespaceWithMultiTenancy("", "all")
+			informerfactory := informers.NewSharedInformerFactoryWithOptions(newclientmanager.InsecureClient(), 1*time.Minute, sharedoption)
+			podinformer := informerfactory.Core().V1().Pods().Informer()
+			stopch := make(chan struct{})
+			informerfactory.Start(stopch)
+			informerfactory.WaitForCacheSync(stopch)
+			tppodinformer = append(tppodinformer, podinformer)
+			tpclients = append(tpclients, newclientmanager)
+		}
 	}
 
 	log.Printf("Successful initial request to the apiserver, version: %s", versionInfo.String())
@@ -143,9 +163,12 @@ func main() {
 	apiHandler, err := handler.CreateHTTPAPIHandler(
 		integrationManager,
 		clientManager,
+		tpclients,
+		rpclients,
 		authManager,
 		settingsManager,
-		systemBannerManager)
+		systemBannerManager,
+		tppodinformer)
 	if err != nil {
 		handleFatalInitError(err)
 	}
@@ -284,4 +307,101 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func CreateOrConfigureKubeconfig() (configDetails map[string]string, err error) {
+
+	configDetails = make(map[string]string)
+	tpCount := 1
+	configDir := os.Getenv("KUBECONFIG_DIR")
+	if configDir == "" {
+		configDir = "/opt/centaurus-configs"
+	}
+	useEnvConfigs := false
+	if os.Getenv("USE_ENV_CONFIGS") != "" {
+		useEnvConfigs, err = strconv.ParseBool(os.Getenv("USE_ENV_CONFIGS"))
+		if err != nil {
+			fmt.Printf("Unable to parse USE_ENV_CONFIGS value. %s \n", err)
+			return
+		}
+	}
+	for {
+		configFound := false
+		if !useEnvConfigs {
+
+			_, err = os.Stat(configDir + "/" + "kubeconfig." + strings.ToLower(TENANTPARTITION) + "-" + strconv.Itoa(tpCount))
+			if err == nil {
+				configFound = true
+			}
+		}
+		if useEnvConfigs {
+			if tpConfig := os.Getenv(TENANTPARTITION + strconv.Itoa(tpCount) + "_CONFIG"); tpConfig != "" {
+				config, _ := base64.StdEncoding.DecodeString(tpConfig)
+				_, err = os.Stat(configDir)
+				if err != nil {
+					err = os.MkdirAll(configDir, 0777)
+					if err != nil && !strings.Contains(err.Error(), "file already exists") {
+						log.Printf("Unable to create config directory %s", configDir)
+						return configDetails, err
+					}
+				}
+				configFile, err := os.Create(configDir + "/" + "kubeconfig." + strings.ToLower(TENANTPARTITION) + "-" + strconv.Itoa(tpCount))
+				if err != nil {
+					log.Printf("error while creating config file: %s", err.Error())
+				}
+				_, err = configFile.Write(config)
+				if err != nil {
+					log.Printf("error while creating config file: %s", err.Error())
+				}
+				configFound = true
+			}
+		}
+		if configFound == false {
+			break
+		} else {
+			configDetails["kubeconfig."+strings.ToLower(TENANTPARTITION)+"-"+strconv.Itoa(tpCount)] = configDir + "/" + "kubeconfig." + strings.ToLower(TENANTPARTITION) + "-" + strconv.Itoa(tpCount)
+		}
+		tpCount++
+	}
+	if tpCount == 1 {
+		return nil, errors.New("error configuring kubeconfig file")
+	}
+
+	// Configuring RP config files
+	rpCount := 1
+
+	for {
+		configFound := false
+		if !useEnvConfigs {
+			_, err = os.Stat(configDir + "/" + "kubeconfig." + strings.ToLower(RESOURCEPARTITION) + "-" + strconv.Itoa(rpCount))
+			if err == nil {
+				configFound = true
+			}
+		}
+		if useEnvConfigs {
+			if rpConfig := os.Getenv(RESOURCEPARTITION + strconv.Itoa(rpCount) + "_CONFIG"); rpConfig != "" {
+				config, _ := base64.StdEncoding.DecodeString(rpConfig)
+				configFile, err := os.Create(configDir + "/" + "kubeconfig." + strings.ToLower(RESOURCEPARTITION) + "-" + strconv.Itoa(rpCount))
+				if err != nil {
+					log.Printf("Err1: %s", err.Error())
+					// handleFatalInitError(err)
+				}
+				_, err = configFile.Write(config)
+				if err != nil {
+					log.Printf("error while creating config file: %s", err.Error())
+				}
+				configFound = true
+			}
+		}
+		if configFound == false {
+			break
+		} else {
+			configDetails["kubeconfig."+strings.ToLower(RESOURCEPARTITION)+"-"+strconv.Itoa(rpCount)] = configDir + "/" + "kubeconfig." + strings.ToLower(RESOURCEPARTITION) + "-" + strconv.Itoa(rpCount)
+		}
+		rpCount++
+	}
+	if rpCount == 1 || tpCount == 1 {
+		return configDetails, errors.New("error configuring kubeconfig file")
+	}
+	return configDetails, nil
 }

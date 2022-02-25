@@ -1,0 +1,116 @@
+<div class="main_container">
+  <div class="row">
+    <kd-card role="table"
+             [hidden]="isHidden()">
+      <div title
+           fxLayout="row"
+           i18n>Resource Partitions</div>
+      <div description><span class="kd-muted-light"
+                             i18n>Items:&nbsp;</span>{{totalItems}}</div>
+      <div actions>
+        <kd-card-list-filter></kd-card-list-filter>
+      </div>
+
+      <div content
+           [hidden]="showZeroState()">
+        <div kdLoadingSpinner
+             [isLoading]="isLoading"></div>
+
+        <mat-table [dataSource]="getData()"
+                   matSort
+                   [matSortActive]="getColumns()[2]"
+                   matSortDisableClear
+                   matSortDirection="asc">
+          <ng-container [matColumnDef]="getColumns()[0]">
+            <mat-header-cell *matHeaderCellDef></mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition">
+              <mat-icon [ngClass]="getStatus(resourcePartition).iconClass">
+                {{getStatus(resourcePartition).iconName}}
+              </mat-icon>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container [matColumnDef]="getColumns()[1]">
+            <mat-header-cell *matHeaderCellDef
+                             mat-sort-header
+                             disableClear="true"
+                             i18n>Name</mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition" >
+              <a routerLink="" queryParamsHandling="preserve" routerLinkActive="active" (click) = setClusterName($event)>
+              {{resourcePartition.objectMeta.name}}
+              </a>
+            </mat-cell>
+          </ng-container>
+
+          <ng-container [matColumnDef]="getColumns()[2]">
+            <mat-header-cell *matHeaderCellDef
+                             mat-sort-header
+                             disableClear="true"
+                             i18n>Node count</mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition">
+              {{resourcePartition.objectMeta.nodeCount}}
+            </mat-cell>
+          </ng-container>
+
+          <ng-container [matColumnDef]="getColumns()[3]">
+            <mat-header-cell *matHeaderCellDef
+                             i18n>CPU (cores)</mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition">
+              {{resourcePartition.objectMeta.cpuUsed | number:"1.2-2"}}%/{{resourcePartition.objectMeta.cpuLimit | kdCores }}
+            </mat-cell>
+          </ng-container>
+
+          <ng-container [matColumnDef]="getColumns()[4]">
+            <mat-header-cell *matHeaderCellDef
+                             i18n>Memory (bytes)</mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition">
+              {{resourcePartition.objectMeta.memoryUsed | number:"1.2-2"}}%/{{resourcePartition.objectMeta.memoryLimit | kdMemory }}
+            </mat-cell>
+          </ng-container>
+
+          <ng-container [matColumnDef]="getColumns()[5]">
+            <mat-header-cell *matHeaderCellDef
+                             mat-sort-header
+                             disableClear="true"
+                             i18n>Health status</mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition">
+              {{resourcePartition.objectMeta.healthyNodeCount}}/{{resourcePartition.objectMeta.nodeCount}}
+            </mat-cell>
+          </ng-container>
+
+          <ng-container [matColumnDef]="getColumns()[6]">
+            <mat-header-cell *matHeaderCellDef
+                             mat-sort-header
+                             disableClear="true"
+                             i18n>etcd size</mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition">
+              5Gi/10Gi
+            </mat-cell>
+          </ng-container>
+
+          <ng-container *ngFor="let col of getActionColumns()"
+                        [matColumnDef]="col.name">
+            <mat-header-cell *matHeaderCellDef></mat-header-cell>
+            <mat-cell *matCellDef="let resourcePartition">
+              <kd-dynamic-cell [component]="col.component"
+                               [resource]="resourcePartition"></kd-dynamic-cell>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
+        </mat-table>
+
+        <mat-paginator [length]="totalItems"
+                       [pageSize]="itemsPerPage"
+                       [hidePageSize]="true"
+                       [showFirstLastButtons]="true"></mat-paginator>
+      </div>
+
+      <div content
+           [hidden]="!showZeroState()">
+        <kd-list-zero-state></kd-list-zero-state>
+      </div>
+    </kd-card>
+  </div>
+</div>
