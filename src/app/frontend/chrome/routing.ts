@@ -65,6 +65,11 @@ const routes: Routes = [
         path: 'role',
         loadChildren: 'resource/tenantmanagement/role/module#RoleModule',
       },
+      {
+        path: 'resourcequota',
+        loadChildren: 'resource/tenantmanagement/resourcequota/module#ResourceQuotaModule',
+      },
+
 
       // Overview
       {

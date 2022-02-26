@@ -81,6 +81,7 @@ import {TenantPartitionListComponent} from "./resourcelist/tenantpartition/compo
 import {TpTenantListComponent} from "./resourcelist/tptenants/component";
 import {PartitionListComponent} from "./resourcelist/partitionlist/component";
 import {RoleListComponent} from "./resourcelist/role/component";
+import {ResourceQuotasListComponent} from "./resourcelist/resourcequotalist/component";
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -161,6 +162,7 @@ const components = [
   RowDetailComponent,
   ResourcePartitionListComponent,
   RoleListComponent,
+  ResourceQuotasListComponent,
 
   StorageClassListComponent,
   StatefulSetListComponent,

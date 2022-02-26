@@ -1151,8 +1151,6 @@ export interface Tenant extends Resource {
   phase: string;
 }
 
-export interface Role extends Resource {}
-
 export interface TenantList extends ResourceList {
   tenants: Tenant[];
 }
@@ -1160,3 +1158,19 @@ export interface TenantList extends ResourceList {
 export interface TenantDetail extends ResourceDetail {
   phase: string;
 }
+
+export interface ResourceQuota extends Resource {
+  phase: string;
+}
+
+export interface ResourceQuotaList extends ResourceList {
+  items: ResourceQuota[];
+}
+
+export interface QuotaAllocationStatus {
+  name: string;
+  used: string;
+  hard: string;
+}
+
+export interface Role extends Resource {}

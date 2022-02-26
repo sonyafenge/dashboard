@@ -1,0 +1,54 @@
+<kd-object-meta [initialized]="isInitialized"
+                [objectMeta]="resourceQuota?.objectMeta"></kd-object-meta>
+
+
+<kd-card [initialized]="isInitialized"
+         role="table">
+  <div title
+       i18n>Allocation</div>
+
+  <div content>
+    <mat-table [dataSource]="getDataSource()"
+               class="kd-table-no-footer">
+      <ng-container [matColumnDef]="getAllocationColumns()[0]">
+        <mat-header-cell *matHeaderCellDef
+                         i18n>Resources</mat-header-cell>
+        <mat-cell *matCellDef="let allocation">
+          <ng-container *ngIf="allocation.name">
+            <span>
+              {{ allocation.name }}
+            </span>
+          </ng-container>
+          <ng-container *ngIf="!allocation.name">-</ng-container>
+        </mat-cell>
+      </ng-container>
+      <ng-container [matColumnDef]="getAllocationColumns()[1]">
+        <mat-header-cell *matHeaderCellDef
+                         i18n>Used</mat-header-cell>
+        <mat-cell *matCellDef="let allocation">
+          <ng-container *ngIf="allocation.used">
+            <span>
+              {{ allocation.used }}
+            </span>
+          </ng-container>
+          <ng-container *ngIf="!allocation.used">-</ng-container>
+        </mat-cell>
+      </ng-container>
+      <ng-container [matColumnDef]="getAllocationColumns()[2]">
+        <mat-header-cell *matHeaderCellDef
+                         i18n>Limit</mat-header-cell>
+        <mat-cell *matCellDef="let allocation">
+          <ng-container *ngIf="allocation.hard">
+            <span>
+              {{ allocation.hard }}
+            </span>
+          </ng-container>
+          <ng-container *ngIf="!allocation.hard">-</ng-container>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="getAllocationColumns()"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: getAllocationColumns();"></mat-row>
+    </mat-table>
+  </div>
+</kd-card>

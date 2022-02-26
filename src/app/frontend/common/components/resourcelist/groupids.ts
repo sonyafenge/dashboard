@@ -19,6 +19,7 @@ export enum ListIdentifier {
   persistentVolumeClaim = 'persistentVolumeClaimList',
   secret = 'secretList',
   replicationController = 'replicationControllerList',
+  resourcequota = 'resourcequota',
   statefulSet = 'statefulSetList',
   event = 'event',
   resource = 'resource',

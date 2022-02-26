@@ -67,12 +67,18 @@
     </div>
 
     <div class="kd-nav-group">
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/overview"
-                   i18n>Overview
-      </kd-nav-item>
+      <mat-panel-title>
+        <kd-nav-item class="kd-nav-group-item" state="/resourcequota" [exact]="true" i18n>
+          <img class="menu_icon" src="assets/images/resource_quota.svg" alt="" style="height: 18px; width: 18px">
+          <strong>Quota Management</strong>
+        </kd-nav-item>
+      </mat-panel-title>
+      <kd-pinner-nav kind="resourcequota"></kd-pinner-nav>
+      <mat-divider></mat-divider>
+    </div>
 
-      <kd-nav-item class="kd-nav-group-item"
+    <div class="kd-nav-group">
+    <kd-nav-item class="kd-nav-group-item"
                    state="/workloads"
                    i18n>Workloads
       </kd-nav-item>

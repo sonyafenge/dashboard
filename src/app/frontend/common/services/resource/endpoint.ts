@@ -21,6 +21,7 @@ export enum Resource {
   clusterRole = 'clusterrole',
   configMap = 'configmap',
   persistentVolumeClaim = 'persistentvolumeclaim',
+  resourcequota = 'resourcequota',
   resourcePartition = 'resourcepartition',
   role = 'role',
   tenantPartition = 'tenantpartition',

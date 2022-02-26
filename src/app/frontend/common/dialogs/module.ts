@@ -12,6 +12,7 @@ import {CreateNamespaceDialog} from "./createNamespace/dialog";
 import {CreateNodeDialog} from "./createNode/dialog";
 import {CreateClusterroleDialog} from "./createClusterrole/dialog";
 import {CreateRoleDialog} from "./createRole/dialog";
+import {assignQuotaDialog} from "./assignQuota/dialog";
 
 @NgModule({
   imports: [SharedModule, ComponentsModule],
@@ -27,6 +28,7 @@ import {CreateRoleDialog} from "./createRole/dialog";
     CreateNodeDialog,
     CreateClusterroleDialog,
     CreateRoleDialog,
+    assignQuotaDialog,
   ],
   exports: [
     AlertDialog,
@@ -40,6 +42,7 @@ import {CreateRoleDialog} from "./createRole/dialog";
     CreateNodeDialog,
     CreateClusterroleDialog,
     CreateRoleDialog,
+    assignQuotaDialog,
   ],
   entryComponents: [
     AlertDialog,
@@ -53,6 +56,7 @@ import {CreateRoleDialog} from "./createRole/dialog";
     CreateNodeDialog,
     CreateClusterroleDialog,
     CreateRoleDialog,
+    assignQuotaDialog,
   ],
 })
 export class DialogsModule {}
