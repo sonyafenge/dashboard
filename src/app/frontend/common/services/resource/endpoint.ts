@@ -32,6 +32,8 @@ export enum Resource {
   container = 'container',
   tenant = 'tenant',
   partition = 'partition',
+  user = 'users',
+  users = 'user',
 }
 
 export enum Utility {

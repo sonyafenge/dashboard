@@ -114,9 +114,12 @@ const (
 	ResourceKindReplicaSet               = "replicaset"
 	ResourceKindReplicationController    = "replicationcontroller"
 	ResourceKindResourceQuota            = "resourcequota"
+	ResourceKindClusterRoleBinding       = "clusterrolebinding"
 	ResourceKindRole                     = "role"
+	ResourceKindRoleBinding              = "rolebinding"
 	ResourceKindSecret                   = "secret"
 	ResourceKindService                  = "service"
+	ResourceKindServiceAccount           = "serviceaccount"
 	ResourceKindStatefulSet              = "statefulset"
 	ResourceKindStorageClass             = "storageclass"
 	ResourceKindClusterRole              = "clusterrole"
@@ -172,10 +175,13 @@ var KindToAPIMapping = map[string]APIMapping{
 	ResourceKindPod:                      {"pods", ClientTypeDefault, true},
 	ResourceKindReplicaSet:               {"replicasets", ClientTypeExtensionClient, true},
 	ResourceKindRole:                     {"roles", ClientTypeDefault, false},
+	ResourceKindRoleBinding:              {"rolebindings", ClientTypeRbacClient, true},
 	ResourceKindReplicationController:    {"replicationcontrollers", ClientTypeDefault, true},
 	ResourceKindResourceQuota:            {"resourcequotas", ClientTypeDefault, true},
+	ResourceKindClusterRoleBinding:       {"clusterrolebindings", ClientTypeRbacClient, false},
 	ResourceKindSecret:                   {"secrets", ClientTypeDefault, true},
 	ResourceKindService:                  {"services", ClientTypeDefault, true},
+	ResourceKindServiceAccount:           {"servicesaccounts", ClientTypeDefault, true},
 	ResourceKindStatefulSet:              {"statefulsets", ClientTypeAppsClient, true},
 	ResourceKindStorageClass:             {"storageclasses", ClientTypeStorageClient, false},
 	ResourceKindEndpoint:                 {"endpoints", ClientTypeDefault, true},

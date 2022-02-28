@@ -13,6 +13,7 @@ import {CreateNodeDialog} from "./createNode/dialog";
 import {CreateClusterroleDialog} from "./createClusterrole/dialog";
 import {CreateRoleDialog} from "./createRole/dialog";
 import {assignQuotaDialog} from "./assignQuota/dialog";
+import {CreateUserDialog} from "./createUser/dialog";
 
 @NgModule({
   imports: [SharedModule, ComponentsModule],
@@ -29,6 +30,7 @@ import {assignQuotaDialog} from "./assignQuota/dialog";
     CreateClusterroleDialog,
     CreateRoleDialog,
     assignQuotaDialog,
+    CreateUserDialog,
   ],
   exports: [
     AlertDialog,
@@ -43,6 +45,7 @@ import {assignQuotaDialog} from "./assignQuota/dialog";
     CreateClusterroleDialog,
     CreateRoleDialog,
     assignQuotaDialog,
+    CreateUserDialog,
   ],
   entryComponents: [
     AlertDialog,
@@ -57,6 +60,7 @@ import {assignQuotaDialog} from "./assignQuota/dialog";
     CreateClusterroleDialog,
     CreateRoleDialog,
     assignQuotaDialog,
+    CreateUserDialog,
   ],
 })
 export class DialogsModule {}

@@ -1,0 +1,50 @@
+package rolebinding
+
+import (
+	"github.com/kubernetes/dashboard/src/app/backend/api"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	rbac "k8s.io/api/rbac/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"reflect"
+	"testing"
+)
+
+func TestToRbacRoleBindingLists(t *testing.T) {
+	cases := []struct {
+		RoleBindings []rbac.RoleBinding
+		expected     *RoleBindingList
+	}{
+		{nil, &RoleBindingList{Items: []RoleBinding{}}},
+		{
+			[]rbac.RoleBinding{
+				{
+					ObjectMeta: metaV1.ObjectMeta{Name: "rolebinding"},
+					Subjects: []rbac.Subject{{
+						Kind:     "User",
+						Name:     "dashboard",
+						APIGroup: "rbac.authorization.k8s.io",
+					}},
+					RoleRef: rbac.RoleRef{
+						APIGroup: "Role",
+						Kind:     "pod-reader",
+						Name:     "rbac.authorization.k8s.io",
+					},
+				},
+			},
+			&RoleBindingList{
+				ListMeta: api.ListMeta{TotalItems: 1},
+				Items: []RoleBinding{{
+					ObjectMeta: api.ObjectMeta{Name: "rolebinding", Namespace: ""},
+					TypeMeta:   api.TypeMeta{Kind: api.ResourceKindRoleBinding},
+				}},
+			},
+		},
+	}
+	for _, c := range cases {
+		actual := toRoleBindingList(c.RoleBindings, nil, dataselect.NoDataSelect)
+		if !reflect.DeepEqual(actual, c.expected) {
+			t.Errorf("toRbacRoleLists(%#v) == \n%#v\nexpected \n%#v\n",
+				c.RoleBindings, actual, c.expected)
+		}
+	}
+}

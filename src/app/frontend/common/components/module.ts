@@ -82,6 +82,7 @@ import {TpTenantListComponent} from "./resourcelist/tptenants/component";
 import {PartitionListComponent} from "./resourcelist/partitionlist/component";
 import {RoleListComponent} from "./resourcelist/role/component";
 import {ResourceQuotasListComponent} from "./resourcelist/resourcequotalist/component";
+import {UserListComponent} from "./resourcelist/user/component";
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -178,6 +179,7 @@ const components = [
   TpTenantListComponent,
 
   UploadFileComponent,
+  UserListComponent,
 
   ZeroStateComponent,
   WorkloadStatusComponent,

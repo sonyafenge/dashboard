@@ -16,6 +16,7 @@ import {CreateTenantDialog} from "../../dialogs/createTenant/dialog";
 import {CreateClusterroleDialog} from "../../dialogs/createClusterrole/dialog";
 import {CreateRoleDialog} from "../../dialogs/createRole/dialog";
 import {assignQuotaDialog} from "../../dialogs/assignQuota/dialog";
+import {CreateUserDialog} from "../../dialogs/createUser/dialog";
 
 @Injectable()
 export class VerberService {
@@ -94,6 +95,18 @@ export class VerberService {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
       .open(assignQuotaDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
+
+  // create user
+  showUserCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateUserDialog, dialogConfig)
       .afterClosed()
       .subscribe(result => {
         if (result) {

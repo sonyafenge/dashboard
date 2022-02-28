@@ -72,6 +72,15 @@ const routes: Routes = [
         path: 'overview',
         loadChildren: 'overview/module#OverviewModule',
       },
+      {
+        path: 'usermanagement',
+        loadChildren: 'resource/usermanagement/module#UserManagementModule',
+      },
+      {
+        path: 'user',
+        loadChildren: 'resource/usermanagement/user/module#UsersModule',
+
+      },
 
       // Workloads group
       {

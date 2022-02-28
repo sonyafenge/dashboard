@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	er "errors"
 	"fmt"
 	restful "github.com/emicklei/go-restful"
@@ -9,10 +10,13 @@ import (
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"github.com/kubernetes/dashboard/src/app/backend/iam/db"
+	"github.com/kubernetes/dashboard/src/app/backend/iam/model"
 	"github.com/kubernetes/dashboard/src/app/backend/integration"
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
 	"github.com/kubernetes/dashboard/src/app/backend/plugin"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrole"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrolebinding"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/configmap"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/container"
@@ -37,8 +41,10 @@ import (
 	"github.com/kubernetes/dashboard/src/app/backend/resource/replicationcontroller"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/resourcequota"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/role"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/rolebinding"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/secret"
 	resourceService "github.com/kubernetes/dashboard/src/app/backend/resource/service"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/serviceaccount"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/statefulset"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/storageclass"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/tenant"
@@ -57,6 +63,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -102,6 +109,11 @@ func ResourceAllocator(tenant string, clients []clientapi.ClientManager) clienta
 		}
 	}
 	return clients[0]
+}
+
+//struct for already exists
+type ErrorMsg struct {
+	Msg string `json:"msg"`
 }
 
 // CreateHTTPAPIHandler creates a new HTTP handler that handles all requests to the API of the backend.
@@ -758,6 +770,40 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 			Writes(pod.PodList{}))
 
 	apiV1Ws.Route(
+		apiV1Ws.GET("/serviceaccount").
+			To(apiHandler.handleGetServiceAccountList).
+			Writes(serviceaccount.ServiceAccountList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/serviceaccount/{namespace}/{serviceaccount}").
+			To(apiHandler.handleGetServiceAccountDetail).
+			Writes(serviceaccount.ServiceAccountDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.POST("/serviceaccount").
+			To(apiHandler.handleCreateServiceAccount).
+			Reads(serviceaccount.ServiceAccount{}).
+			Writes(serviceaccount.ServiceAccount{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/namespace/{namespace}/serviceaccount/{serviceaccount}").
+			To(apiHandler.handleDeleteServiceAccount))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/tenants/{tenant}/namespaces/{namespace}/serviceaccount").
+			To(apiHandler.handleGetServiceAccountListWithMultiTenancy).
+			Writes(serviceaccount.ServiceAccountList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/tenants/{tenant}/namespaces/{namespace}/serviceaccounts/{name}").
+			To(apiHandler.handleGetServiceAccountDetailWithMultiTenancy).
+			Writes(serviceaccount.ServiceAccountDetail{}))
+	apiV1Ws.Route(
+		apiV1Ws.POST("/serviceaccounts").
+			To(apiHandler.handleCreateServiceAccountsWithMultiTenancy).
+			Reads(serviceaccount.ServiceAccount{}).
+			Writes(serviceaccount.ServiceAccount{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/tenants/{tenant}/namespaces/{namespace}/serviceaccounts/{serviceaccount}").
+			To(apiHandler.handleDeleteServiceAccountsWithMultiTenancy))
+
+	apiV1Ws.Route(
 		apiV1Ws.GET("/ingress").
 			To(apiHandler.handleGetIngressList).
 			Writes(ingress.IngressList{}))
@@ -914,6 +960,24 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 			Writes(clusterrole.ClusterRoleDetail{}))
 
 	apiV1Ws.Route(
+		apiV1Ws.POST("/clusterrolebinding").
+			To(apiHandler.handleCreateClusterRoleBindings).
+			Reads(clusterrolebinding.ClusterRoleBinding{}).
+			Writes(clusterrolebinding.ClusterRoleBinding{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/clusterrolebindings/{clusterrolebinding}").
+			To(apiHandler.handleDeleteClusterRoleBindings))
+
+	apiV1Ws.Route(
+		apiV1Ws.POST("/clusterrolebindings").
+			To(apiHandler.handleCreateClusterRoleBindingsWithMultiTenancy).
+			Reads(clusterrolebinding.ClusterRoleBinding{}).
+			Writes(clusterrolebinding.ClusterRoleBinding{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("tenants/{tenant}/clusterrolebindings/{clusterrolebinding}").
+			To(apiHandler.handleDeleteClusterRoleBindingsWithMultiTenancy))
+
+	apiV1Ws.Route(
 		apiV1Ws.GET("/role").
 			To(apiHandler.handleGetRoles).
 			Writes(role.RoleList{}))
@@ -937,6 +1001,24 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 	apiV1Ws.Route(
 		apiV1Ws.DELETE("/tenants/{tenant}/namespaces/{namespace}/role/{role}").
 			To(apiHandler.handleDeleteRolesWithMultiTenancy))
+
+	apiV1Ws.Route(
+		apiV1Ws.POST("/rolebinding").
+			To(apiHandler.handleCreateRoleBindings).
+			Reads(rolebinding.RoleBinding{}).
+			Writes(rolebinding.RoleBinding{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/namespaces/{namespace}/rolebindings/{rolebinding}").
+			To(apiHandler.handleDeleteRoleBindings))
+
+	apiV1Ws.Route(
+		apiV1Ws.POST("/rolebindings").
+			To(apiHandler.handleCreateRoleBindingsWithMultiTenancy).
+			Reads(rolebinding.RoleBinding{}).
+			Writes(rolebinding.RoleBinding{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("tenants/{tenant}/namespaces/{namespace}/rolebindings/{rolebinding}").
+			To(apiHandler.handleDeleteRoleBindingsWithMultiTenancy))
 
 	apiV1Ws.Route(
 		apiV1Ws.GET("/persistentvolume").
@@ -1101,6 +1183,30 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 		apiV1Ws.GET("/tenants/{tenant}/log/file/{namespace}/{pod}/{container}").
 			To(apiHandler.handleLogFileWithMultiTenancy).
 			Writes(logs.LogDetails{}))
+
+	// IAM User related routes
+	apiV1Ws.Route(
+		apiV1Ws.POST("/users").
+			To(apiHandler.handleCreateUser).
+			Reads(model.User{}).
+			Writes(model.User{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/users").
+			To(apiHandler.handleGetAllUser).
+			Writes(model.User{}))
+
+	apiV1Ws.Route(
+		apiV1Ws.GET("/users/{username}").
+			To(apiHandler.handleGetUser).
+			Writes(model.User{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/user/{username}").
+			To(apiHandler.handleGetUserDetail).
+			Writes(model.User{}))
+	apiV1Ws.Route(
+		apiV1Ws.DELETE("/tenants/{tenant}/users/{username}/{userid}").
+			To(apiHandler.handleDeleteUser).
+			Writes(model.User{}))
 
 	return wsContainer, nil
 }
@@ -1399,22 +1505,74 @@ func (apiHandler *APIHandler) handleCreateCreateClusterRolesWithMultiTenancy(req
 	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleSpec)
 }
 
-//func (apiHandler *APIHandler) handleGetClusterRoleDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
-//	k8sClient, err := apiHandler.tpManager.Client(request)
-//	if err != nil {
-//		errors.HandleInternalError(response, err)
-//		return
-//	}
-//
-//	tenant := request.PathParameter("tenant")
-//	name := request.PathParameter("name")
-//	result, err := clusterrole.GetClusterRoleDetailWithMultiTenancy(k8sClient, tenant, name)
-//	if err != nil {
-//		errors.HandleInternalError(response, err)
-//		return
-//	}
-//	response.WriteHeaderAndEntity(http.StatusOK, result)
-//}
+func (apiHandler *APIHandler) handleCreateClusterRoleBindings(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	clusterRoleBindingSpec := new(clusterrolebinding.ClusterRoleBindingSpec)
+	if err := request.ReadEntity(clusterRoleBindingSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if err := clusterrolebinding.CreateClusterRoleBindings(clusterRoleBindingSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleBindingSpec)
+}
+
+func (apiHandler *APIHandler) handleDeleteClusterRoleBindings(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	clusterrolebindingName := request.PathParameter("clusterrolebinding")
+	if err := clusterrolebinding.DeleteClusterRoleBindings(clusterrolebindingName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+}
+
+func (apiHandler *APIHandler) handleCreateClusterRoleBindingsWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	clusterRoleBindingSpec := new(clusterrolebinding.ClusterRoleBindingSpec)
+	if err := request.ReadEntity(clusterRoleBindingSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if err := clusterrolebinding.CreateClusterRoleBindingsWithMultiTenancy(clusterRoleBindingSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, clusterRoleBindingSpec)
+}
+
+func (apiHandler *APIHandler) handleDeleteClusterRoleBindingsWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	tenantName := request.PathParameter("tenant")
+	clusterrolebindingName := request.PathParameter("clusterrolebinding")
+	if err := clusterrolebinding.DeleteClusterRoleBindingsWithMultiTenancy(tenantName, clusterrolebindingName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+}
 
 func (apiHandler *APIHandler) handleGetRoles(request *restful.Request, response *restful.Response) {
 	k8sClient, err := apiHandler.tpManager.Client(request)
@@ -1508,6 +1666,77 @@ func (apiHandler *APIHandler) handleDeleteRolesWithMultiTenancy(request *restful
 	namespace := request.PathParameter("namespace")
 	roleName := request.PathParameter("role")
 	if err := role.DeleteRolesWithMultiTenancy(tenant, namespace, roleName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+}
+
+func (apiHandler *APIHandler) handleCreateRoleBindings(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	roleBindingSpec := new(rolebinding.RoleBindingSpec)
+	if err := request.ReadEntity(roleBindingSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if err := rolebinding.CreateRoleBindings(roleBindingSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, roleBindingSpec)
+}
+
+func (apiHandler *APIHandler) handleDeleteRoleBindings(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	namespaceName := request.PathParameter("namespace")
+	rolebindingName := request.PathParameter("rolebinding")
+	if err := rolebinding.DeleteRoleBindings(namespaceName, rolebindingName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+}
+
+func (apiHandler *APIHandler) handleCreateRoleBindingsWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	roleBindingSpec := new(rolebinding.RoleBindingSpec)
+	if err := request.ReadEntity(roleBindingSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	if err := rolebinding.CreateRoleBindingsWithMultiTenancy(roleBindingSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, roleBindingSpec)
+}
+
+func (apiHandler *APIHandler) handleDeleteRoleBindingsWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	tenantName := request.PathParameter("tenant")
+	namespaceName := request.PathParameter("namespace")
+	rolebindingName := request.PathParameter("rolebinding")
+	if err := rolebinding.DeleteRoleBindingsWithMultiTenancy(tenantName, namespaceName, rolebindingName, k8sClient); err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
@@ -1886,6 +2115,157 @@ func (apiHandler *APIHandler) handleGetServicePodsWithMultiTenancy(request *rest
 		return
 	}
 	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetServiceAccountList(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	Namespace := request.PathParameter("namespace")
+	var namespaces []string
+	namespaces = append(namespaces, Namespace)
+	namespace := common.NewNamespaceQuery(namespaces)
+	dataSelect := parseDataSelectPathParameter(request)
+
+	result, err := serviceaccount.GetServiceAccountList(k8sClient, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetServiceAccountDetail(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("serviceaccount")
+	namespace := request.PathParameter("namespace")
+	result, err := serviceaccount.GetServiceAccountDetail(k8sClient, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleCreateServiceAccount(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	serviceaccountSpec := new(serviceaccount.ServiceAccountSpec)
+	if err := request.ReadEntity(serviceaccountSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	if err := serviceaccount.CreateServiceAccount(serviceaccountSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, serviceaccountSpec)
+}
+
+func (apiHandler *APIHandler) handleDeleteServiceAccount(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	serviceaccountName := request.PathParameter("serviceaccount")
+	namespaceName := request.PathParameter("namespace")
+	if err := serviceaccount.DeleteServiceAccount(namespaceName, serviceaccountName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
+}
+
+func (apiHandler *APIHandler) handleGetServiceAccountListWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	tenant := request.PathParameter("tenant")
+	Namespace := request.PathParameter("namespace")
+	var namespaces []string
+	namespaces = append(namespaces, Namespace)
+	namespace := common.NewNamespaceQuery(namespaces)
+	dataSelect := parseDataSelectPathParameter(request)
+
+	result, err := serviceaccount.GetServiceAccountListWithMultiTenancy(k8sClient, tenant, namespace, dataSelect)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleGetServiceAccountDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	name := request.PathParameter("name")
+	tenant := request.PathParameter("tenant")
+	namespace := request.PathParameter("namespace")
+	result, err := serviceaccount.GetServiceAccountDetailWithMultiTenancy(k8sClient, tenant, namespace, name)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusOK, result)
+}
+
+func (apiHandler *APIHandler) handleCreateServiceAccountsWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	serviceaccountSpec := new(serviceaccount.ServiceAccountSpec)
+	if err := request.ReadEntity(serviceaccountSpec); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	if err := serviceaccount.CreateServiceAccountsWithMultiTenancy(serviceaccountSpec, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeaderAndEntity(http.StatusCreated, serviceaccountSpec)
+}
+
+func (apiHandler *APIHandler) handleDeleteServiceAccountsWithMultiTenancy(request *restful.Request, response *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+
+	serviceaccountName := request.PathParameter("serviceaccount")
+	tenantName := request.PathParameter("tenant")
+	namespaceName := request.PathParameter("namespace")
+	if err := serviceaccount.DeleteServiceAccountsWithMultiTenancy(tenantName, namespaceName, serviceaccountName, k8sClient); err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
+	response.WriteHeader(http.StatusOK)
 }
 
 func (apiHandler *APIHandlerV2) handleGetNodeLists(request *restful.Request, response *restful.Response) {
@@ -4889,4 +5269,159 @@ func parseDataSelectPathParameter(request *restful.Request) *dataselect.DataSele
 	filterQuery := parseFilterPathParameter(request)
 	metricQuery := parseMetricPathParameter(request)
 	return dataselect.NewDataSelectQuery(paginationQuery, sortQuery, filterQuery, metricQuery)
+}
+
+// IAM Service related functions
+type response struct {
+	ID      int64  `json:"id,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
+func (apiHandler *APIHandler) handleCreateUser(w *restful.Request, r *restful.Response) {
+	_, error := apiHandler.tpManager.Client(w)
+	if error != nil {
+		ErrMsg := ErrorMsg{Msg: error.Error()}
+		r.WriteHeaderAndEntity(http.StatusUnauthorized, ErrMsg)
+		return
+	}
+
+	var user model.User
+	err := w.ReadEntity(&user)
+	if err != nil {
+		log.Fatalf("Unable to decode the request body.  %v", err)
+	}
+	if user.NameSpace == "" {
+		user.NameSpace = "default"
+	}
+	user.CreationTimestamp = time.Now().Truncate(time.Second)
+	insertID := db.InsertUser(user)
+	res := response{
+		ID:      insertID,
+		Message: "User created successfully",
+	}
+
+	r.WriteHeaderAndEntity(http.StatusCreated, res)
+}
+
+func (apiHandler *APIHandler) handleGetUser(w *restful.Request, r *restful.Response) {
+	username := w.PathParameter("username")
+	decode, err := base64.StdEncoding.DecodeString(username)
+	if err != nil {
+		ErrMsg := ErrorMsg{Msg: err.Error()}
+		r.WriteHeaderAndEntity(http.StatusUnauthorized, ErrMsg)
+		return
+	}
+
+	substrings := strings.Split(string(decode), "+")
+	user, err := db.GetUser(substrings[0])
+
+	if err != nil {
+		log.Printf("Unable to get user. %v", err)
+		r.WriteHeaderAndEntity(http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	r.WriteHeaderAndEntity(http.StatusOK, user)
+}
+
+func (apiHandler *APIHandler) handleGetUserDetail(w *restful.Request, r *restful.Response) {
+	username := w.PathParameter("username")
+	user, err := db.GetUser(username)
+
+	if err != nil {
+		log.Printf("Unable to get user. %v", err)
+		r.WriteHeaderAndEntity(http.StatusUnauthorized, err.Error())
+		return
+	}
+	user.ObjectMeta.Password = "***********"
+	user.ObjectMeta.Token = "***********"
+
+	r.WriteHeaderAndEntity(http.StatusOK, user)
+}
+
+func (apiHandler *APIHandler) handleGetAllUser(w *restful.Request, r *restful.Response) {
+	_, err := apiHandler.tpManager.Client(w)
+	if err != nil {
+		errors.HandleInternalError(r, err)
+		return
+	}
+
+	users, err := db.GetAllUsers()
+
+	if err != nil {
+		log.Fatalf("Unable to get all user. %v", err)
+	}
+	r.WriteHeaderAndEntity(http.StatusOK, users)
+}
+
+func (apiHandler *APIHandler) handleDeleteUser(w *restful.Request, r *restful.Response) {
+	k8sClient, err := apiHandler.tpManager.Client(w)
+
+	tenantName := w.PathParameter("tenant")
+	userName := w.PathParameter("username")
+	userid := w.PathParameter("userid")
+
+	if err != nil {
+		errors.HandleInternalError(r, err)
+		return
+	}
+
+	userDetail, err := db.GetUser(userName)
+
+	if tenantName == userDetail.ObjectMeta.Username {
+		errors.HandleInternalError(r, er.New("cannot delete its parent user"))
+		return
+	}
+
+	if userDetail.ObjectMeta.Type == `tenant-admin` {
+		if err := tenant.DeleteTenant(userName, k8sClient); err != nil {
+			errors.HandleInternalError(r, err)
+			return
+		}
+		if err := clusterrolebinding.DeleteClusterRoleBindings(userName, k8sClient); err != nil {
+			errors.HandleInternalError(r, err)
+			return
+		}
+		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
+			errors.HandleInternalError(r, err)
+			return
+		}
+		if err := clusterrole.DeleteClusterRole(userName, k8sClient); err != nil {
+			errors.HandleInternalError(r, err)
+			return
+		}
+	} else if userDetail.ObjectMeta.Type == `cluster-admin` {
+		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
+			errors.HandleInternalError(r, err)
+			return
+		}
+		if err := clusterrolebinding.DeleteClusterRoleBindings(userName, k8sClient); err != nil {
+			errors.HandleInternalError(r, err)
+			return
+		}
+	} else {
+		if userDetail.ObjectMeta.Type == `tenant-user` {
+			if err := serviceaccount.DeleteServiceAccountsWithMultiTenancy(userDetail.ObjectMeta.Tenant, userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
+				errors.HandleInternalError(r, err)
+				return
+			}
+			if err := rolebinding.DeleteRoleBindingsWithMultiTenancy(userDetail.ObjectMeta.Tenant, userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
+				errors.HandleInternalError(r, err)
+				return
+			}
+		}
+	}
+	id, err := strconv.Atoi(userid)
+	deletedRows := db.DeleteUser(int64(id))
+
+	if err != nil {
+		log.Fatalf("Unable to get user. %v", err)
+	}
+	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
+
+	res := response{
+		ID:      int64(id),
+		Message: msg,
+	}
+	r.WriteHeaderAndEntity(http.StatusOK, res)
 }

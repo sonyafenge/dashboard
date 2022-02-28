@@ -1,0 +1,83 @@
+<form [formGroup]="form1">
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <h2 mat-dialog-title>Create a User</h2>
+    </div>
+  </div>
+
+      <div class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+          <mat-form-field appearance="fill">
+            <mat-label>Type of user</mat-label>
+            <mat-select  formControlName="usertype"
+                         (selectionChange)="selectUserType($event.value)">
+
+              <mat-option value="cluster-admin" *ngIf="userType=='cluster-admin'">Cluster Admin</mat-option>
+              <mat-option value="tenant-admin" *ngIf="userType=='cluster-admin' || userType=='tenant-admin'">Tenant Admin</mat-option>
+              <mat-option value="tenant-user" *ngIf="userType=='tenant-admin'">Tenant User</mat-option>
+            </mat-select>
+            <input matInput >
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+          <mat-form-field appearance="fill">
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username" placeholder="e.g. my-name or 123-abc" autocomplete="off" required />
+          </mat-form-field>
+          <div class="error_sec" *ngIf="username.errors && (username.dirty || username.touched)">
+            <span class="red" *ngIf="username.errors.required">Username is required.</span>
+            <span class="red" *ngIf="username.hasError('pattern')">Username must be alphanumeric and may contain dashes.</span>
+            <span class="red" *ngIf="username.hasError('maxlength')">Username should not be greater than 24 characters.</span>
+          </div>
+        </div>
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+          <mat-form-field appearance="fill">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" placeholder="e.g. Myname12@ or 123-abc" formControlName="password" autocomplete="off" required/>
+          </mat-form-field>
+          <div *ngIf="this.message==true" class="hintmessage">
+            {{success}}
+          </div>
+          <div class="error_sec" *ngIf="password.errors && (password.dirty || password.touched)">
+            <span class="red" *ngIf="password.errors.required">Password is required.</span>
+            <span class="red" *ngIf="password.hasError('maxlength')">Password must contain 8-20 characters.</span>
+          </div>
+        </div>
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+          <mat-form-field appearance="fill" *ngIf="selected=='tenant-user'">
+            <mat-label>Namespace</mat-label>
+            <mat-select formControlName="namespace"
+                        (selectionChange)="selectNamespace($event.value)"
+                        placeholder="namespace"
+                        i18n-placeholder
+                        required>
+              <mat-option *ngFor="let namespace of namespaces"
+                          [value]="namespace">
+                {{namespace}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+          <mat-form-field appearance="fill"  *ngIf="selected=='tenant-user'" >
+            <mat-label>Role </mat-label>
+            <mat-select formControlName="role"
+                        placeholder="role"
+                        i18n-placeholder
+                        required>
+              <mat-option *ngFor="let role of roles"
+                          [value]="role">
+                {{role}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+          <mat-dialog-actions align="end">
+            <button mat-button mat-dialog-close>Cancel</button>
+            <button mat-button [mat-dialog-close]="true" [disabled]="isCreateDisabled()" type="submit" (click)="createTenantUser()">Create</button>
+          </mat-dialog-actions>
+        </div>
+</form>

@@ -9,6 +9,8 @@ export interface ListMeta {
 }
 
 export interface ObjectMeta {
+  type: any;
+  id?: any;
   name?: string;
   namespace?: string;
   labels?: StringMap;
@@ -1174,3 +1176,15 @@ export interface QuotaAllocationStatus {
 }
 
 export interface Role extends Resource {}
+
+export interface User extends Resource {
+  phase: string;
+}
+
+export interface UserList extends ResourceList {
+  users: User[];
+}
+
+export interface UserDetail extends ResourceDetail {
+  phase: string;
+}
