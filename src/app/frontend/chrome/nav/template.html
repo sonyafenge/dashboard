@@ -77,74 +77,59 @@
       <mat-divider></mat-divider>
     </div>
 
-    <div class="kd-nav-group">
-    <kd-nav-item class="kd-nav-group-item"
-                   state="/workloads"
-                   i18n>Workloads
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/cronjob"
-                   i18n>Cron Jobs
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/daemonset"
-                   i18n>Daemon Sets
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/deployment"
-                   i18n>Deployments
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/job"
-                   i18n>Jobs
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/pod"
-                   i18n>Pods
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/replicaset"
-                   i18n>Replica Sets
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/replicationcontroller"
-                   i18n>Replication Controllers
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/statefulset"
-                   i18n>Stateful Sets
-      </kd-nav-item>
 
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/discovery"
-                   i18n>Discovery and Load Balancing
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/ingress"
-                   i18n>Ingresses
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/service"
-                   i18n>Services
-      </kd-nav-item>
+    <mat-accordion>
+      <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <kd-nav-item class="kd-nav-group-item" state="/workloadoverview" i18n>
+              <img class="menu_icon" src="assets/images/workloads_icon.svg" alt="" style="height: 18px; width: 18px">
+              <strong>Workloads</strong>
+            </kd-nav-item>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
-      <kd-nav-item class="kd-nav-group-item"
-                   state="/config"
-                   i18n>Config and Storage
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/configmap"
-                   i18n>Config Maps
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/persistentvolumeclaim"
-                   i18n>Persistent Volume Claims
-      </kd-nav-item>
-      <kd-nav-item class="kd-nav-item"
-                   state="/secret"
-                   i18n>Secrets
-      </kd-nav-item>
-    </div>
+        <div class="kd-nav-group">
+          <kd-nav-item class="kd-nav-item" state="/workloadoverview" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Overview
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/cronjob" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Cron Jobs
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/deployment" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Deployments
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/job" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Jobs
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/namespace" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Namespaces
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/pod" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Pods
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/replicaset" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Replica Sets
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/statefulset" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Stateful Sets
+          </kd-nav-item>
+          <kd-nav-item class="kd-nav-item" state="/virtualmachine" i18n>
+            <img class="submenu_icon" src="assets/images/right_double_arrow.svg" alt="">
+            Virtual Machines
+          </kd-nav-item>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+    <mat-divider></mat-divider>
 
     <mat-divider></mat-divider>
 

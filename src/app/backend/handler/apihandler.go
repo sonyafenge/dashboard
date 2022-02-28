@@ -598,12 +598,12 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 
 	apiV1Ws.Route(
 		apiV1Ws.POST("/namespace").
-			To(apiHandler.handleCreateNamespace).
+			To(apiHandler1.handleCreateNamespace).
 			Reads(ns.NamespaceSpec{}).
 			Writes(ns.NamespaceSpec{}))
 	apiV1Ws.Route(
 		apiV1Ws.GET("/namespace").
-			To(apiHandler.handleGetNamespaces).
+			To(apiHandler1.handleGetNamespaces).
 			Writes(ns.NamespaceList{}))
 	apiV1Ws.Route(
 		apiV1Ws.GET("/namespace/{name}").
@@ -616,7 +616,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 
 	apiV1Ws.Route(
 		apiV1Ws.POST("/tenants/{tenant}/namespace"). // TODO
-								To(apiHandler.handleCreateNamespace).
+								To(apiHandler1.handleCreateNamespace).
 								Reads(ns.NamespaceSpec{}).
 								Writes(ns.NamespaceSpec{}))
 	apiV1Ws.Route(
@@ -3126,39 +3126,53 @@ func (apiHandler *APIHandler) handleGetReplicationControllerPodsWithMultiTenancy
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
-func (apiHandler *APIHandler) handleCreateNamespace(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.tpManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
+func (apiHandler *APIHandlerV2) handleCreateNamespace(request *restful.Request, response *restful.Response) {
 	namespaceSpec := new(ns.NamespaceSpec)
 	if err := request.ReadEntity(namespaceSpec); err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
-	if err := ns.CreateNamespace(namespaceSpec, k8sClient); err != nil {
-		errors.HandleInternalError(response, err)
+	if len(apiHandler.tpManager) == 0 {
+		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
+	}
+	client := ResourceAllocator(namespaceSpec.Tenant, apiHandler.tpManager)
+	k8sClient := client.InsecureClient()
+	//k8sClient, err := client.Client(request)
+	//if err != nil {
+	//	errors.HandleInternalError(response, err)
+	//	return
+	//}
+
+	if err := ns.CreateNamespace(namespaceSpec, namespaceSpec.Tenant, k8sClient); err != nil {
+		errorMsg := Error{Msg: err.Error(), StatusCode: http.StatusConflict}
+		response.WriteHeaderAndEntity(http.StatusConflict, errorMsg)
 		return
 	}
 	response.WriteHeaderAndEntity(http.StatusCreated, namespaceSpec)
 }
 
-func (apiHandler *APIHandler) handleGetNamespaces(request *restful.Request, response *restful.Response) {
-	k8sClient, err := apiHandler.tpManager.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+func (apiHandler *APIHandlerV2) handleGetNamespaces(request *restful.Request, response *restful.Response) {
+	var namespacesList ns.NamespaceList
+	if len(apiHandler.tpManager) == 0 {
+		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
+	for _, tpManager := range apiHandler.tpManager {
 
-	dataSelect := parseDataSelectPathParameter(request)
-	result, err := ns.GetNamespaceList(k8sClient, dataSelect)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+		k8sClient := tpManager.InsecureClient()
+
+		dataSelect := parseDataSelectPathParameter(request)
+		result, err := ns.GetNamespaceList(k8sClient, dataSelect)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+		for _, x := range result.Namespaces {
+			namespacesList.Namespaces = append(namespacesList.Namespaces, x)
+			namespacesList.ListMeta.TotalItems++
+		}
+
 	}
-	response.WriteHeaderAndEntity(http.StatusOK, result)
+	response.WriteHeaderAndEntity(http.StatusOK, namespacesList)
 }
 
 func (apiHandler *APIHandler) handleGetNamespacesWithMultiTenancy(request *restful.Request, response *restful.Response) {

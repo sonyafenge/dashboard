@@ -37,10 +37,6 @@ const routes: Routes = [
         loadChildren: 'resource/cluster/tenant/module#TenantModule',
       },
       {
-        path: 'namespace',
-        loadChildren: 'resource/cluster/namespace/module#NamespaceModule',
-      },
-      {
         path: 'node',
         loadChildren: 'resource/cluster/node/module#NodeModule',
         canActivate: [SystemGuard],
@@ -81,6 +77,10 @@ const routes: Routes = [
       {
         path: 'workloads',
         loadChildren: 'resource/workloads/module#WorkloadsModule',
+      },
+      {
+        path: 'namespace',
+        loadChildren: 'resource/workloads/namespace/module#NamespaceModule',
       },
       {
         path: 'cronjob',
