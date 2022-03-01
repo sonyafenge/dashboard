@@ -9,6 +9,7 @@ export enum Resource {
   daemonSet = 'daemonset',
   deployment = 'deployment',
   pod = 'pod',
+  virtualMachine = 'virtualmachine',
   replicaSet = 'replicaset',
   oldReplicaSet = 'oldreplicaset',
   newReplicaSet = 'newreplicaset',

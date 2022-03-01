@@ -123,6 +123,10 @@ const routes: Routes = [
         path: 'statefulset',
         loadChildren: 'resource/workloads/statefulset/module#StatefulSetModule',
       },
+      {
+        path: 'virtualmachine',
+        loadChildren: 'resource/workloads/virtualmachine/module#VirtualMachineModule',
+      },
 
       // Discovery and load balancing group
       {

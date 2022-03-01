@@ -1,0 +1,103 @@
+<kd-object-meta [initialized]="isInitialized"
+                [objectMeta]="virtualMachine?.objectMeta"></kd-object-meta>
+
+<kd-card [initialized]="isInitialized">
+  <div title
+       i18n>Resource information</div>
+
+  <div description>
+    <div class="kd-inline-property"
+         *ngIf="virtualMachine?.podPhase">
+      <span class="kd-muted-light"
+            i18n>Status:&nbsp;</span>
+      <span>{{virtualMachine.podPhase}}</span>
+    </div>
+
+    <div class="kd-inline-property"
+         *ngIf="virtualMachine?.podIP">
+      <span class="kd-muted-light"
+            i18n>IP:&nbsp;</span>
+      <span>{{virtualMachine.podIP}}</span>
+    </div>
+  </div>
+
+  <div content
+       *ngIf="isInitialized"
+       fxLayout="row wrap">
+    <kd-property *ngIf="virtualMachine?.nodeName">
+      <div key
+           i18n>Node</div>
+      <a value
+         [routerLink]="getNodeHref(virtualMachine.nodeName)"
+         queryParamsHandling="preserve">{{virtualMachine.nodeName}}</a>
+    </kd-property>
+
+    <kd-property *ngIf="virtualMachine?.podStatus">
+      <div key
+           i18n>Status</div>
+      <div value>{{virtualMachine?.podStatus}}</div>
+    </kd-property>
+
+    <kd-property *ngIf="virtualMachine?.virtualMachineIP">
+      <div key
+           i18n>IP</div>
+      <div value>{{virtualMachine.virtualMachineIP}}</div>
+    </kd-property>
+
+    <kd-property *ngIf="virtualMachine?.objectMeta.keyPair">
+      <div key
+           i18n>Shutdown behavior</div>
+      <div value>{{virtualMachine.objectMeta.keyPair}}</div>
+    </kd-property>
+
+    <kd-property *ngIf="virtualMachine?.objectMeta.imagePullPolicy">
+      <div key
+           i18n>Image pull policy</div>
+      <div value>{{virtualMachine.objectMeta.imagePullPolicy}}</div>
+    </kd-property>
+
+
+    <kd-property *ngIf="virtualMachine?.objectMeta.shutdownBehavior">
+      <div key
+           i18n>Shutdown behavior</div>
+      <div value>{{virtualMachine.objectMeta.shutdownBehavior}}</div>
+    </kd-property>
+
+    <kd-property *ngIf="virtualMachine?.qosClass">
+      <div key
+           i18n>QoS Class</div>
+      <div value>{{virtualMachine.qosClass}}</div>
+    </kd-property>
+
+    <kd-property *ngIf="virtualMachine?.restartCount !== undefined">
+      <div key
+           i18n>Restarts</div>
+      <div value>{{virtualMachine.restartCount}}</div>
+    </kd-property>
+  </div>
+</kd-card>
+
+<kd-condition-list [conditions]="virtualMachine?.conditions"
+                   [initialized]="isInitialized"></kd-condition-list>
+
+<kd-creator-card *ngIf="virtualMachine?.controller?.typeMeta?.kind"
+                 [creator]="virtualMachine?.controller"
+                 [initialized]="isInitialized"></kd-creator-card>
+
+<kd-event-list [endpoint]="eventListEndpoint"></kd-event-list>
+
+<div *ngIf="virtualMachine?.containers?.length"
+     class="kd-card-group-header kd-muted"
+     i18n>Containers</div>
+<kd-container-card *ngFor="let container of virtualMachine?.containers"
+                   [container]="container"
+                   [namespace]="virtualMachine.objectMeta.namespace"
+                   [initialized]="isInitialized"></kd-container-card>
+
+<div *ngIf="virtualMachine?.initContainers?.length"
+     class="kd-card-group-header kd-muted"
+     i18n>Init containers</div>
+<kd-container-card *ngFor="let container of virtualMachine?.initContainers"
+                   [container]="container"
+                   [namespace]="virtualMachine.objectMeta.namespace"
+                   [initialized]="isInitialized"></kd-container-card>

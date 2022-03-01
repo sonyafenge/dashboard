@@ -62,6 +62,7 @@ import {NodeListComponent} from './resourcelist/node/component';
 import {PersistentVolumeListComponent} from './resourcelist/persistentvolume/component';
 import {PersistentVolumeClaimListComponent} from './resourcelist/persistentvolumeclaim/component';
 import {PodListComponent} from './resourcelist/pod/component';
+import {VirtualMachineListComponent} from './resourcelist/virtualmachine/component'
 import {ReplicaSetListComponent} from './resourcelist/replicaset/component';
 import {ReplicationControllerListComponent} from './resourcelist/replicationcontroller/component';
 import {SecretListComponent} from './resourcelist/secret/component';
@@ -150,6 +151,7 @@ const components = [
   PropertyComponent,
   ProxyComponent,
   PodListComponent,
+  VirtualMachineListComponent,
   PersistentVolumeListComponent,
   PersistentVolumeClaimListComponent,
   PolicyRuleListComponent,

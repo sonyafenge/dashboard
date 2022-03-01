@@ -120,6 +120,9 @@ type ResourceChannels struct {
 
 	// List and error channels to ClusterRoleBindings
 	ClusterRoleBindingList ClusterRoleBindingListChannel
+
+	// List and error channels to VM
+	VMList VMListChannel
 }
 
 // ServiceListChannel is a list and error channels to Services.
@@ -425,6 +428,11 @@ type PodListChannel struct {
 	Error chan error
 }
 
+type VMListChannel struct {
+	List  chan *v1.PodList
+	Error chan error
+}
+
 // GetPodListChannel returns a pair of channels to a Pod list and errors that both must be read
 // numReads times.
 func GetPodListChannel(client client.Interface,
@@ -471,6 +479,32 @@ func GetPodListChannelWithMultiTenancyAndOptions(client client.Interface, tenant
 	options metaV1.ListOptions, numReads int) PodListChannel {
 
 	channel := PodListChannel{
+		List:  make(chan *v1.PodList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().PodsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(options)
+		var filteredItems []v1.Pod
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+func GetVMListChannelWithMultiTenancyAndOptions(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	options metaV1.ListOptions, numReads int) VMListChannel {
+
+	channel := VMListChannel{
 		List:  make(chan *v1.PodList, numReads),
 		Error: make(chan error, numReads),
 	}
