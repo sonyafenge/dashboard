@@ -84,6 +84,10 @@ import {PartitionListComponent} from "./resourcelist/partitionlist/component";
 import {RoleListComponent} from "./resourcelist/role/component";
 import {ResourceQuotasListComponent} from "./resourcelist/resourcequotalist/component";
 import {UserListComponent} from "./resourcelist/user/component";
+import {NetworkListComponent} from "./resourcelist/network/component";
+import {NetworkObjectListComponent} from "./resourcelist/networkobject/component";
+import {NetworkVersionListComponent} from "./resourcelist/networkversion/component";
+
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -144,6 +148,9 @@ const components = [
   NodeListComponent,
   NamespaceSelectorComponent,
   NamespaceChangeDialog,
+  NetworkListComponent,
+  NetworkVersionListComponent,
+  NetworkObjectListComponent,
 
   ObjectMetaComponent,
 

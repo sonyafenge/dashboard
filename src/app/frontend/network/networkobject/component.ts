@@ -4,7 +4,7 @@ import {MatButtonToggleGroup} from '@angular/material';
 import {HttpClient} from '@angular/common/http';
 import {dump as toYaml} from 'js-yaml';
 import {Subscription} from 'rxjs';
-import {CRDObjectDetail} from '@api/backendapi';
+import {NetworkObjectDetail} from '@api/backendapi';
 import {highlightAuto} from 'highlight.js';
 import {ActionbarService, ResourceMeta} from '../../common/services/global/actionbar';
 import {NamespacedResourceService} from '../../common/services/resource/resource';
@@ -18,14 +18,14 @@ enum Modes {
   YAML = 'yaml',
 }
 
-@Component({selector: 'kd-crd-object-detail', templateUrl: './template.html'})
-export class CRDObjectDetailComponent implements OnInit, OnDestroy {
+@Component({selector: 'kd-network-object-detail', templateUrl: './template.html'})
+export class NetworkObjectDetailComponent implements OnInit, OnDestroy {
   @ViewChild('group', {static: true}) buttonToggleGroup: MatButtonToggleGroup;
   @ViewChild('code', {static: true}) codeRef: ElementRef;
 
   private objectSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.crd, false, true);
-  object: CRDObjectDetail;
+  private readonly endpoint_ = EndpointManager.resource(Resource.network, false, true);
+  object: NetworkObjectDetail;
   modes = Modes;
   isInitialized = false;
   selectedMode = Modes.YAML;
@@ -33,7 +33,7 @@ export class CRDObjectDetailComponent implements OnInit, OnDestroy {
   eventListEndpoint: string;
 
   constructor(
-    private readonly object_: NamespacedResourceService<CRDObjectDetail>,
+    private readonly object_: NamespacedResourceService<NetworkObjectDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
     private readonly notifications_: NotificationsService,
@@ -43,16 +43,16 @@ export class CRDObjectDetailComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    const {crdName, namespace, objectName} = this.activatedRoute_.snapshot.params;
+    const {networkName, namespace, objectName} = this.activatedRoute_.snapshot.params;
     this.eventListEndpoint = this.endpoint_.child(
-      `${crdName}/${objectName}`,
+      `${networkName}/${objectName}`,
       Resource.event,
       namespace,
     );
 
     this.objectSubscription_ = this.object_
-      .get(this.endpoint_.child(crdName, objectName, namespace))
-      .subscribe((d: CRDObjectDetail) => {
+      .get(this.endpoint_.child(networkName, objectName, namespace))
+      .subscribe((d: NetworkObjectDetail) => {
         this.object = d;
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta(d.typeMeta.kind, d.objectMeta, d.typeMeta));

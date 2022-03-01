@@ -2,9 +2,9 @@
          [hidden]="isHidden()">
   <div title
        fxLayout="row"
-       i18n>Custom Resource Definitions</div>
+       i18n>Networks</div>
   <div description><span class="kd-muted-light"
-                         i18n>Items:&nbsp;</span>{{totalItems}}</div>
+          i18n>Items:&nbsp;</span>{{totalItems}}</div>
   <div actions>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
@@ -21,9 +21,9 @@
                matSortDirection="asc">
       <ng-container [matColumnDef]="getColumns()[0]">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let crd">
-          <mat-icon [ngClass]="getStatus(crd).iconClass">
-            {{getStatus(crd).iconName}}
+        <mat-cell *matCellDef="let network">
+          <mat-icon [ngClass]="getStatus(network).iconClass">
+            {{getStatus(network).iconName}}
           </mat-icon>
         </mat-cell>
       </ng-container>
@@ -33,28 +33,28 @@
                          mat-sort-header
                          disableClear="true"
                          i18n>Name</mat-header-cell>
-        <mat-cell *matCellDef="let crd">
-          <a [routerLink]="getDetailsHref(crd.objectMeta.name)"
-             queryParamsHandling="preserve">{{crd.names.kind}}</a>
+        <mat-cell *matCellDef="let network">
+          <a [routerLink]="getDetailsHref(network.objectMeta.name)"
+             queryParamsHandling="preserve">{{network.names.kind}}</a>
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[2]">
         <mat-header-cell *matHeaderCellDef
                          i18n>Group</mat-header-cell>
-        <mat-cell *matCellDef="let crd">{{crd.group}}</mat-cell>
+        <mat-cell *matCellDef="let network">{{network.group}}</mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[3]">
         <mat-header-cell *matHeaderCellDef
                          i18n>Full Name</mat-header-cell>
-        <mat-cell *matCellDef="let crd">{{crd.objectMeta.name}}</mat-cell>
+        <mat-cell *matCellDef="let network">{{network.objectMeta.name}}</mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[4]">
         <mat-header-cell *matHeaderCellDef
                          i18n>Namespaced</mat-header-cell>
-        <mat-cell *matCellDef="let crd">{{isNamespaced(crd)}}</mat-cell>
+        <mat-cell *matCellDef="let network">{{isNamespaced(network)}}</mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[5]">
@@ -62,8 +62,8 @@
                          mat-sort-header
                          disableClear="true"
                          i18n>Age</mat-header-cell>
-        <mat-cell *matCellDef="let crd">
-          <kd-date [date]="crd.objectMeta.creationTimestamp"
+        <mat-cell *matCellDef="let network">
+          <kd-date [date]="network.objectMeta.creationTimestamp"
                    relative></kd-date>
         </mat-cell>
       </ng-container>
@@ -71,9 +71,9 @@
       <ng-container *ngFor="let col of getActionColumns()"
                     [matColumnDef]="col.name">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let crd">
+        <mat-cell *matCellDef="let network">
           <kd-dynamic-cell [component]="col.component"
-                           [resource]="crd"></kd-dynamic-cell>
+                           [resource]="network"></kd-dynamic-cell>
         </mat-cell>
       </ng-container>
 

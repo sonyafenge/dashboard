@@ -35,6 +35,9 @@ export enum Resource {
   partition = 'partition',
   user = 'users',
   users = 'user',
+  network = 'crd',
+  networkFull = 'network',
+  networkObject = 'object',
 }
 
 export enum Utility {

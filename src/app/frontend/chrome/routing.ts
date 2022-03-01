@@ -161,7 +161,14 @@ const routes: Routes = [
       },
 
       // Custom resource definitions
-      {path: 'customresourcedefinition', loadChildren: 'crd/module#CrdModule'},
+      {
+        path: 'customresourcedefinition',
+        loadChildren: 'crd/module#CrdModule'
+      },
+      {
+        path: 'network',
+        loadChildren: 'network/module#NetworkModule',
+      },
 
       // Others
       {

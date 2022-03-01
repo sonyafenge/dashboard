@@ -1121,12 +1121,12 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 			Writes(customresourcedefinition.CustomResourceDefinitionDetail{}))
 
 	apiV1Ws.Route(
-		apiV1Ws.GET("/tenants/{tenant}/crd/{namespace}/{crd}/object").
+		apiV1Ws.GET("/tenants/{tenant}/crd/{crd}/object").
 			To(apiHandler.handleGetCustomResourceObjectListWithMultiTenancy).
 			Writes(customresourcedefinition.CustomResourceObjectList{}))
 
 	apiV1Ws.Route(
-		apiV1Ws.GET("/tenants/{tenant}/crd/{namespace}/{crd}/{object}").
+		apiV1Ws.GET("/tenants/{tenant}/crd/{crd}/{object}").
 			To(apiHandler.handleGetCustomResourceObjectDetailWithMultiTenancy).
 			Writes(customresourcedefinition.CustomResourceObject{}))
 

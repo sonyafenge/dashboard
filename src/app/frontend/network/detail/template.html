@@ -1,5 +1,5 @@
 <kd-object-meta [initialized]="isInitialized"
-                [objectMeta]="crd?.objectMeta"></kd-object-meta>
+                [objectMeta]="network?.objectMeta"></kd-object-meta>
 
 <kd-card [initialized]="isInitialized">
   <div title
@@ -7,20 +7,20 @@
   <div content
        *ngIf="isInitialized"
        fxLayout="row wrap">
-    <kd-property *ngIf="crd?.version">
+    <kd-property *ngIf="network?.version">
       <div key
            i18n>Version</div>
-      <div value>{{crd?.version}}</div>
+      <div value>{{network?.version}}</div>
     </kd-property>
     <kd-property>
       <div key
            i18n>Scope</div>
-      <div value>{{crd?.scope}}</div>
+      <div value>{{network?.scope}}</div>
     </kd-property>
     <kd-property>
       <div key
            i18n>Group</div>
-      <div value>{{crd?.group}}</div>
+      <div value>{{network?.group}}</div>
     </kd-property>
   </div>
 </kd-card>
@@ -34,42 +34,42 @@
     <kd-property>
       <div key
            i18n>Plural</div>
-      <div value>{{crd?.names.plural}}</div>
+      <div value>{{network?.names.plural}}</div>
     </kd-property>
-    <kd-property *ngIf="crd?.names.singular">
+    <kd-property *ngIf="network?.names.singular">
       <div key
            i18n>Singular</div>
-      <div value>{{crd?.names.singular}}</div>
+      <div value>{{network?.names.singular}}</div>
     </kd-property>
     <kd-property>
       <div key
            i18n>Kind</div>
-      <div value>{{crd?.names.kind}}</div>
+      <div value>{{network?.names.kind}}</div>
     </kd-property>
     <kd-property>
       <div key
            i18n>List Kind</div>
-      <div value>{{crd?.names.listKind}}</div>
+      <div value>{{network?.names.listKind}}</div>
     </kd-property>
-    <kd-property *ngIf="crd?.names.shortNames">
+    <kd-property *ngIf="network?.names.shortNames">
       <div key
            i18n>Short Names</div>
-      <div value>{{crd?.names.shortNames.join(", ")}}</div>
+      <div value>{{network?.names.shortNames.join(", ")}}</div>
     </kd-property>
-    <kd-property *ngIf="crd?.names.categories">
+    <kd-property *ngIf="network?.names.categories">
       <div key
            i18n>Categories</div>
-      <div value>{{crd?.names.categories.join(", ")}}</div>
+      <div value>{{network?.names.categories.join(", ")}}</div>
     </kd-property>
   </div>
 </kd-card>
 
-<kd-crd-object-list [endpoint]="crdObjectEndpoint"></kd-crd-object-list>
+<kd-network-object-list [endpoint]="networkObjectEndpoint"></kd-network-object-list>
 
-<kd-crd-versions-list *ngIf="crd?.versions"
-                      [versions]="crd?.versions"
-                      [initialized]="isInitialized"></kd-crd-versions-list>
+<kd-network-versions-list *ngIf="network?.versions"
+                          [versions]="network?.versions"
+                          [initialized]="isInitialized"></kd-network-versions-list>
 
-<kd-condition-list [conditions]="crd?.conditions"
+<kd-condition-list [conditions]="network?.conditions"
                    [showLastProbeTime]="false"
                    [initialized]="isInitialized"></kd-condition-list>

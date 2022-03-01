@@ -28,6 +28,8 @@ export enum ListIdentifier {
   resourcePartition = 'resourcepartition',
   tenantPartition = 'tenantpartition',
   user = 'users',
+  network = 'crdList',
+  networkObject = 'crdObjectList',
 }
 
 export enum ListGroupIdentifier {

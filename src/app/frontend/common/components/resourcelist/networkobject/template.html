@@ -1,0 +1,72 @@
+<kd-card role="table"
+         [hidden]="isHidden()">
+  <div title
+       fxLayout="row"
+       i18n>Objects</div>
+  <div description>
+    <span class="kd-muted-light"
+          i18n>Items:&nbsp;</span>{{totalItems}}</div>
+  <div actions>
+    <kd-card-list-filter></kd-card-list-filter>
+  </div>
+
+  <div content
+       [hidden]="showZeroState()">
+    <div kdLoadingSpinner
+         [isLoading]="isLoading"></div>
+
+    <mat-table [dataSource]="getData()"
+               matSort
+               matSortActive="age"
+               matSortDisableClear
+               matSortDirection="asc">
+      <ng-container [matColumnDef]="getColumns()[0]">
+        <mat-header-cell *matHeaderCellDef
+                         i18n>Name</mat-header-cell>
+        <mat-cell *matCellDef="let object">
+          <a [routerLink]="getDetailsHref(object.objectMeta.name, object.objectMeta.namespace)"
+             queryParamsHandling="preserve">
+            {{object.objectMeta.name}}
+          </a>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container [matColumnDef]="getColumns()[1]">
+        <mat-header-cell *matHeaderCellDef
+                         i18n>Namespace</mat-header-cell>
+        <mat-cell *matCellDef="let object">{{object.objectMeta.namespace}}</mat-cell>
+      </ng-container>
+
+      <ng-container [matColumnDef]="getColumns()[2]">
+        <mat-header-cell *matHeaderCellDef
+                         i18n>Age</mat-header-cell>
+        <mat-cell *matCellDef="let object">
+          <kd-date [date]="object.objectMeta.creationTimestamp"
+                   relative></kd-date>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container *ngFor="let col of getActionColumns()"
+                    [matColumnDef]="col.name">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let network">
+          <kd-dynamic-cell [component]="col.component"
+                           [resource]="network"></kd-dynamic-cell>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
+    </mat-table>
+
+    <mat-paginator [length]="totalItems"
+                   [pageSize]="itemsPerPage"
+                   [hidePageSize]="true"
+                   [showFirstLastButtons]="true"></mat-paginator>
+  </div>
+
+  <div content
+       [hidden]="!showZeroState()">
+    <kd-list-zero-state></kd-list-zero-state>
+  </div>
+</kd-card>

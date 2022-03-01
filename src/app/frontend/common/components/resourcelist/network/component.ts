@@ -1,6 +1,6 @@
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
-import {CRD, CRDList} from '@api/backendapi';
+import {Network, NetworkList} from '@api/backendapi';
 import {Observable} from 'rxjs';
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
@@ -10,18 +10,18 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
 @Component({
-  selector: 'kd-crd-list',
+  selector: 'kd-network-list',
   templateUrl: './template.html',
 })
-export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
-  @Input() endpoint = EndpointManager.resource(Resource.crd, false, true).list();
+export class NetworkListComponent extends ResourceListWithStatuses<NetworkList, Network> {
+  @Input() endpoint = EndpointManager.resource(Resource.network, false, true).list();
 
   constructor(
-    private readonly crd_: ResourceService<CRDList>,
+    private readonly network_: ResourceService<NetworkList>,
     notifications: NotificationsService,
   ) {
-    super(Resource.crdFull, notifications);
-    this.id = ListIdentifier.crd;
+    super(Resource.networkFull, notifications);
+    this.id = ListIdentifier.network;
     this.groupId = ListGroupIdentifier.none;
 
     // Register action columns.
@@ -33,34 +33,34 @@ export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
     this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
   }
 
-  isNamespaced(crd: CRD): string {
-    return crd.scope === 'Namespaced' ? 'True' : 'False';
+  isNamespaced(network: Network): string {
+    return network.scope === 'Namespaced' ? 'True' : 'False';
   }
 
-  getResourceObservable(params?: HttpParams): Observable<CRDList> {
-    return this.crd_.get(this.endpoint, undefined, params);
+  getResourceObservable(params?: HttpParams): Observable<NetworkList> {
+    return this.network_.get(this.endpoint, undefined, params);
   }
 
-  map(crdList: CRDList): CRD[] {
-    const crdLists:CRD[] = [];
-    crdList.items.map((crd)=>{
-      if (crd.names.kind !== 'Network' && crd.group !== 'mizar.com') {
-        crdLists.push(crd)
+  map(networkList: NetworkList): Network[] {
+    const networkLists:Network[] = [];
+    networkList.items.map((network)=>{
+      if (network.names.kind === 'Network' || network.group === 'mizar.com') {
+        networkLists.push(network)
       }
     })
-    this.totalItems = crdLists.length
-    return crdLists;
+    this.totalItems = networkLists.length
+    return networkLists;
   }
 
-  isInErrorState(resource: CRD): boolean {
+  isInErrorState(resource: Network): boolean {
     return resource.established === 'False';
   }
 
-  isInUnknownState(resource: CRD): boolean {
+  isInUnknownState(resource: Network): boolean {
     return resource.established === 'Unknown';
   }
 
-  isInSuccessState(resource: CRD): boolean {
+  isInSuccessState(resource: Network): boolean {
     return resource.established === 'True';
   }
 
