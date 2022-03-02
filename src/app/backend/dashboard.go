@@ -1,3 +1,18 @@
+// Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -7,24 +22,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/kubernetes/dashboard/src/app/backend/args"
-	"github.com/kubernetes/dashboard/src/app/backend/auth"
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	"github.com/kubernetes/dashboard/src/app/backend/auth/jwe"
-	"github.com/kubernetes/dashboard/src/app/backend/cert"
-	"github.com/kubernetes/dashboard/src/app/backend/cert/ecdsa"
-	"github.com/kubernetes/dashboard/src/app/backend/client"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/handler"
 	"github.com/kubernetes/dashboard/src/app/backend/iam"
-	"github.com/kubernetes/dashboard/src/app/backend/iam/db"
-	"github.com/kubernetes/dashboard/src/app/backend/integration"
-	integrationapi "github.com/kubernetes/dashboard/src/app/backend/integration/api"
-	"github.com/kubernetes/dashboard/src/app/backend/settings"
-	"github.com/kubernetes/dashboard/src/app/backend/sync"
-	"github.com/kubernetes/dashboard/src/app/backend/systembanner"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/spf13/pflag"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 	"log"
@@ -34,6 +32,26 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/kubernetes/dashboard/src/app/backend/iam/db"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/spf13/pflag"
+
+	"github.com/kubernetes/dashboard/src/app/backend/args"
+	"github.com/kubernetes/dashboard/src/app/backend/auth"
+	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
+	"github.com/kubernetes/dashboard/src/app/backend/auth/jwe"
+	"github.com/kubernetes/dashboard/src/app/backend/cert"
+	"github.com/kubernetes/dashboard/src/app/backend/cert/ecdsa"
+	"github.com/kubernetes/dashboard/src/app/backend/client"
+	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
+	"github.com/kubernetes/dashboard/src/app/backend/handler"
+	"github.com/kubernetes/dashboard/src/app/backend/integration"
+	integrationapi "github.com/kubernetes/dashboard/src/app/backend/integration/api"
+	"github.com/kubernetes/dashboard/src/app/backend/settings"
+	"github.com/kubernetes/dashboard/src/app/backend/sync"
+	"github.com/kubernetes/dashboard/src/app/backend/systembanner"
 )
 
 var (

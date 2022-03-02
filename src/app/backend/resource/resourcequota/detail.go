@@ -156,7 +156,6 @@ func DeleteResourceQuota(client k8sClient.Interface, namespace string, tenant st
 	if err != nil {
 		return nil
 	}
-
 	return nil
 }
 
@@ -175,9 +174,7 @@ func GetResourceQuotaList(client k8sClient.Interface, namespace *common.Namespac
 		detail := ToResourceQuotaDetail(&item)
 		result.Items = append(result.Items, *detail)
 	}
-
 	return result, nil
-
 }
 
 func GetResourceQuotaListsWithMultiTenancy(client k8sClient.Interface, namespace string, tenant string) (*ResourceQuotaDetailList, error) {
@@ -201,9 +198,7 @@ func GetResourceQuotaListsWithMultiTenancy(client k8sClient.Interface, namespace
 		detail := ToResourceQuotaDetail(&item)
 		result.Items = append(result.Items, *detail)
 	}
-
 	return result, nil
-
 }
 
 func GetResourceQuotaDetails(client k8sClient.Interface, namespace string, tenant string, name string) (*ResourceQuotaDetail, error) {
@@ -225,11 +220,8 @@ func GetResourceQuotaDetails(client k8sClient.Interface, namespace string, tenan
 			detail := ToResourceQuotaDetail(&item)
 			itemNew = detail
 		}
-
 	}
-
 	return itemNew, nil
-
 }
 
 type ResourceQuotaCell ResourceQuota
@@ -243,7 +235,6 @@ func (self ResourceQuotaCell) GetProperty(name dataselect.PropertyName) datasele
 	case dataselect.NamespaceProperty:
 		return dataselect.StdComparableString(self.ObjectMeta.Namespace)
 	default:
-		// if name is not supported then just return a constant dummy value, sort will have no effect.
 		return nil
 	}
 }

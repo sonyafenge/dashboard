@@ -1,9 +1,7 @@
-
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
-import {Role, RoleList} from '@api/backendapi';
+import {ObjectMeta, Role, RoleList, TypeMeta} from '@api/backendapi';
 import {Observable} from 'rxjs';
-
 import {ResourceListBase} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
@@ -12,15 +10,14 @@ import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {VerberService} from '../../../services/global/verber';
 
-
 @Component({
   selector: 'kd-role-list',
   templateUrl: './template.html',
 })
 export class RoleListComponent extends ResourceListBase<RoleList, Role> {
   @Input() endpoint = EndpointManager.resource(Resource.role, true,true).list();
-  typeMeta:any;
-  objectMeta:any;
+  typeMeta: TypeMeta;
+  objectMeta: ObjectMeta;
 
   constructor(
     private readonly role_: NamespacedResourceService<RoleList>,

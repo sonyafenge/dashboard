@@ -1,3 +1,4 @@
+
 import {Component,Inject,OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
@@ -6,6 +7,9 @@ import {AbstractControl, Validators,FormBuilder} from '@angular/forms';
 import { FormGroup } from '@angular/forms';
 import {CONFIG} from "../../../index.config";
 import {CsrfTokenService} from "../../services/global/csrftoken";
+
+// @ts-ignore
+import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export interface assignQuotaDialogMeta {
   quotaname: string[];
@@ -144,7 +148,23 @@ export class assignQuotaDialog implements OnInit {
         )
         .subscribe(
           () => {
+            Swal.fire({
+              type: 'success',
+              title: this.quotaname.value,
+              text: 'quota successfully created!',
+              imageUrl: '/assets/images/tick-circle.svg',
+            })
             this.dialogRef.close(this.quotaname.value);
+          },
+          (error:any) => {
+            if (error) {
+              Swal.fire({
+                type:'error',
+                title: this.quotaname.value,
+                text: 'quota already exists!',
+                imageUrl: '/assets/images/close-circle.svg',
+              })
+            }
           },
         );
     });

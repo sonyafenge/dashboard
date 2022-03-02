@@ -30,12 +30,17 @@
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
               "node_modules/xterm/dist/xterm.css",
               "node_modules/c3/c3.min.css",
+              "node_modules/sweetalert2/src/sweetalert2.scss",
               "src/app/frontend/index.scss"
             ],
-            "scripts": [ "./node_modules/jquery/dist/jquery.js",
+            "scripts": [
+              "./node_modules/jquery/dist/jquery.js",
               "./node_modules/@popperjs/core/dist/umd/popper.min.js",
               "./node_modules/bootstrap/dist/js/bootstrap.min.js",
-              "node_modules/sockjs-client/dist/sockjs.min.js"]
+              "node_modules/sockjs-client/dist/sockjs.min.js",
+              "node_modules/sweetalert2/dist/sweetalert2.js"
+
+            ]
           },
           "configurations": {
             "production": {
@@ -104,7 +109,7 @@
           }
         }
       }
-    },
+    }
   },
   "defaultProject": "kubernetes-dashboard",
   "schematics": {

@@ -2,16 +2,18 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Component, Inject, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material';
-import {AlertDialog, AlertDialogConfig} from '../../../common/dialogs/alert/dialog';
 import {CsrfTokenService} from '../../../common/services/global/csrftoken';
 import {CONFIG} from '../../../index.config';
 import {NamespacedResourceService} from "../../services/resource/resource";
 import {TenantDetail} from "@api/backendapi";
 
+// @ts-ignore
+import Swal from "sweetalert2/dist/sweetalert2.js";
+
 export interface CreateNamespaceDialogMeta {
   namespaces: string[];
-  tenants: string[];
 }
+
 @Component({
   selector: 'kd-create-namespace-dialog',
   templateUrl: 'template.html',
@@ -23,6 +25,7 @@ export class CreateNamespaceDialog implements OnInit {
 
   namespaceMaxLength = 63;
   namespacePattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
+
   constructor(
     public dialogRef: MatDialogRef<CreateNamespaceDialog>,
     @Inject(MAT_DIALOG_DATA) public data: CreateNamespaceDialogMeta,
@@ -32,6 +35,7 @@ export class CreateNamespaceDialog implements OnInit {
     private readonly fb_: FormBuilder,
     private readonly tenant_: NamespacedResourceService<TenantDetail>,
   ) {}
+
   ngOnInit(): void {
     this.currentTenant = this.tenant_['tenant_']['currentTenant_']
 
@@ -45,12 +49,14 @@ export class CreateNamespaceDialog implements OnInit {
       ],
     });
   }
+
   get namespace(): AbstractControl {
     return this.form1.get('namespace');
   }
+
   createNamespace(): void {
     if (!this.form1.valid) return;
-    const namespaceSpec = {name: this.namespace.value,tenant: this.currentTenant};
+    const namespaceSpec = {name: this.namespace.value, tenant: this.currentTenant};
     const tokenPromise = this.csrfToken_.getTokenForAction('namespace');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
@@ -63,24 +69,34 @@ export class CreateNamespaceDialog implements OnInit {
         )
         .subscribe(
           () => {
+            Swal.fire({
+              type: 'success',
+              title: this.namespace.value,
+              text: 'namespace successfully created!',
+              imageUrl: '/assets/images/tick-circle.svg',
+            })
             this.dialogRef.close(this.namespace.value);
           },
-          error => {
-            this.dialogRef.close();
-            const configData: AlertDialogConfig = {
-              title: 'Error creating namespace',
-              message: error.data,
-              confirmLabel: 'OK',
-            };
-            this.matDialog_.open(AlertDialog, {data: configData});
+          (error:any) => {
+            if (error) {
+              Swal.fire({
+                type:'error',
+                title: this.namespace.value,
+                text: 'namespace already exists!',
+                imageUrl: '/assets/images/close-circle.svg',
+              })
+            }
           },
         );
     });
   }
+
   isDisabled(): boolean {
     return this.data.namespaces.indexOf(this.namespace.value) >= 0;
   }
+
   cancel(): void {
     this.dialogRef.close();
   }
+
 }

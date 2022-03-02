@@ -15,10 +15,13 @@ import {
   RoleList,
   NamespaceList,
   Namespace,
-} from '@api/backendapi';
+} from '../../../typings/backendapi';
 import {validateUniqueName} from "../../../create/from/form/validator/uniquename.validator";
 import {TenantDetail} from "@api/backendapi";
 import {NamespaceService} from "../../services/global/namespace";
+// @ts-ignore
+import Swal from "sweetalert2/dist/sweetalert2.js";
+
 
 export interface UserToken {
   token: string;
@@ -328,8 +331,22 @@ export class CreateUserDialog implements OnInit {
         )
         .subscribe(
           (data: any) => {
+            Swal.fire({
+              type: 'success',
+              title: this.username.value,
+              text: 'user successfully created!',
+              imageUrl: '/assets/images/tick-circle.svg',
+            });
             this.dialogRef.close(this.username.value);
             this.serviceAccountCreated.push(Object.entries(data))
+          },
+          () =>{
+            Swal.fire({
+              type: 'error',
+              title: this.username.value,
+              text: 'user already exists!',
+              imageUrl: '/assets/images/close-circle.svg',
+            });
           },
         );
     })
@@ -380,7 +397,7 @@ export class CreateUserDialog implements OnInit {
   }
 
   createRoleBinding(): void{
-    if(this.selected == "tenant-user"){
+    if(this.selected === "tenant-user"){
       this.tenantUsed = this.currentTenant
       this.namespaceUsed = this.selectednamespace
     }
@@ -403,11 +420,11 @@ export class CreateUserDialog implements OnInit {
     })
   }
 
-  getToken(callback: any): any {
-    if( this.selected == "cluster-admin")
+  getToken(callback: any) {
+    if( this.selected === "cluster-admin")
     {
       this.tenantUsed = "system"
-    }else if (this.selected == "tenant-admin")
+    }else if (this.selected === "tenant-admin")
     {
       this.tenantUsed = "system"
     }else
@@ -424,8 +441,13 @@ export class CreateUserDialog implements OnInit {
             })
           }
         });
-      });
-    }, 3000);
+      },
+      () => {
+      },
+      () => {},
+      );
+    });
+
   }
 
   createTenantUser() {

@@ -1,11 +1,16 @@
+
 import {Component,Inject,OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {AbstractControl, Validators,FormBuilder} from '@angular/forms';
-import {FormGroup} from '@angular/forms';
+import { FormGroup, FormControl } from '@angular/forms';
 import {CONFIG} from "../../../index.config";
 import {CsrfTokenService} from "../../services/global/csrftoken";
+
+// @ts-ignore
+import Swal from "sweetalert2/dist/sweetalert2.js";
+
 
 export interface CreateClusterroleDialogMeta {
   name: string;
@@ -115,7 +120,24 @@ export class CreateClusterroleDialog implements OnInit {
         )
         .subscribe(
           () => {
+            Swal.fire({
+              type: 'success',
+              title: this.clusterrole.value,
+              text: 'clusterrole successfully created!',
+              imageUrl: '/assets/images/tick-circle.svg',
+            })
             this.dialogRef.close(this.clusterrole.value);
+
+          },
+          (error:any) => {
+            if (error) {
+              Swal.fire({
+                type:'error',
+                title: this.clusterrole.value,
+                text: 'clusterrole already exists!',
+                imageUrl: '/assets/images/close-circle.svg',
+              })
+            }
           },
         );
     });

@@ -1,4 +1,3 @@
-
 import {Component, OnInit, Inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
@@ -10,6 +9,8 @@ import {CsrfTokenService} from "../../services/global/csrftoken";
 import {NamespacedResourceService} from "../../services/resource/resource";
 import {TenantDetail} from "@api/backendapi";
 
+// @ts-ignore
+import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export interface CreateRoleDialogMeta {
   name: string;
@@ -136,7 +137,23 @@ export class CreateRoleDialog implements OnInit {
         )
         .subscribe(
           () => {
+            Swal.fire({
+              type: 'success',
+              title: this.role.value,
+              text: 'role successfully created!',
+              imageUrl: '/assets/images/tick-circle.svg',
+            })
             this.dialogRef.close(this.role.value);
+          },
+          (error:any) => {
+            if (error) {
+              Swal.fire({
+                type:'error',
+                title: this.role.value,
+                text: 'role already exists!',
+                imageUrl: '/assets/images/close-circle.svg',
+              })
+            }
           },
         );
     });
