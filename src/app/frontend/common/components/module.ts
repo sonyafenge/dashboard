@@ -75,6 +75,7 @@ import {TextInputComponent} from './textinput/component';
 import {UploadFileComponent} from './uploadfile/component';
 import {WorkloadStatusComponent} from './workloadstatus/component';
 import {ZeroStateComponent} from './zerostate/component';
+import {ServiceAccountListComponent} from "./resourcelist/serviceaccount/component";
 import {TenantSelectorComponent} from './tenant/component';
 import {TenantListComponent} from './resourcelist/tenantlist/component';
 import {ResourcePartitionListComponent} from "./resourcelist/resourcepartition/component";
@@ -181,6 +182,7 @@ const components = [
   CpuSparklineComponent,
   MemorySparklineComponent,
   ScaleDefaultActionbar,
+  ServiceAccountListComponent,
 
   TextInputComponent,
   TriggerDefaultActionbar,

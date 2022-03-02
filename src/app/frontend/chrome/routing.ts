@@ -92,6 +92,10 @@ const routes: Routes = [
         loadChildren: 'resource/workloads/namespace/module#NamespaceModule',
       },
       {
+        path: 'serviceaccount',
+        loadChildren: 'resource/workloads/serviceaccount/module#ServiceAccountModule',
+      },
+      {
         path: 'cronjob',
         loadChildren: 'resource/workloads/cronjob/module#CronJobModule',
       },

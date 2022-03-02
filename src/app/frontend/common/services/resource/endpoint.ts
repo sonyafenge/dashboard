@@ -35,6 +35,7 @@ export enum Resource {
   partition = 'partition',
   user = 'users',
   users = 'user',
+  serviceaccount = 'serviceaccount',
   network = 'crd',
   networkFull = 'network',
   networkObject = 'object',

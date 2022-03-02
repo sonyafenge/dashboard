@@ -28,6 +28,7 @@ export enum ListIdentifier {
   resourcePartition = 'resourcepartition',
   tenantPartition = 'tenantpartition',
   user = 'users',
+  serviceaccount = 'serviceaccount',
   network = 'crdList',
   networkObject = 'crdObjectList',
 }
