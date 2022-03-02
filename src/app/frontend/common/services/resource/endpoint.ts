@@ -13,7 +13,6 @@ export enum Resource {
   replicaSet = 'replicaset',
   oldReplicaSet = 'oldreplicaset',
   newReplicaSet = 'newreplicaset',
-  replicationController = 'replicationcontroller',
   statefulSet = 'statefulset',
   node = 'node',
   namespace = 'namespace',

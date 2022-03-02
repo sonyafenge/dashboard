@@ -186,11 +186,6 @@ export interface ReplicaSetList extends ResourceList {
   status: Status;
 }
 
-export interface ReplicationControllerList extends ResourceList {
-  replicationControllers: ReplicationController[];
-  status: Status;
-}
-
 export interface ResourceQuotaDetailList extends ResourceList {
   items: ResourceQuotaDetail[];
 }
@@ -391,12 +386,6 @@ export interface ReplicaSet extends Resource {
   initContainerImages: string[];
 }
 
-export interface ReplicationController extends Resource {
-  podInfo: PodInfo;
-  containerImages: string[];
-  initContainerImages: string[];
-}
-
 export interface Secret extends Resource {
   type: string;
 }
@@ -445,17 +434,6 @@ export interface DeploymentDetail extends ResourceDetail {
   revisionHistoryLimit?: number;
   rollingUpdateStrategy?: RollingUpdateStrategy;
   events: EventList;
-}
-
-export interface ReplicationControllerDetail extends ResourceDetail {
-  labelSelector: StringMap;
-  containerImages: string[];
-  initContainerImages: string[];
-  podInfo: PodInfo;
-  podList: PodList;
-  serviceList: ServiceList;
-  eventList: EventList;
-  hasMetrics: boolean;
 }
 
 export interface ServiceDetail extends ResourceDetail {
@@ -1076,32 +1054,13 @@ export interface DeploymentInfo {
   unavailable: number;
 }
 
-export interface ReplicationControllerSpec {
-  replicas: number;
-}
-
 export interface ReplicaCounts {
   desiredReplicas: number;
   actualReplicas: number;
 }
 
-export interface DeleteReplicationControllerSpec {
-  deleteServices: boolean;
-}
-
 export interface NamespaceSpec {
   name: string;
-}
-
-export interface ReplicationControllerPodWithContainers {
-  name: string;
-  startTime?: string;
-  totalRestartCount: number;
-  podContainers: PodContainer[];
-}
-
-export interface ReplicationControllerPods {
-  pods: ReplicationControllerPodWithContainers[];
 }
 
 export interface LogSources {

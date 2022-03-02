@@ -120,10 +120,6 @@ const routes: Routes = [
         loadChildren: 'resource/workloads/replicaset/module#ReplicaSetModule',
       },
       {
-        path: 'replicationcontroller',
-        loadChildren: 'resource/workloads/replicationcontroller/module#ReplicationControllerModule',
-      },
-      {
         path: 'statefulset',
         loadChildren: 'resource/workloads/statefulset/module#StatefulSetModule',
       },

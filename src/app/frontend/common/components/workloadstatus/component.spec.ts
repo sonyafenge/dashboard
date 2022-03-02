@@ -1,17 +1,3 @@
-// Copyright 2017 The Kubernetes Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {CUSTOM_ELEMENTS_SCHEMA} from '@angular/core';
 import {async, ComponentFixture, TestBed} from '@angular/core/testing';
@@ -21,11 +7,9 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {AppConfig} from '@api/backendapi';
 import {ResourcesRatio} from '@api/frontendapi';
-
 import {ConfigService} from '../../services/global/config';
 import {AllocationChartComponent} from '../allocationchart/component';
 import {CardComponent} from '../card/component';
-
 import {WorkloadStatusComponent} from './component';
 
 const testResourcesRatio: ResourcesRatio = {
@@ -50,11 +34,6 @@ const testResourcesRatio: ResourcesRatio = {
   replicaSetRatio: [
     {key: 'Running: 1', value: 50},
     {key: 'Failed: 1', value: 50},
-    {key: 'Pending: 0', value: 0},
-  ],
-  replicationControllerRatio: [
-    {key: 'Running: 2', value: 100},
-    {key: 'Failed: 0', value: 0},
     {key: 'Pending: 0', value: 0},
   ],
   statefulSetRatio: [],
