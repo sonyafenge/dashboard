@@ -1,11 +1,10 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuard} from '../common/services/guard/auth';
-import {SystemGuard} from '../common/services/guard/system';
 import {ChromeComponent} from './component';
 
 const routes: Routes = [
-  {path: '', redirectTo: '/overview', pathMatch: 'full'},
+  {path: '', redirectTo: '/tenantmonitoring', pathMatch: 'full'},
   {
     path: '',
     component: ChromeComponent,
@@ -16,6 +15,7 @@ const routes: Routes = [
         loadChildren: 'error/module#ErrorModule',
       },
 
+      // Cluster Management
       {
         path: 'cluster',
         loadChildren: 'resource/cluster/module#ClusterModule',
@@ -25,12 +25,12 @@ const routes: Routes = [
         loadChildren: 'resource/cluster/clusterrole/module#ClusterRoleModule',
       },
       {
-        path: 'partition',
-        loadChildren: 'resource/cluster/partition/module#PartitionModule',
+        path: 'role',
+        loadChildren: 'resource/tenantmanagement/role/module#RoleModule',
       },
       {
-        path: 'tptenant',
-        loadChildren: 'resource/cluster/tptenant/module#TpTenantModule',
+        path: 'resourcequota',
+        loadChildren: 'resource/tenantmanagement/resourcequota/module#ResourceQuotaModule',
       },
       {
         path: 'tenant',
@@ -39,34 +39,17 @@ const routes: Routes = [
       {
         path: 'node',
         loadChildren: 'resource/cluster/node/module#NodeModule',
-        canActivate: [SystemGuard],
-      },
-      {
-        path: 'persistentvolume',
-        loadChildren: 'resource/cluster/persistentvolume/module#PersistentVolumeModule',
-      },
-      {
-        path: 'storageclass',
-        loadChildren: 'resource/cluster/storageclass/module#StorageClassModule',
-      },
-      {
-        path: 'tenantmanagement',
-        loadChildren: 'resource/tenantmanagement/module#TenantManagementModule',
-      },
-      {
-        path: 'tenantmonitoring',
-        loadChildren: 'resource/tenantmanagement/tenantmonitoring/module#TenantMonitoringModule',
-      },
-      {
-        path: 'role',
-        loadChildren: 'resource/tenantmanagement/role/module#RoleModule',
-      },
-      {
-        path: 'resourcequota',
-        loadChildren: 'resource/tenantmanagement/resourcequota/module#ResourceQuotaModule',
-      },
 
+      },
+      {
+        path: 'partition',
+        loadChildren: 'resource/cluster/partition/module#PartitionModule',
 
+      },
+      {
+        path: 'tptenant',
+        loadChildren: 'resource/cluster/tptenant/module#TpTenantModule',
+      },
       // Overview
       {
         path: 'overview',
@@ -94,6 +77,10 @@ const routes: Routes = [
       {
         path: 'serviceaccount',
         loadChildren: 'resource/workloads/serviceaccount/module#ServiceAccountModule',
+      },
+      {
+        path: 'workloadoverview',
+        loadChildren: 'resource/workloads/workloadoverview/module#WorkloadOverviewModule',
       },
       {
         path: 'cronjob',
@@ -152,6 +139,14 @@ const routes: Routes = [
         loadChildren: 'resource/config/configmap/module#ConfigMapModule',
       },
       {
+        path: 'persistentvolume',
+        loadChildren: 'resource/cluster/persistentvolume/module#PersistentVolumeModule',
+      },
+      {
+        path: 'storageclass',
+        loadChildren: 'resource/cluster/storageclass/module#StorageClassModule',
+      },
+      {
         path: 'persistentvolumeclaim',
         loadChildren: 'resource/config/persistentvolumeclaim/module#PersistentVolumeClaimModule',
       },
@@ -163,8 +158,10 @@ const routes: Routes = [
       // Custom resource definitions
       {
         path: 'customresourcedefinition',
-        loadChildren: 'crd/module#CrdModule'
+        loadChildren: 'crd/module#CrdModule',
       },
+
+      // Networks
       {
         path: 'network',
         loadChildren: 'network/module#NetworkModule',
@@ -179,7 +176,17 @@ const routes: Routes = [
         path: 'about',
         loadChildren: 'about/module#AboutModule',
       },
+      {
+        path: 'tenantmanagement',
+        loadChildren: 'resource/tenantmanagement/module#TenantManagementModule',
+      },
+      {
+        path: 'tenantmonitoring',
+        loadChildren: 'resource/tenantmanagement/tenantmonitoring/module#TenantMonitoringModule',
 
+      },
+
+      //here
       {
         path: 'create',
         loadChildren: 'create/module#CreateModule',
