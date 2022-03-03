@@ -36,7 +36,7 @@ type ClientManager interface {
 	HasAccess(authInfo api.AuthInfo) error
 	VerberClient(req *restful.Request, config *rest.Config) (ResourceVerber, error)
 	SetTokenManager(manager authApi.TokenManager)
-	GetTenant(authInfo api.AuthInfo) (string, error)
+	GetTenant(authInfo api.AuthInfo, nameSpace string) (string, error)
 	GetClusterName() string
 }
 

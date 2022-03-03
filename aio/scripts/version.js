@@ -10,7 +10,7 @@ const gitInfo = gitDescribeSync({
 });
 
 gitInfo.packageVersion = version;
-Object.assign(gitInfo.semver, {
+Object.assign(gitInfo.semver || {}, {
   loose: false,
   options: {
     includePrerelease: false,

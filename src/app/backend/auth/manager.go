@@ -1,18 +1,3 @@
-// Copyright 2017 The Kubernetes Authors.
-// Copyright 2020 Authors of Arktos - file modified.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package auth
 
 import (
@@ -46,10 +31,11 @@ func (self authManager) Login(spec *authApi.LoginSpec) (*authApi.AuthResponse, e
 	err = self.healthCheck(authInfo)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil || len(nonCriticalErrors) > 0 {
-		return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
+		//return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
+		err = nil
 	}
 
-	tenant, err := self.GetTenant(authInfo)
+	tenant, err := self.GetTenant(authInfo, spec.NameSpace)
 	nonCriticalErrors, criticalError = errors.HandleError(err)
 	if criticalError != nil || len(nonCriticalErrors) > 0 {
 		return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
@@ -91,7 +77,7 @@ func (self authManager) getAuthenticator(spec *authApi.LoginSpec) (authApi.Authe
 		return NewKubeConfigAuthenticator(spec, self.authenticationModes), nil
 	}
 
-	return nil, errors.NewInvalid("Not enough data to create authenticator.")
+	return nil, errors.NewInvalid("Invalid Username or Password")
 }
 
 // Checks if user data extracted from provided AuthInfo structure is valid and user is correctly authenticated
@@ -101,8 +87,8 @@ func (self authManager) healthCheck(authInfo api.AuthInfo) error {
 }
 
 // Get the tenant name from the provided AuthInfo
-func (self authManager) GetTenant(authInfo api.AuthInfo) (string, error) {
-	return self.clientManager.GetTenant(authInfo)
+func (self authManager) GetTenant(authInfo api.AuthInfo, nameSpace string) (string, error) {
+	return self.clientManager.GetTenant(authInfo, nameSpace)
 }
 
 // NewAuthManager creates auth manager.

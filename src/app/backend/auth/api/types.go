@@ -1,18 +1,3 @@
-// Copyright 2017 The Kubernetes Authors.
-// Copyright 2020 Authors of Arktos - file modified.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package api
 
 import (
@@ -128,6 +113,7 @@ type LoginSpec struct {
 	// KubeConfig is the content of users' kubeconfig file. It will be parsed and auth data will be extracted.
 	// Kubeconfig can not contain any paths. All data has to be provided within the file.
 	KubeConfig string `json:"kubeconfig,omitempty"`
+	NameSpace  string `json:"namespace,omitempty"`
 }
 
 // AuthResponse is returned from our backend as a response for login/refresh requests. It contains generated JWEToken
