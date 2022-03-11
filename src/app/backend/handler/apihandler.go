@@ -169,7 +169,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 	authHandler := auth.NewAuthHandler(authManager)
 	authHandler.Install(apiV1Ws)
 
-	settingsHandler := settings.NewSettingsHandler(sManager, tpManager)
+	settingsHandler := settings.NewSettingsHandler(sManager, tpManagers)
 	settingsHandler.Install(apiV1Ws)
 
 	systemBannerHandler := systembanner.NewSystemBannerHandler(sbManager)
@@ -1297,12 +1297,12 @@ func (apiHandler *APIHandlerV2) handleCreateTenant(request *restful.Request, res
 		return
 	}
 	userSpec := model.User{
-		Username:          tenantSpec.Name + "-tenant-admin",
-		Password:          tenantSpec.Name + "@123",
+		Username:          tenantSpec.Username,
+		Password:          tenantSpec.Password,
 		Token:             "",
 		Type:              "tenant-admin",
 		Tenant:            tenantSpec.Name,
-		Role:              "",
+		Role:              tenantSpec.Name + "-admin",
 		NameSpace:         "default",
 		CreationTimestamp: time.Time{},
 	}

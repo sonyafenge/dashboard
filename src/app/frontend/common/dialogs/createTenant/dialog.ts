@@ -27,6 +27,7 @@ import Swal from "sweetalert2/dist/sweetalert2.js";
 export interface CreateTenantDialogMeta {
   tenants: string[];
   StorageClusterId: string []
+
 }
 
 @Component({
@@ -38,9 +39,15 @@ export class CreateTenantDialog implements OnInit {
   form1: FormGroup;
   private readonly config_ = CONFIG;
 
-  // validation
+  //validation
   tenantMaxLength = 24;
   tenantPattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
+
+  usernameMaxLength = 24;
+  usernamePattern: RegExp = new RegExp('^[a-z0-9]([-a-z-0-9]*[a-z0-9])?$');
+
+  passwordMaxLength = 20;
+  passwordPattern: RegExp = new RegExp('^[a-z\\A-Z\\0-9\\d_@.#$=!%^~)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
 
   storageidMaxLength =3;
   storageidPattern: RegExp = new RegExp('^[0-9]*$');
@@ -55,6 +62,7 @@ export class CreateTenantDialog implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     this.form1 = this.fb_.group({
         tenant: [
           '',
@@ -64,18 +72,25 @@ export class CreateTenantDialog implements OnInit {
             Validators.pattern(this.tenantPattern),
           ]),
         ],
-        StorageClusterId :[
+        username :[
           '',
           Validators.compose([
             Validators.required,
-            Validators.maxLength(this.storageidMaxLength),
-            Validators.pattern(this.storageidPattern),
+            Validators.maxLength(this.usernameMaxLength),
+            Validators.pattern(this.usernamePattern),
+          ]),
+        ],
+        password :[
+          '',
+          Validators.compose([
+            Validators.required,
+            Validators.maxLength(this.passwordMaxLength),
+            Validators.pattern(this.passwordPattern),
           ]),
         ],
       },
     );
   }
-
 
   get tenant(): AbstractControl {
     return this.form1.get('tenant');
@@ -83,12 +98,17 @@ export class CreateTenantDialog implements OnInit {
   get StorageClusterId(): AbstractControl {
     return this.form1.get('StorageClusterId')
   }
+  get username(): AbstractControl {
+    return this.form1.get('username')
+  }
+  get password(): AbstractControl{
+    return this.form1.get('password')
+  }
 
-
+  // To create new tenant
   createTenant(): void {
     if (!this.form1.valid) return;
-
-    const tenantSpec= {name: this.tenant.value,StorageClusterId: this.StorageClusterId.value};
+    const tenantSpec= {name: this.tenant.value,username: this.username.value,password: this.password.value};
     const tokenPromise = this.csrfToken_.getTokenForAction(this.tenant.value,'tenant');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
@@ -132,4 +152,3 @@ export class CreateTenantDialog implements OnInit {
   }
 
 }
-
