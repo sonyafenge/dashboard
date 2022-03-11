@@ -161,12 +161,6 @@ const routes: Routes = [
         loadChildren: 'crd/module#CrdModule',
       },
 
-      // Networks
-      {
-        path: 'network',
-        loadChildren: 'network/module#NetworkModule',
-      },
-
       // Others
       {
         path: 'settings',
