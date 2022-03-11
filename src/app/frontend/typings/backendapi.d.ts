@@ -1,3 +1,18 @@
+// Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {KdError} from '@api/frontendapi';
 
 export interface TypeMeta {
@@ -17,22 +32,6 @@ export interface ObjectMeta {
   annotations?: StringMap;
   creationTimestamp?: string;
   uid?: string;
-}
-
-export interface ResourcePartition extends Resource {
-  name: string
-  nodeCount: number
-  cpuLimit: number
-  memoryLimit: number
-  healthyNodeCount: number
-}
-
-export interface TenantPartition extends Resource {
-  name: string
-  tenantCount: number
-  cpuLimit: number
-  memoryLimit: number
-  healthyNodeCount: number
 }
 
 export interface ResourceDetail {
@@ -74,8 +73,9 @@ export interface ClusterRoleList extends ResourceList {
 }
 
 export interface RoleList extends ResourceList {
-  roles: Role[];
+  items: Role[];
 }
+
 
 export interface ConfigMapList extends ResourceList {
   items: ConfigMap[];
@@ -109,14 +109,6 @@ export interface DaemonSetList extends ResourceList {
   status: Status;
 }
 
-export interface ResourcePartitionList extends ResourceList {
-  resourcePartitions: ResourcePartition[];
-}
-
-export interface TenantPartitionList extends ResourceList {
-  tenantPartitions: TenantPartition[];
-}
-
 export interface DeploymentList extends ResourceList {
   deployments: Deployment[];
   status: Status;
@@ -137,7 +129,6 @@ export interface HorizontalPodAutoscalerList extends ResourceList {
 export interface IngressList extends ResourceList {
   items: Ingress[];
 }
-
 export interface ServiceAccountList extends ResourceList {
   items: ServiceAccount[];
 }
@@ -149,11 +140,30 @@ export interface JobList extends ResourceList {
 
 export interface NamespaceList extends ResourceList {
   namespaces: Namespace[];
+
+}
+export interface TenantList extends ResourceList {
+  tenants: Tenant[];
+
 }
 
 export interface NodeList extends ResourceList {
   nodes: Node[];
 }
+
+export interface ResourcePartitionList extends ResourceList {
+  resourcePartitions: ResourcePartition[];
+}
+
+export interface TenantPartitionList extends ResourceList {
+  tenantPartitions: TenantPartition[];
+}
+
+export interface QuotaList extends ResourceList {
+  quotas: Node[];
+}
+
+export interface PartitionList extends ResourceList {}
 
 export interface PersistentVolumeClaimList extends ResourceList {
   items: PersistentVolumeClaim[];
@@ -186,6 +196,11 @@ export interface ReplicaSetList extends ResourceList {
   status: Status;
 }
 
+export interface ReplicationControllerList extends ResourceList {
+  replicationControllers: ReplicationController[];
+  status: Status;
+}
+
 export interface ResourceQuotaDetailList extends ResourceList {
   items: ResourceQuotaDetail[];
 }
@@ -212,6 +227,8 @@ export interface ServiceAccount extends Resource {}
 
 export interface ClusterRole extends Resource {}
 
+export interface Role extends Resource {}
+
 export interface ConfigMap extends Resource {}
 
 export interface Controller extends Resource {
@@ -235,10 +252,6 @@ export interface CRD extends Resource {
   names: Names;
 }
 
-export interface CRDObject extends Resource {}
-
-export interface NetworkObject extends Resource {}
-
 export interface Network extends Resource {
   group: string;
   scope: string;
@@ -255,6 +268,9 @@ export interface Names {
   listKind: string;
 }
 
+export interface CRDObject extends Resource {}
+
+export interface NetworkObject extends Resource {}
 
 export interface DaemonSet extends Resource {
   podInfo: PodInfo;
@@ -335,10 +351,35 @@ export interface Job extends Resource {
 export interface Namespace extends Resource {
   phase: string;
 }
-
+export interface Tenant extends Resource {
+  phase: string;
+}
 export interface Node extends Resource {
   ready: string;
 }
+
+export interface ResourcePartition extends Resource {
+  name: string
+  nodeCount: number
+  cpuLimit: number
+  memoryLimit: number
+  healthyNodeCount: number
+}
+
+export interface TenantPartition extends Resource {
+  name: string
+  tenantCount: number
+  cpuLimit: number
+  memoryLimit: number
+  healthyNodeCount: number
+}
+
+export interface Quota extends Resource {
+  ready: string;
+}
+
+
+export interface Partition extends Resource {}
 
 export interface PersistentVolume extends Resource {
   capacity: StringMap;
@@ -381,6 +422,12 @@ export interface PodContainer {
 }
 
 export interface ReplicaSet extends Resource {
+  podInfo: PodInfo;
+  containerImages: string[];
+  initContainerImages: string[];
+}
+
+export interface ReplicationController extends Resource {
   podInfo: PodInfo;
   containerImages: string[];
   initContainerImages: string[];
@@ -436,6 +483,17 @@ export interface DeploymentDetail extends ResourceDetail {
   events: EventList;
 }
 
+export interface ReplicationControllerDetail extends ResourceDetail {
+  labelSelector: StringMap;
+  containerImages: string[];
+  initContainerImages: string[];
+  podInfo: PodInfo;
+  podList: PodList;
+  serviceList: ServiceList;
+  eventList: EventList;
+  hasMetrics: boolean;
+}
+
 export interface ServiceDetail extends ResourceDetail {
   internalEndpoint: Endpoint;
   externalEndpoints: Endpoint[];
@@ -476,6 +534,7 @@ export interface ClusterRoleDetail extends ResourceDetail {
 export interface RoleDetail extends ResourceDetail {
   rules: PolicyRule[];
 }
+
 
 export interface SecretDetail extends ResourceDetail {
   type: string;
@@ -518,8 +577,6 @@ export interface CRDDetail extends ResourceDetail {
   conditions: Condition[];
 }
 
-export interface CRDObjectDetail extends ResourceDetail {}
-
 export interface NetworkDetail extends ResourceDetail {
   version?: string;
   group: string;
@@ -529,6 +586,8 @@ export interface NetworkDetail extends ResourceDetail {
   objects: CRDObjectList;
   conditions: Condition[];
 }
+
+export interface CRDObjectDetail extends ResourceDetail {}
 
 export interface NetworkObjectDetail extends ResourceDetail {}
 
@@ -620,6 +679,23 @@ export interface NodeDetail extends ResourceDetail {
   eventList: EventList;
 }
 
+export interface PartitionDetail extends ResourceDetail {
+  phase: string;
+  podCIDR: string;
+  providerID: string;
+  unschedulable: boolean;
+  allocatedResources: NodeAllocatedResources;
+  nodeInfo: NodeInfo;
+  containerImages: string[];
+  initContainerImages: string[];
+  addresses: NodeAddress[];
+  taints: NodeTaint[];
+  conditions: Condition[];
+  podList: PodList;
+  eventList: EventList;
+}
+
+
 export interface HorizontalPodAutoscalerDetail extends ResourceDetail {
   scaleTargetRef: ScaleTargetRef;
   minReplicas: number;
@@ -675,6 +751,7 @@ export interface LoginSpec {
   password: string;
   token: string;
   kubeconfig: string;
+  tenant: string;
 }
 
 export interface LoginStatus {
@@ -780,6 +857,12 @@ export interface ResourceQuotaStatus {
   hard: string;
 }
 
+export interface QuotaAllocationStatus {
+  name: string;
+  used: string;
+  hard: string;
+}
+
 export interface MetricResult {
   timestamp: string;
   value: number;
@@ -833,6 +916,16 @@ export interface CRDNames {
   listKind?: string;
   categories?: string[];
 }
+
+export interface NetworkNames {
+  plural: string;
+  singular?: string;
+  shortNames?: string[];
+  kind: string;
+  listKind?: string;
+  categories?: string[];
+}
+
 
 export interface CRDVersion {
   name: string;
@@ -933,7 +1026,19 @@ export interface NodeAddress {
   address: string;
 }
 
+export interface PartitionAddress {
+  type: string;
+  address: string;
+}
+
 export interface NodeTaint {
+  key: string;
+  value: string;
+  effect: string;
+  timeAdded: number;
+}
+
+export interface PartitionTaint {
   key: string;
   value: string;
   effect: string;
@@ -1054,13 +1159,32 @@ export interface DeploymentInfo {
   unavailable: number;
 }
 
+export interface ReplicationControllerSpec {
+  replicas: number;
+}
+
 export interface ReplicaCounts {
   desiredReplicas: number;
   actualReplicas: number;
 }
 
+export interface DeleteReplicationControllerSpec {
+  deleteServices: boolean;
+}
+
 export interface NamespaceSpec {
   name: string;
+}
+
+export interface ReplicationControllerPodWithContainers {
+  name: string;
+  startTime?: string;
+  totalRestartCount: number;
+  podContainers: PodContainer[];
+}
+
+export interface ReplicationControllerPods {
+  pods: ReplicationControllerPodWithContainers[];
 }
 
 export interface LogSources {
@@ -1148,6 +1272,7 @@ export interface LoginSpec {
   password: string;
   token: string;
   kubeConfig: string;
+  tenant: string;
 }
 
 export interface AuthResponse {
@@ -1230,29 +1355,29 @@ export interface Tenant extends Resource {
   phase: string;
 }
 
+export interface ResourceQuota extends Resource {
+  phase: string;
+}
+
+export interface Role extends Resource {
+}
+export interface ServiceAccount extends Resource {
+  type: string;
+}
 export interface TenantList extends ResourceList {
   tenants: Tenant[];
+}
+export interface ResourceQuotaList extends ResourceList {
+  items: ResourceQuota[];
+}
+
+export interface RoleList extends ResourceList {
+  roles: Role[];
 }
 
 export interface TenantDetail extends ResourceDetail {
   phase: string;
 }
-
-export interface ResourceQuota extends Resource {
-  phase: string;
-}
-
-export interface ResourceQuotaList extends ResourceList {
-  items: ResourceQuota[];
-}
-
-export interface QuotaAllocationStatus {
-  name: string;
-  used: string;
-  hard: string;
-}
-
-export interface Role extends Resource {}
 
 export interface User extends Resource {
   phase: string;

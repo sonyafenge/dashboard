@@ -80,7 +80,7 @@ export class CreateService {
     let error: HttpErrorResponse;
 
     try {
-      const {token} = await this.csrfToken_.getTokenForAction('appdeploymentfromfile').toPromise();
+      const {token} = await this.csrfToken_.getTokenForAction(this.tenant_.current(),'appdeploymentfromfile').toPromise();
       this.isDeployInProgress_ = true;
       response = await this.http_
         .post<AppDeploymentContentResponse>('api/v1/appdeploymentfromfile', spec, {
@@ -110,7 +110,7 @@ export class CreateService {
     let error: HttpErrorResponse;
 
     try {
-      const {token} = await this.csrfToken_.getTokenForAction('appdeployment').toPromise();
+      const {token} = await this.csrfToken_.getTokenForAction(this.tenant_.current(),'appdeployment').toPromise();
       this.isDeployInProgress_ = true;
       response = await this.http_
         .post<AppDeploymentContentResponse>('api/v1/appdeployment', spec, {

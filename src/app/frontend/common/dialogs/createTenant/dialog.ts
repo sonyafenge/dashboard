@@ -1,3 +1,17 @@
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {Component, OnInit, Inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
@@ -24,6 +38,7 @@ export class CreateTenantDialog implements OnInit {
   form1: FormGroup;
   private readonly config_ = CONFIG;
 
+  // validation
   tenantMaxLength = 24;
   tenantPattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
 
@@ -40,7 +55,6 @@ export class CreateTenantDialog implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
     this.form1 = this.fb_.group({
         tenant: [
           '',
@@ -75,7 +89,7 @@ export class CreateTenantDialog implements OnInit {
     if (!this.form1.valid) return;
 
     const tenantSpec= {name: this.tenant.value,StorageClusterId: this.StorageClusterId.value};
-    const tokenPromise = this.csrfToken_.getTokenForAction('tenant');
+    const tokenPromise = this.csrfToken_.getTokenForAction(this.tenant.value,'tenant');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
         .post<{valid: boolean}>(

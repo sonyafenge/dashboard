@@ -1,10 +1,23 @@
+// Copyright 2017 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import {Component,Inject,OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
 import {AbstractControl, Validators,FormBuilder} from '@angular/forms';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import {CONFIG} from "../../../index.config";
 import {CsrfTokenService} from "../../services/global/csrftoken";
 
@@ -27,23 +40,23 @@ export interface CreateClusterroleDialogMeta {
 export class CreateClusterroleDialog implements OnInit {
   form1: FormGroup;
   private readonly config_ = CONFIG;
-
-  ClusterroleMaxLength = 24;
-  ClusterrolePattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
-
-  ApigroupsMaxLength = 63;
-  ApigroupsPattern:  RegExp = new RegExp('^[a-z\\a-z\\d_@.#$=!%^)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
-
-  ResourceMaxLength = 63;
-  ResourcePattern: RegExp = new RegExp('^^[a-z\\a-z\\d_@.#$=!%^)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
-
-  VerbsMaxLength = 63;
-  VerbsPattern: RegExp = new RegExp('^^[a-z\\a-z\\d_@.#$=!%^)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
-
   name: string
   apigroup: string[]
   resource: string[]
   verb : string[]
+
+  // validation
+  clusterroleMaxLength = 24;
+  clusterrolePattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
+
+  apigroupsMaxLength = 63;
+  apigroupsPattern:  RegExp = new RegExp('^[a-z\\a-z\\d_@.#$=!%^)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
+
+  resourceMaxLength = 63;
+  resourcePattern: RegExp = new RegExp('^^[a-z\\a-z\\d_@.#$=!%^)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
+
+  verbsMaxLength = 63;
+  verbsPattern: RegExp = new RegExp('^^[a-z\\a-z\\d_@.#$=!%^)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
 
   constructor(
     public dialogRef: MatDialogRef<CreateClusterroleDialog>,
@@ -59,29 +72,29 @@ export class CreateClusterroleDialog implements OnInit {
       clusterrole: [
         '',
         Validators.compose([
-          Validators.maxLength(this.ClusterroleMaxLength),
-          Validators.pattern(this.ClusterrolePattern),
+          Validators.maxLength(this.clusterroleMaxLength),
+          Validators.pattern(this.clusterrolePattern),
         ]),
       ],
       apigroups: [
         '',
         Validators.compose([
-          Validators.maxLength(this.ApigroupsMaxLength),
-          Validators.pattern(this.ApigroupsPattern),
+          Validators.maxLength(this.apigroupsMaxLength),
+          Validators.pattern(this.apigroupsPattern),
         ]),
       ],
       resources: [
         '',
         Validators.compose([
-          Validators.maxLength(this.ResourceMaxLength),
-          Validators.pattern(this.ResourcePattern),
+          Validators.maxLength(this.resourceMaxLength),
+          Validators.pattern(this.resourcePattern),
         ]),
       ],
       verbs: [
         '',
         Validators.compose([
-          Validators.maxLength(this.VerbsMaxLength),
-          Validators.pattern(this.VerbsPattern),
+          Validators.maxLength(this.verbsMaxLength),
+          Validators.pattern(this.verbsPattern),
         ]),
       ],
     });
@@ -100,15 +113,15 @@ export class CreateClusterroleDialog implements OnInit {
     return this.form1.get('resources');
   }
 
-  // function for creating new Clusterrole
-  createclusterrole(): void {
+  // To create clusterole specific tenant
+  createClusterrole(): void {
     if (!this.form1.valid) return;
     this.apigroup = this.apigroups.value.split(',')
     this.resource = this.resources.value.split(',')
     this.verb = this.verbs.value.split(',')
 
     const clusterroleSpec= {name: this.clusterrole.value,apiGroups: this.apigroup,verbs: this.verb,resources: this.resource};
-    const tokenPromise = this.csrfToken_.getTokenForAction('clusterrole');
+    const tokenPromise = this.csrfToken_.getTokenForAction('system','clusterrole');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
         .post<{valid: boolean}>(

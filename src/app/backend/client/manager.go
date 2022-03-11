@@ -252,6 +252,9 @@ func (self *clientManager) GetTenant(authInfo api.AuthInfo, nameSpace string, te
 		return tenant, nil
 	}
 	result, err := client.CoreV1().NamespacesWithMultiTenancy("").Get(nameSpace, metaV1.GetOptions{})
+	if err != nil {
+		log.Printf("list namespace failed: %s", err.Error())
+	}
 	tenant = result.ObjectMeta.Tenant
 	return tenant, err
 }

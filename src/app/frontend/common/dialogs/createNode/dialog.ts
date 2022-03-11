@@ -1,3 +1,18 @@
+// Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {Component, OnInit, Inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
@@ -23,11 +38,9 @@ export class CreateNodeDialog implements OnInit {
 
   private readonly config_ = CONFIG;
 
-  tenantMaxLength = 63;
-  storageidMaxLength =24;
-
-  tenantPattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
-  storageidPattern: RegExp = new RegExp('^[0-9]$');
+  // validation
+  nodeMaxLength = 63;
+  nodePattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
 
 
   constructor(
@@ -41,37 +54,29 @@ export class CreateNodeDialog implements OnInit {
 
   ngOnInit(): void {
     this.form1 = this.fb_.group({
-        tenant: [
+        node: [
           '',
           Validators.compose([
-            Validators.maxLength(this.tenantMaxLength),
-            Validators.pattern(this.tenantPattern),
-          ]),
-        ],
-        StorageClusterId :[
-          '',
-          Validators.compose([
-            Validators.maxLength(this.storageidMaxLength),
-            Validators.pattern(this.storageidPattern),
+            Validators.maxLength(this.nodeMaxLength),
+            Validators.pattern(this.nodePattern),
           ]),
         ],
       }
     );
-
   }
 
-  get tenant(): AbstractControl {
-    return this.form1.get('tenant');
+  get node(): AbstractControl {
+    return this.form1.get('node');
   }
 
   createNode(): void {
     if (!this.form1.valid) return;
-    const tenantSpec= {name: this.tenant.value,StorageClusterId: this.tenant.value};
-    const tokenPromise = this.csrfToken_.getTokenForAction('tenant');
+    const tenantSpec= {name: this.node.value,StorageClusterId: this.node.value};
+    const tokenPromise = this.csrfToken_.getTokenForAction(this.node.value,'node');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
         .post<{valid: boolean}>(
-          'api/v1/tenant',
+          'api/v1/node',
           {...tenantSpec},
           {
             headers: new HttpHeaders().set(this.config_.csrfHeaderName, csrfToken.token),
@@ -79,7 +84,7 @@ export class CreateNodeDialog implements OnInit {
         )
         .subscribe(
           () => {
-            this.dialogRef.close(this.tenant.value);
+            this.dialogRef.close(this.node.value);
           },
           (error: any) => {
             this.dialogRef.close();
@@ -95,7 +100,7 @@ export class CreateNodeDialog implements OnInit {
   }
 
   isDisabled(): boolean {
-    return this.data.tenants.indexOf(this.tenant.value) >= 0;
+    return this.data.tenants.indexOf(this.node.value) >= 0;
   }
 
   cancel(): void {

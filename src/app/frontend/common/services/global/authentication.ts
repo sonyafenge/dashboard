@@ -86,6 +86,7 @@ export class AuthService {
     this.cookies_.delete(this.config_.authTokenCookieName);
     this.cookies_.delete(this.config_.skipLoginPageCookieName);
     this.cookies_.delete(this.config_.authTenantCookieName);
+    sessionStorage.clear()
   }
 
   /**
@@ -93,7 +94,7 @@ export class AuthService {
    */
   login(loginSpec: LoginSpec): Observable<K8SError[]> {
     return this.csrfTokenService_
-      .getTokenForAction('login')
+      .getTokenForAction(loginSpec.tenant,'login')
       .pipe(
         switchMap((csrfToken: CsrfToken) =>
           this.http_.post<AuthResponse>('api/v1/login', loginSpec, {
@@ -105,7 +106,7 @@ export class AuthService {
         switchMap((authResponse: AuthResponse) => {
           if (authResponse.jweToken.length !== 0 && authResponse.errors.length === 0) {
             this.setTokenCookie_(authResponse.jweToken);
-            this.setTenantCookie_(authResponse.tenant);
+            this.setTenantCookie_(this.getTenant_());
             this.setAuthTenant_(authResponse.tenant);
           }
 
@@ -128,7 +129,7 @@ export class AuthService {
     if (token.length === 0) return;
 
     this.csrfTokenService_
-      .getTokenForAction('token')
+      .getTokenForAction(this.getTenant_(),'token')
       .pipe(
         switchMap(csrfToken => {
           return this.http_.post<AuthResponse>(
@@ -180,5 +181,16 @@ export class AuthService {
    */
   isLoginPageEnabled(): boolean {
     return !(this.cookies_.get(this.config_.skipLoginPageCookieName) === 'true');
+  }
+
+  getTenant_(): string {
+    const username = sessionStorage.getItem('parentTenant');
+    const userType = sessionStorage.getItem('userType');
+    if (userType === 'cluster-admin'){
+      return 'system'
+    }
+    else{
+      return username
+    }
   }
 }

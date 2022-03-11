@@ -1,3 +1,18 @@
+// Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {Component, OnInit, Inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
@@ -27,6 +42,10 @@ export interface CreateRoleDialogMeta {
 export class CreateRoleDialog implements OnInit {
   form1: FormGroup;
   private readonly config_ = CONFIG;
+  currentTenant: string
+  apiGroups1: string[]
+  resources1: string[]
+  verbs1: string[]
 
   //Validation
   roleMaxLength = 24;
@@ -44,11 +63,6 @@ export class CreateRoleDialog implements OnInit {
   verbsMaxLength = 63;
   verbsPattern: RegExp = new RegExp('^^[a-z\\a-z\\d_@.#$=!%^)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
 
-  apiGroups1: string[]
-  resources1: string[]
-  verbs1: string[]
-
-  currentTenant: string
 
   constructor(
     public dialogRef: MatDialogRef<CreateRoleDialog>,
@@ -118,14 +132,15 @@ export class CreateRoleDialog implements OnInit {
     return this.form1.get('resources');
   }
 
-  createrole(): void {
+  // To create role under specific namespace
+  createRole(): void {
     if (!this.form1.valid) return;
     this.apiGroups1 = this.apigroups.value.split(',')
     this.resources1 = this.resources.value.split(',')
     this.verbs1 = this.verbs.value.split(',')
 
     const roleSpec = {name: this.role.value, tenant: this.currentTenant, namespace: this.namespace.value, apiGroups: this.apiGroups1,verbs: this.verbs1,resources: this.resources1};
-    const tokenPromise = this.csrfToken_.getTokenForAction('roles');
+    const tokenPromise = this.csrfToken_.getTokenForAction(roleSpec.tenant,'roles');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
         .post<{valid: boolean}>(

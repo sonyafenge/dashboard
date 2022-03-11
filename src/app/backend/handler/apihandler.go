@@ -134,7 +134,7 @@ func ResourceAllocator(tenant string, clients []clientapi.ClientManager) clienta
 	return clients[0]
 }
 
-//struct for already exists resource
+//struct for already exists
 type ErrorMsg struct {
 	Msg string `json:"msg"`
 }
@@ -210,7 +210,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 			To(apiHandler.handleDeleteTenant))
 
 	apiV1Ws.Route(
-		apiV1Ws.GET("csrftoken/{action}").
+		apiV1Ws.GET("/tenants/{tenant}/csrftoken/{action}").
 			To(apiHandler.handleGetCsrfToken).
 			Writes(api.CsrfToken{}))
 
@@ -1266,7 +1266,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 	return wsContainer, nil
 }
 
-//error struct for already exists
+//error struct for already exists resource
 type Error struct {
 	// Name of the tenant.
 	Msg        string `json:"msg"`
@@ -1285,16 +1285,29 @@ func (apiHandler *APIHandlerV2) handleCreateTenant(request *restful.Request, res
 	}
 	client := ResourceAllocator(tenantSpec.Name, apiHandler.tpManager)
 	k8sClient := client.InsecureClient()
-	//k8sClient, err := client.Client(request)
-	//if err != nil {
-	//	errors.HandleInternalError(response, err)
-	//	return
-	//}
+
 	if err := tenant.CreateTenant(tenantSpec, k8sClient, client.GetClusterName()); err != nil {
 		errorMsg := Error{Msg: err.Error(), StatusCode: http.StatusConflict}
 		response.WriteHeaderAndEntity(http.StatusConflict, errorMsg)
 		return
 	}
+	userSpec := model.User{
+		Username:          tenantSpec.Name + "-tenant-admin",
+		Password:          tenantSpec.Name + "@123",
+		Token:             "",
+		Type:              "tenant-admin",
+		Tenant:            tenantSpec.Name,
+		Role:              "",
+		NameSpace:         "default",
+		CreationTimestamp: time.Time{},
+	}
+	user, err := iam.TenantAdmin(userSpec, client)
+	if err != nil {
+		log.Printf("Error creating tenant admin user: %s", err.Error())
+	}
+	_ = db.InsertUser(user)
+	tenantSpec.Username = user.Username
+	tenantSpec.Password = user.Password
 	response.WriteHeaderAndEntity(http.StatusCreated, tenantSpec)
 }
 
@@ -1463,6 +1476,10 @@ func (apiHandler *APIHandlerV2) handleGetClusterRoleDetailWithMultiTenancy(reque
 
 func (apiHandler *APIHandlerV2) handleGetCsrfToken(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
+	if tenant == "" {
+		tenant = "system"
+	}
+
 	client := ResourceAllocator(tenant, apiHandler.tpManager)
 
 	action := request.PathParameter("action")
@@ -2078,6 +2095,7 @@ func (apiHandler *APIHandlerV2) handleGetNodeEvents(request *restful.Request, re
 			_, err = node.GetNodeDetail(k8sClient, apiHandler.iManager.Metric().Client(), name, dataSelect, clusterName)
 			if err != nil {
 				log.Printf("Invalid Client or Internal Error %s", err.Error())
+				//errors.HandleInternalError(response, err)
 			} else {
 				break
 			}
@@ -2098,6 +2116,11 @@ func (apiHandler *APIHandlerV2) handleGetNodeEvents(request *restful.Request, re
 }
 
 func (apiHandler *APIHandlerV2) handleGetNodePods(request *restful.Request, response *restful.Response) {
+	//k8sClient, err := apiHandler.tpManager.Client(request)
+	//if err != nil {
+	//	errors.HandleInternalError(response, err)
+	//	return
+	//}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -2116,6 +2139,7 @@ func (apiHandler *APIHandlerV2) handleGetNodePods(request *restful.Request, resp
 		_, err = node.GetNodeDetail(k8sClient, apiHandler.iManager.Metric().Client(), name, dataSelect, clusterName)
 		if err != nil {
 			log.Printf("Invalid Client or Internal Error %s", err.Error())
+			//errors.HandleInternalError(response, err)
 		} else {
 			break
 		}
@@ -2129,6 +2153,7 @@ func (apiHandler *APIHandlerV2) handleGetNodePods(request *restful.Request, resp
 			_, err = node.GetNodeDetail(k8sClient, apiHandler.iManager.Metric().Client(), name, dataSelect, clusterName)
 			if err != nil {
 				log.Printf("Invalid Client or Internal Error %s", err.Error())
+				//errors.HandleInternalError(response, err)
 			} else {
 				break
 			}
@@ -3683,7 +3708,7 @@ func (apiHandler *APIHandlerV2) handleCreateRolesWithMultiTenancy(request *restf
 		errors.HandleInternalError(response, err)
 		return
 	}
-
+	log.Printf("potnt1")
 	if err := role.CreateRolesWithMultiTenancy(roleSpec, k8sClient); err != nil {
 		if strings.Contains(err.Error(), "already exists") {
 			msg := "roles '" + roleSpec.Name + "' already exists"
@@ -3714,7 +3739,7 @@ func (apiHandler *APIHandlerV2) handleDeleteRolesWithMultiTenancy(request *restf
 }
 
 func (apiHandler *APIHandlerV2) handleAddResourceQuota(request *restful.Request, response *restful.Response) {
-	log.Printf("Creating Quota")
+	log.Printf("Adding Quota")
 	tenant := request.PathParameter("tenant")
 	client := ResourceAllocator(tenant, apiHandler.tpManager)
 	k8sClient, err := client.Client(request)
@@ -5680,13 +5705,14 @@ func (apiHandler *APIHandlerV2) handleLogFileWithMultiTenancy(request *restful.R
 // No namespaces means "view all user namespaces", i.e., everything except kube-system.
 func parseNamespacePathParameter(request *restful.Request) *common.NamespaceQuery {
 	namespace := request.PathParameter("namespace")
+
 	namespaces := strings.Split(namespace, ",")
 	var nonEmptyNamespaces []string
 	for _, n := range namespaces {
 		n = strings.Trim(n, " ")
 		if len(n) > 0 {
 			nonEmptyNamespaces = append(nonEmptyNamespaces, n)
-			nonEmptyNamespaces = append(nonEmptyNamespaces, n)
+			//nonEmptyNamespaces = append(nonEmptyNamespaces, n)
 		}
 	}
 	return common.NewNamespaceQuery(nonEmptyNamespaces)
@@ -5749,13 +5775,20 @@ func parseDataSelectPathParameter(request *restful.Request) *dataselect.DataSele
 	return dataselect.NewDataSelectQuery(paginationQuery, sortQuery, filterQuery, metricQuery)
 }
 
-// IAM Service functions
+// IAM Service related functions
 type response struct {
 	ID      int64  `json:"id,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
 func (apiHandler *APIHandlerV2) handleCreateUser(w *restful.Request, r *restful.Response) {
+	//_, error := apiHandler.tpManager.Client(w)
+	//if error != nil {
+	//	ErrMsg := ErrorMsg{Msg: error.Error()}
+	//	r.WriteHeaderAndEntity(http.StatusUnauthorized, ErrMsg)
+	//	return
+	//}
+
 	var user model.User
 	err := w.ReadEntity(&user)
 	if err != nil {
@@ -5821,6 +5854,7 @@ func (apiHandler *APIHandlerV2) handleGetUserDetail(w *restful.Request, r *restf
 }
 
 func (apiHandler *APIHandlerV2) handleGetAllUser(w *restful.Request, r *restful.Response) {
+
 	var err error
 	for _, cManager := range apiHandler.tpManager {
 		_, err = cManager.Client(w)

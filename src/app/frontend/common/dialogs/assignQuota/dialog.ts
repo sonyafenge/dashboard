@@ -1,3 +1,16 @@
+// Copyright 2017 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import {Component,Inject,OnInit} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
@@ -33,14 +46,15 @@ export interface assignQuotaDialogMeta {
 export class assignQuotaDialog implements OnInit {
   form1: FormGroup;
 
-  QuotaMaxLength = 24;
-  QuotaPattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
+  // validation
+  quotaMaxLength = 24;
+  quotaPattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
 
-  TenatMaxLength = 24;
-  TenantPattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
+  tenatMaxLength = 24;
+  tenantPattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
 
-  NamespaceMaxLength = 63;
-  NamespacePattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
+  namespaceMaxLength = 63;
+  namespacePattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
 
   private readonly config_ = CONFIG;
   constructor(
@@ -57,22 +71,22 @@ export class assignQuotaDialog implements OnInit {
       quotaname: [
         '',
         Validators.compose([
-          Validators.maxLength(this.QuotaMaxLength),
-          Validators.pattern(this.QuotaPattern),
+          Validators.maxLength(this.quotaMaxLength),
+          Validators.pattern(this.quotaPattern),
         ]),
       ],
       tenant: [
         '',
         Validators.compose([
-          Validators.maxLength(this.TenatMaxLength),
-          Validators.pattern(this.TenantPattern),
+          Validators.maxLength(this.tenatMaxLength),
+          Validators.pattern(this.tenantPattern),
         ]),
       ],
       namespace: [
         '',
         Validators.compose([
-          Validators.maxLength(this.NamespaceMaxLength),
-          Validators.pattern(this.NamespacePattern),
+          Validators.maxLength(this.namespaceMaxLength),
+          Validators.pattern(this.namespacePattern),
         ]),
       ],
       service: '',
@@ -120,6 +134,7 @@ export class assignQuotaDialog implements OnInit {
     return this.form1.get('ephemeral_storage');
   }
 
+  // To create quota under specific tenant and namespace
   createQuota(): void {
     if (!this.form1.valid) return;
     const quotaSpec= {
@@ -136,7 +151,7 @@ export class assignQuotaDialog implements OnInit {
       ephemeral_storage: this.ephemeral_storage.value,
     };
 
-    const tokenPromise = this.csrfToken_.getTokenForAction('resourcequota');
+    const tokenPromise = this.csrfToken_.getTokenForAction(this.tenants.value,'resourcequota');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
         .post<{valid: boolean}>(
