@@ -160,7 +160,7 @@ func main() {
 	}
 
 	// Init auth manager
-	authManager := initAuthManager(clientManager)
+	authManager := initAuthManager(tpclients)
 
 	// Init settings manager
 	settingsManager := settings.NewSettingsManager()
@@ -247,35 +247,41 @@ func main() {
 	select {}
 }
 
-func initAuthManager(clientManager clientapi.ClientManager) authApi.AuthManager {
-	insecureClient := clientManager.InsecureClient()
+func initAuthManager(tpManager []clientapi.ClientManager) []authApi.AuthManager {
+	var authenticationSkippable bool
+	authManagers := make([]authApi.AuthManager, 0)
+	for _, clientManager := range tpManager {
+		insecureClient := clientManager.InsecureClient()
 
-	// Init default encryption key synchronizer
-	synchronizerManager := sync.NewSynchronizerManager(insecureClient)
-	keySynchronizer := synchronizerManager.Secret(args.Holder.GetNamespace(), authApi.EncryptionKeyHolderName)
+		// Init default encryption key synchronizer
+		synchronizerManager := sync.NewSynchronizerManager(insecureClient)
+		keySynchronizer := synchronizerManager.Secret(args.Holder.GetNamespace(), authApi.EncryptionKeyHolderName)
 
-	// Register synchronizer. Overwatch will be responsible for restarting it in case of error.
-	sync.Overwatch.RegisterSynchronizer(keySynchronizer, sync.AlwaysRestart)
+		// Register synchronizer. Overwatch will be responsible for restarting it in case of error.
+		sync.Overwatch.RegisterSynchronizer(keySynchronizer, sync.AlwaysRestart)
 
-	// Init encryption key holder and token manager
-	keyHolder := jwe.NewRSAKeyHolder(keySynchronizer)
-	tokenManager := jwe.NewJWETokenManager(keyHolder)
-	tokenTTL := time.Duration(args.Holder.GetTokenTTL())
-	if tokenTTL != authApi.DefaultTokenTTL {
-		tokenManager.SetTokenTTL(tokenTTL)
+		// Init encryption key holder and token manager
+		keyHolder := jwe.NewRSAKeyHolder(keySynchronizer)
+		tokenManager := jwe.NewJWETokenManager(keyHolder)
+		tokenTTL := time.Duration(args.Holder.GetTokenTTL())
+		if tokenTTL != authApi.DefaultTokenTTL {
+			tokenManager.SetTokenTTL(tokenTTL)
+		}
+
+		// Set token manager for client manager.
+		clientManager.SetTokenManager(tokenManager)
+		authModes := authApi.ToAuthenticationModes(args.Holder.GetAuthenticationMode())
+		if len(authModes) == 0 {
+			authModes.Add(authApi.Token)
+		}
+
+		// UI logic dictates this should be the inverse of the cli option
+		authenticationSkippable = args.Holder.GetEnableSkipLogin()
+		authManager := auth.NewAuthManager(clientManager, tokenManager, authModes, authenticationSkippable)
+		authManagers = append(authManagers, authManager)
 	}
 
-	// Set token manager for client manager.
-	clientManager.SetTokenManager(tokenManager)
-	authModes := authApi.ToAuthenticationModes(args.Holder.GetAuthenticationMode())
-	if len(authModes) == 0 {
-		authModes.Add(authApi.Token)
-	}
-
-	// UI logic dictates this should be the inverse of the cli option
-	authenticationSkippable := args.Holder.GetEnableSkipLogin()
-
-	return auth.NewAuthManager(clientManager, tokenManager, authModes, authenticationSkippable)
+	return authManagers
 }
 
 func initArgHolder() {

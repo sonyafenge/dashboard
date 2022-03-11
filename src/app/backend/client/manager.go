@@ -1,3 +1,18 @@
+// Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package client
 
 import (
@@ -214,7 +229,7 @@ func (self *clientManager) CSRFKey() string {
 }
 
 // GetTenant gets the tenant name using the provided AuthInfo
-func (self *clientManager) GetTenant(authInfo api.AuthInfo) (string, error) {
+func (self *clientManager) GetTenant(authInfo api.AuthInfo, nameSpace string, tenant string) (string, error) {
 	cfg, err := self.buildConfigFromFlags(self.apiserverHost, self.kubeConfigPath)
 	if err != nil {
 		return "", err
@@ -232,8 +247,12 @@ func (self *clientManager) GetTenant(authInfo api.AuthInfo) (string, error) {
 	}
 
 	// Get the tenant name from default namespace.
-	result, err := client.CoreV1().NamespacesWithMultiTenancy("").Get("default", metaV1.GetOptions{})
-	tenant := result.ObjectMeta.Tenant
+	_, err = client.CoreV1().PodsWithMultiTenancy(nameSpace, tenant).List(metaV1.ListOptions{})
+	if err == nil {
+		return tenant, nil
+	}
+	result, err := client.CoreV1().NamespacesWithMultiTenancy("").Get(nameSpace, metaV1.GetOptions{})
+	tenant = result.ObjectMeta.Tenant
 	return tenant, err
 }
 
@@ -335,7 +354,6 @@ func (self *clientManager) extractAuthInfo(req *restful.Request) (*api.AuthInfo,
 	authHeader := req.HeaderParameter("Authorization")
 	impersonationHeader := req.HeaderParameter("Impersonate-User")
 	jweToken := req.HeaderParameter(JWETokenHeader)
-
 	// Authorization header will be more important than our token
 	token := self.extractTokenFromHeader(authHeader)
 	if len(token) > 0 {
@@ -407,6 +425,7 @@ func (self *clientManager) secureClient(req *restful.Request) (kubernetes.Interf
 	cfg, err := self.secureConfig(req)
 	if err != nil {
 		return nil, err
+
 	}
 
 	client, err := kubernetes.NewForConfig(cfg)
@@ -551,6 +570,7 @@ func NewClientManager(kubeConfigPath, apiserverHost string) clientapi.ClientMana
 	result.init()
 	return result
 }
+
 func GetClusternName(config string) (cName string, err error) {
 	filename, _ := filepath.Abs(config)
 	yamlFile, err := ioutil.ReadFile(filename)

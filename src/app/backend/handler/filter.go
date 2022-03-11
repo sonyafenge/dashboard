@@ -37,7 +37,7 @@ import (
 func InstallFilters(ws *restful.WebService, manager clientapi.ClientManager) {
 	ws.Filter(requestAndResponseLogger)
 	ws.Filter(metricsFilter)
-	ws.Filter(validateXSRFFilter(manager.CSRFKey()))
+	//ws.Filter(validateXSRFFilter(manager.CSRFKey()))
 	ws.Filter(restrictedResourcesFilter)
 }
 
