@@ -65,7 +65,7 @@ func TestGetCustomResourceDefinition(t *testing.T) {
 	for _, c := range cases {
 		fakeClient := fake.NewSimpleClientset(c.crdList)
 
-		actual, _ := GetCustomResourceDefinitionList(fakeClient, dataselect.DefaultDataSelect)
+		actual, _ := GetCustomResourceDefinitionList(fakeClient, dataselect.DefaultDataSelect, "")
 
 		actions := fakeClient.Actions()
 		if len(actions) != len(c.expectedActions) {

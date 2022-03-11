@@ -16,6 +16,7 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/kubernetes/dashboard/src/app/backend/systembanner"
 	"net/http"
 	"testing"
 
@@ -25,13 +26,13 @@ import (
 
 	restful "github.com/emicklei/go-restful"
 	"github.com/kubernetes/dashboard/src/app/backend/args"
-	"github.com/kubernetes/dashboard/src/app/backend/auth"
+	//"github.com/kubernetes/dashboard/src/app/backend/auth"
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	"github.com/kubernetes/dashboard/src/app/backend/auth/jwe"
-	"github.com/kubernetes/dashboard/src/app/backend/client"
-	"github.com/kubernetes/dashboard/src/app/backend/settings"
+	//"github.com/kubernetes/dashboard/src/app/backend/client"
+	//"github.com/kubernetes/dashboard/src/app/backend/settings"
 	"github.com/kubernetes/dashboard/src/app/backend/sync"
-	"github.com/kubernetes/dashboard/src/app/backend/systembanner"
+	//"github.com/kubernetes/dashboard/src/app/backend/systembanner"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -43,11 +44,8 @@ func getTokenManager() authApi.TokenManager {
 }
 
 func TestCreateHTTPAPIHandler(t *testing.T) {
-	cManager := client.NewClientManager("", "http://localhost:8080")
-	authManager := auth.NewAuthManager(cManager, getTokenManager(), authApi.AuthenticationModes{}, true)
-	sManager := settings.NewSettingsManager()
 	sbManager := systembanner.NewSystemBannerManager("Hello world!", "INFO")
-	_, err := CreateHTTPAPIHandler(nil, cManager, authManager, sManager, sbManager)
+	_, err := CreateHTTPAPIHandler(nil, nil, nil, nil, nil, nil, sbManager, nil)
 	if err != nil {
 		t.Fatal("CreateHTTPAPIHandler() cannot create HTTP API handler")
 	}

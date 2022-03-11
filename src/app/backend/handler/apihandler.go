@@ -1266,7 +1266,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 	return wsContainer, nil
 }
 
-//error struct for already exists resource
+//error struct for already exists
 type Error struct {
 	// Name of the tenant.
 	Msg        string `json:"msg"`
@@ -1285,6 +1285,11 @@ func (apiHandler *APIHandlerV2) handleCreateTenant(request *restful.Request, res
 	}
 	client := ResourceAllocator(tenantSpec.Name, apiHandler.tpManager)
 	k8sClient := client.InsecureClient()
+	//k8sClient, err := client.Client(request)
+	//if err != nil {
+	//	errors.HandleInternalError(response, err)
+	//	return
+	//}
 
 	if err := tenant.CreateTenant(tenantSpec, k8sClient, client.GetClusterName()); err != nil {
 		errorMsg := Error{Msg: err.Error(), StatusCode: http.StatusConflict}
@@ -5292,7 +5297,7 @@ func (apiHandler *APIHandlerV2) handleGetCustomResourceDefinitionList(request *r
 	}
 
 	dataSelect := parseDataSelectPathParameter(request)
-	result, err := customresourcedefinition.GetCustomResourceDefinitionList(apiextensionsclient, dataSelect)
+	result, err := customresourcedefinition.GetCustomResourceDefinitionList(apiextensionsclient, dataSelect, client.GetClusterName())
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -5303,18 +5308,41 @@ func (apiHandler *APIHandlerV2) handleGetCustomResourceDefinitionList(request *r
 
 func (apiHandler *APIHandlerV2) handleGetCustomResourceDefinitionListWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
-	client := ResourceAllocator(tenant, apiHandler.tpManager)
-	apiextensionsclient, err := client.APIExtensionsClient(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+	newrequest := restful.NewRequest(&http.Request{})
 
-	dataSelect := parseDataSelectPathParameter(request)
-	result, err := customresourcedefinition.GetCustomResourceDefinitionList(apiextensionsclient, dataSelect)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+	result := new(customresourcedefinition.CustomResourceDefinitionList)
+	if tenant != "system" {
+		client := ResourceAllocator(tenant, apiHandler.tpManager)
+		apiextensionsclient, err := client.APIExtensionsClient(request)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+
+		dataSelect := parseDataSelectPathParameter(request)
+		result, err = customresourcedefinition.GetCustomResourceDefinitionList(apiextensionsclient, dataSelect, client.GetClusterName())
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+	} else {
+		for _, client := range apiHandler.tpManager {
+			apiextensionsclient, err := client.APIExtensionsClient(newrequest)
+			if err != nil {
+				errors.HandleInternalError(response, err)
+				return
+			}
+
+			dataSelect := parseDataSelectPathParameter(newrequest)
+			nresult, err := customresourcedefinition.GetCustomResourceDefinitionList(apiextensionsclient, dataSelect, client.GetClusterName())
+			if err != nil {
+				errors.HandleInternalError(response, err)
+				return
+			}
+			result.Items = append(result.Items, nresult.Items...)
+			result.ListMeta.TotalItems += nresult.ListMeta.TotalItems
+			result.Errors = append(result.Errors, nresult.Errors...)
+		}
 	}
 
 	response.WriteHeaderAndEntity(http.StatusOK, result)
