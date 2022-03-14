@@ -157,7 +157,7 @@ func GetUserDetail(param string) (model.UserDetails, error) {
 }
 
 // GetAllUsers gets all the users from the DB
-func GetAllUsers() (*model.UserList, error) {
+func GetAllUsers(tenant string) (*model.UserList, error) {
 	// create the postgres db connection
 	db := CreateConnection()
 
@@ -167,13 +167,26 @@ func GetAllUsers() (*model.UserList, error) {
 	userList := new(model.UserList)
 
 	// create the select sql query
-	sqlStatement := `SELECT * FROM userdetails`
+	rows := new(sql.Rows)
+	var err error
+	if tenant == "system" || tenant == "" {
+		sqlStatement := `SELECT * FROM userdetails`
 
-	// execute the sql statement
-	rows, err := db.Query(sqlStatement)
+		// execute the sql statement
+		rows, err = db.Query(sqlStatement)
 
-	if err != nil {
-		log.Fatalf("Unable to execute the query. %v", err)
+		if err != nil {
+			log.Fatalf("Unable to execute the query. %v", err)
+		}
+	} else {
+		sqlStatement := `SELECT * FROM userdetails WHERE tenant=$1`
+
+		// execute the sql statement
+		rows, err = db.Query(sqlStatement, tenant)
+
+		if err != nil {
+			log.Fatalf("Unable to execute the query. %v", err)
+		}
 	}
 
 	// close the statement

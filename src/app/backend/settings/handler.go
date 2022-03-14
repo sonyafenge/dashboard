@@ -71,7 +71,11 @@ func (self *SettingsHandler) handleSettingsGlobalCanI(request *restful.Request, 
 	if len(verb) == 0 {
 		verb = http.MethodGet
 	}
-	c, _ := request.Request.Cookie("tenant")
+	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
 	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
 
 	log.Printf("cookie_tenant is: %s", c.Value)

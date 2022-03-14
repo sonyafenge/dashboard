@@ -32,11 +32,10 @@ import {TenantDetail} from "@api/backendapi";
 @Component({
   selector: 'kd-user-list',
   templateUrl: './template.html',
-
 })
 
 export class UserListComponent extends ResourceListWithStatuses<UserList, User> {
-  @Input() endpoint = EndpointManager.resource(Resource.user).list();
+  @Input() endpoint = EndpointManager.resource(Resource.user,false,true).list();
   @ViewChild(MatDrawer, {static: true}) private readonly nav_: MatDrawer;
 
   displayName:any;
@@ -72,24 +71,7 @@ export class UserListComponent extends ResourceListWithStatuses<UserList, User> 
   }
 
   map(userList: UserList): User[] {
-    const userType=sessionStorage.getItem('userType');
-    const data=userList.users
-    const userdata:any=[];
-    data.map((user)=>{
-      if(userType.includes('tenant'))
-      {
-        const parentTenant = sessionStorage.getItem('parentTenant');
-        //@ts-ignore
-        if(user.objectMeta.tenant === this.currentTenant || user.objectMeta.tenant === parentTenant || user.objectMeta.username === this.currentTenant) {
-          return userdata.push(user)
-        }
-      }
-      else {
-        return userdata.push(user)
-      }
-    })
-    this.totalItems=userdata.length
-    return userdata
+    return userList.users
   }
 
   isInErrorState(resource: User): boolean {

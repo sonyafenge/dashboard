@@ -56,9 +56,11 @@ limitations under the License.
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[2]">
-        <mat-header-cell *matHeaderCellDef
+        <mat-header-cell [hidden]="!isClusterAdmin"
+                         *matHeaderCellDef
                          i18n>Tenant Partition</mat-header-cell>
-        <mat-cell *matCellDef="let crd">{{crd.clusterName}}</mat-cell>
+        <mat-cell [hidden]="!isClusterAdmin"
+                  *matCellDef="let crd">{{crd.clusterName}}</mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[3]">
