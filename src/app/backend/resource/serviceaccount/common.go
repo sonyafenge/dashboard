@@ -47,7 +47,6 @@ func CreateServiceAccount(spec *ServiceAccountSpec, client kubernetes.Interface)
 			Tenant:    spec.Tenant,
 		},
 	}
-
 	_, err := client.CoreV1().ServiceAccounts(spec.Namespace).Create(serviceaccount)
 	return err
 }
@@ -70,7 +69,6 @@ func CreateServiceAccountsWithMultiTenancy(spec *ServiceAccountSpec, client kube
 			Tenant:    spec.Tenant,
 		},
 	}
-
 	_, err := client.CoreV1().ServiceAccountsWithMultiTenancy(spec.Namespace, spec.Tenant).Create(serviceaccount)
 	return err
 }

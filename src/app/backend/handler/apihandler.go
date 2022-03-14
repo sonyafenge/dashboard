@@ -118,19 +118,21 @@ type TerminalResponse struct {
 
 func ResourceAllocator(tenant string, clients []clientapi.ClientManager) clientapi.ClientManager {
 	if tenant == "system" || tenant == "" {
+		log.Printf("selected config of %s cluster", clients[0].GetClusterName())
 		return clients[0]
 	}
 	if clienlen := len(clients); clienlen > 1 {
 		pref := []rune(strings.ToUpper(tenant))
 		log.Printf("prefix:%v", pref[0])
 		if pref[0] <= rune(77) {
-			log.Printf("client[0]")
+			log.Printf("selected config of %s cluster", clients[0].GetClusterName())
 			return clients[0]
 		} else {
-			log.Printf("client[1]")
+			log.Printf("selected config of %s cluster", clients[1].GetClusterName())
 			return clients[1]
 		}
 	}
+	log.Printf("selected config of %s cluster", clients[0].GetClusterName())
 	return clients[0]
 }
 
@@ -1368,19 +1370,32 @@ func (apiHandler *APIHandlerV2) handleGetTenantList(request *restful.Request, re
 }
 
 func (apiHandler *APIHandlerV2) handleGetTenantDetail(request *restful.Request, response *restful.Response) {
-	name := request.PathParameter("name")
+	tenantName := request.PathParameter("name")
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
-	client := ResourceAllocator(name, apiHandler.tpManager)
-	k8sClient := client.InsecureClient()
-	//k8sClient, err := client.Client(request)
-	//if err != nil {
-	//	errors.HandleInternalError(response, err)
-	//	return
-	//}
+	client := ResourceAllocator(tenantName, apiHandler.tpManager)
+	c, err := request.Request.Cookie("tenant")
+	var CookieTenant string
+	if err != nil {
+		log.Printf("Cookie error: %v", err)
+		CookieTenant = tenantName
+	} else {
+		CookieTenant = c.Value
+	}
+	log.Printf("cookie_tenant is: %s", CookieTenant)
+	var k8sClient kubernetes.Interface
+	if tenantName != CookieTenant {
+		k8sClient = client.InsecureClient()
+	} else {
+		k8sClient, err = client.Client(request)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+	}
 
-	result, err := tenant.GetTenantDetail(k8sClient, name)
+	result, err := tenant.GetTenantDetail(k8sClient, tenantName)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -2428,10 +2443,24 @@ func (apiHandler *APIHandlerV2) handleGetReplicaSets(request *restful.Request, r
 func (apiHandler *APIHandlerV2) handleGetReplicaSetsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	client := ResourceAllocator(tenant, apiHandler.tpManager)
-	k8sClient, err := client.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	var CookieTenant string
 	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+		log.Printf("Cookie error: %v", err)
+		CookieTenant = tenant
+	} else {
+		CookieTenant = c.Value
+	}
+	log.Printf("cookie_tenant is: %s", CookieTenant)
+	var k8sClient kubernetes.Interface
+	if tenant != CookieTenant {
+		k8sClient = client.InsecureClient()
+	} else {
+		k8sClient, err = client.Client(request)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
 	}
 	namespace := parseNamespacePathParameter(request)
 	dataSelect := parseDataSelectPathParameter(request)
@@ -2743,10 +2772,25 @@ func (apiHandler *APIHandlerV2) handleGetDeployments(request *restful.Request, r
 func (apiHandler *APIHandlerV2) handleGetDeploymentsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	client := ResourceAllocator(tenant, apiHandler.tpManager)
-	k8sClient, err := client.Client(request)
+
+	c, err := request.Request.Cookie("tenant")
+	var CookieTenant string
 	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+		log.Printf("Cookie error: %v", err)
+		CookieTenant = tenant
+	} else {
+		CookieTenant = c.Value
+	}
+	log.Printf("cookie_tenant is: %s", CookieTenant)
+	var k8sClient kubernetes.Interface
+	if tenant != CookieTenant {
+		k8sClient = client.InsecureClient()
+	} else {
+		k8sClient, err = client.Client(request)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
 	}
 	namespace := parseNamespacePathParameter(request)
 	dataSelect := parseDataSelectPathParameter(request)
@@ -2942,10 +2986,24 @@ func (apiHandler *APIHandlerV2) handleGetPods(request *restful.Request, response
 func (apiHandler *APIHandlerV2) handleGetPodsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	client := ResourceAllocator(tenant, apiHandler.tpManager)
-	k8sClient, err := client.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	var CookieTenant string
 	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+		log.Printf("Cookie error: %v", err)
+		CookieTenant = tenant
+	} else {
+		CookieTenant = c.Value
+	}
+	log.Printf("cookie_tenant is: %s", CookieTenant)
+	var k8sClient kubernetes.Interface
+	if tenant != CookieTenant {
+		k8sClient = client.InsecureClient()
+	} else {
+		k8sClient, err = client.Client(request)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
 	}
 
 	namespace := parseNamespacePathParameter(request)
@@ -3775,11 +3833,26 @@ func (apiHandler *APIHandlerV2) handleAddResourceQuota(request *restful.Request,
 func (apiHandler *APIHandlerV2) handleGetResourceQuotaList(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	client := ResourceAllocator(tenant, apiHandler.tpManager)
-	k8sClient, err := client.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	var CookieTenant string
 	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+		log.Printf("Cookie error: %v", err)
+		CookieTenant = tenant
+	} else {
+		CookieTenant = c.Value
 	}
+	log.Printf("cookie_tenant is: %s", CookieTenant)
+	var k8sClient kubernetes.Interface
+	if tenant != CookieTenant {
+		k8sClient = client.InsecureClient()
+	} else {
+		k8sClient, err = client.Client(request)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
+	}
+
 	//Namespace := request.PathParameter("namespace")
 	var namespaces []string
 	//namespaces = append(namespaces, Namespace)
@@ -4070,10 +4143,24 @@ func (apiHandler *APIHandlerV2) handleGetNamespaces(request *restful.Request, re
 func (apiHandler *APIHandlerV2) handleGetNamespacesWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	client := ResourceAllocator(tenant, apiHandler.tpManager)
-	k8sClient, err := client.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	var CookieTenant string
 	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
+		log.Printf("Cookie error: %v", err)
+		CookieTenant = tenant
+	} else {
+		CookieTenant = c.Value
+	}
+	log.Printf("cookie_tenant is: %s", CookieTenant)
+	var k8sClient kubernetes.Interface
+	if tenant != CookieTenant {
+		k8sClient = client.InsecureClient()
+	} else {
+		k8sClient, err = client.Client(request)
+		if err != nil {
+			errors.HandleInternalError(response, err)
+			return
+		}
 	}
 	dataSelect := parseDataSelectPathParameter(request)
 	result, err := ns.GetNamespaceListWithMultiTenancy(k8sClient, tenant, dataSelect)
@@ -5323,7 +5410,7 @@ func (apiHandler *APIHandlerV2) handleGetCustomResourceDefinitionListWithMultiTe
 		}
 
 		dataSelect := parseDataSelectPathParameter(request)
-		result, err = customresourcedefinition.GetCustomResourceDefinitionList(apiextensionsclient, dataSelect, client.GetClusterName())
+		result, err = customresourcedefinition.GetCustomResourceDefinitionListWithMultiTenancy(apiextensionsclient, dataSelect, tenant, client.GetClusterName())
 		if err != nil {
 			errors.HandleInternalError(response, err)
 			return
