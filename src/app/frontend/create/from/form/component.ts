@@ -17,6 +17,8 @@ import {Component, OnInit} from '@angular/core';
 import {AbstractControl, FormArray, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material';
 import {ActivatedRoute} from '@angular/router';
+import {TenantDetail} from "@api/backendapi";
+import {NamespacedResourceService} from '../../../../frontend/common/services/resource/resource';
 import {
   AppDeploymentSpec,
   EnvironmentVariable,
@@ -52,10 +54,14 @@ export class CreateFromFormComponent implements OnInit {
   namespaces: string[];
   protocols: string[];
   secrets: string[];
+  userType = '';
+  Tenant = '';
+  nameSpace= '';
   isExternal = false;
   labelArr: DeployLabel[] = [];
 
   form: FormGroup;
+  private currentTenant: string;
 
   constructor(
     private readonly namespace_: NamespaceService,
@@ -65,9 +71,17 @@ export class CreateFromFormComponent implements OnInit {
     private readonly route_: ActivatedRoute,
     private readonly fb_: FormBuilder,
     private readonly dialog_: MatDialog,
+    private readonly tenants_: NamespacedResourceService<TenantDetail>,
   ) {}
 
   ngOnInit(): void {
+    const nameSpace = sessionStorage.getItem('namespace');
+    this.nameSpace = nameSpace
+    const Tenant = sessionStorage.getItem('parentTenant');
+    this.Tenant = Tenant
+    const usertype = sessionStorage.getItem('userType');
+    this.userType = usertype
+    this.currentTenant = this.tenants_['tenant_']['currentTenant_']
     this.form = this.fb_.group({
       name: ['', Validators.compose([Validators.required, FormValidators.namePattern])],
       containerImage: ['', Validators.required],
@@ -89,12 +103,13 @@ export class CreateFromFormComponent implements OnInit {
       this.labelArr[0].value = v;
       this.labels.patchValue([{index: 0, value: v}]);
     });
+
     this.namespace.valueChanges.subscribe((namespace: string) => {
       this.name.clearAsyncValidators();
       this.name.setAsyncValidators(validateUniqueName(this.http_, namespace));
       this.name.updateValueAndValidity();
     });
-    this.http_.get('api/v1/namespace').subscribe((result: NamespaceList) => {
+    this.http_.get(`api/v1/tenants/${this.currentTenant}/namespace`).subscribe((result: NamespaceList) => {
       this.namespaces = result.namespaces.map((namespace: Namespace) => namespace.objectMeta.name);
       this.namespace.patchValue(
         !this.namespace_.areMultipleNamespacesSelected()
@@ -122,8 +137,7 @@ export class CreateFromFormComponent implements OnInit {
   get description(): AbstractControl {
     return this.form.get('description');
   }
-
-  get namespace(): AbstractControl {
+  get namespace():any {
     return this.form.get('namespace');
   }
 
@@ -171,9 +185,6 @@ export class CreateFromFormComponent implements OnInit {
     this.imagePullSecret.patchValue('');
   }
 
-  isCreateDisabled(): boolean {
-    return !this.form.valid || this.create_.isDeployDisabled();
-  }
 
   getSecrets(): void {
     this.http_.get(`api/v1/secret/${this.namespace.value}`).subscribe((result: SecretList) => {
@@ -275,7 +286,12 @@ export class CreateFromFormComponent implements OnInit {
     const portMappings = this.portMappings.value.portMappings || [];
     const variables = this.variables.value.variables || [];
     const labels = this.labels.value.labels || [];
+    if(this.userType == "tenant-user"){
+      this.namespace.value = this.nameSpace
+      this.currentTenant = this.Tenant
+    }
     const spec: AppDeploymentSpec = {
+
       containerImage: this.containerImage.value,
       imagePullSecret: this.imagePullSecret.value ? this.imagePullSecret.value : null,
       containerCommand: this.containerCommand.value ? this.containerCommand.value : null,
@@ -289,6 +305,7 @@ export class CreateFromFormComponent implements OnInit {
       variables: variables.filter(this.isVariableFilled),
       replicas: this.replicas.value,
       namespace: this.namespace.value,
+      tenant: this.currentTenant,
       cpuRequirement: this.isNumber(this.cpuRequirement.value) ? this.cpuRequirement.value : null,
       memoryRequirement: this.isNumber(this.memoryRequirement.value)
         ? `${this.memoryRequirement.value}Mi`

@@ -67,11 +67,13 @@ export class CreateService {
     content: string,
     validate = true,
     name = '',
+    namespace = 'default',
+    tenant = this.tenant_.current()
   ): Promise<AppDeploymentContentResponse> {
     const spec: AppDeploymentContentSpec = {
       name,
-      namespace: this.namespace_.current(),
-      tenant: this.tenant_.current(),
+      namespace: this.namespace_.current().length === 0 ? namespace : this.namespace_.current(),
+      tenant: tenant,
       content,
       validate,
     };
@@ -80,7 +82,7 @@ export class CreateService {
     let error: HttpErrorResponse;
 
     try {
-      const {token} = await this.csrfToken_.getTokenForAction(this.tenant_.current(),'appdeploymentfromfile').toPromise();
+      const {token} = await this.csrfToken_.getTokenForAction(tenant, 'appdeploymentfromfile').toPromise();
       this.isDeployInProgress_ = true;
       response = await this.http_
         .post<AppDeploymentContentResponse>('api/v1/appdeploymentfromfile', spec, {

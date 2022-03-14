@@ -177,13 +177,13 @@ limitations under the License.
       </kd-user-help>
     </kd-help-section>
 
-    <kd-help-section>
-      <mat-form-field>
+    <kd-help-section *ngIf="userType!='tenant-user'">
+      <mat-form-field >
         <mat-select formControlName="namespace"
                     (click)="resetImagePullSecret()"
                     placeholder="Namespace"
                     i18n-placeholder
-                    required>
+        >
           <mat-option *ngFor="let namespace of namespaces"
                       [value]="namespace">
             {{namespace}}
@@ -347,7 +347,6 @@ limitations under the License.
 </form>
 
 <button type="button"
-        [disabled]="isCreateDisabled()"
         color="primary"
         mat-raised-button
         (click)="deploy()"
@@ -366,7 +365,6 @@ limitations under the License.
 <button mat-button
         color="primary"
         (click)="switchMoreOptions()"
-        [hidden]="!isMoreOptionsEnabled()"
         i18n>
   {isMoreOptionsEnabled(), select, 1 {Hide advanced options} other {Show advanced options}}
 </button>
