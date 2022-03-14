@@ -164,9 +164,8 @@ func CreateClusterAdmin() error {
 
 func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, error) {
 	const namespace = "default"
-	var clusterRoleName = user.Username + "-" + user.Tenant + "-" + "role"
-	var saName = user.Tenant + "-" + user.Tenant + "-sa"
-	var clusterRoleBinding = user.Username + "-" + user.Tenant + "-" + "rb"
+	var clusterRoleName = user.Tenant + "-" + "role"
+	var saName = user.Tenant + "-sa"
 	//clientManager := client.NewClientManager(args.Holder.GetKubeConfigFile(), args.Holder.GetApiServerHost())
 
 	// TODO Check if centaurus-dashboard namespace exists or not using GET method
@@ -194,7 +193,7 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 	apiGroups = append(apiGroups, "*")
 	resources = append(resources, "*")
 	clusterRoleSpec := &clusterrole.ClusterRoleSpec{
-		Name:      clusterRoleName,
+		Name:      user.Tenant + "-" + "role",
 		Verbs:     verbs,
 		APIGroups: apiGroups,
 		Resources: resources,
@@ -207,7 +206,7 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 
 	// Create Cluster Role Binding
 	clusterRoleBindingSpec := &clusterrolebinding.ClusterRoleBindingSpec{
-		Name: clusterRoleBinding,
+		Name: saName + "-rb",
 		Subject: rbac.Subject{
 			Kind:      "ServiceAccount",
 			APIGroup:  "",
@@ -273,24 +272,4 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 	// call insertUser function and pass the user data
 	log.Printf("Created tenant admin successfully : %s", user2.Username)
 	return user2, nil
-}
-
-func ResourceAllocator(tenant string, clients []clientapi.ClientManager) clientapi.ClientManager {
-	if tenant == "system" || tenant == "" {
-		log.Printf("selected config of %s cluster", clients[0].GetClusterName())
-		return clients[0]
-	}
-	if clienlen := len(clients); clienlen > 1 {
-		pref := []rune(strings.ToUpper(tenant))
-		log.Printf("prefix:%v", pref[0])
-		if pref[0] <= rune(77) {
-			log.Printf("selected config of %s cluster", clients[0].GetClusterName())
-			return clients[0]
-		} else {
-			log.Printf("selected config of %s cluster", clients[1].GetClusterName())
-			return clients[1]
-		}
-	}
-	log.Printf("selected config of %s cluster", clients[0].GetClusterName())
-	return clients[0]
 }

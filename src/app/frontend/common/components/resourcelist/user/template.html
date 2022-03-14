@@ -1,3 +1,19 @@
+<!--
+Copyright 2020 Authors of Arktos.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 <div class="main_container">
   <div class="row">
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
@@ -15,6 +31,7 @@
         <div title fxLayout="row" i18n>Users</div>
         <div description><span class="kd-muted-light" i18n>Items:&nbsp;</span>{{totalItems}}
         </div>
+
 
         <div content [hidden]="showZeroState()">
           <div kdLoadingSpinner [isLoading]="isLoading"></div>
@@ -47,18 +64,29 @@
               </mat-cell>
             </ng-container>
 
-            <ng-container [matColumnDef]="getColumns()[4]">
+            <ng-container [matColumnDef]="getColumns()[2]">
               <mat-header-cell *matHeaderCellDef
                                mat-sort-header
                                disableClear="true"
-                               i18n>Age</mat-header-cell>
+                               matSortDirection="asc"
+                               i18n>Tenant</mat-header-cell>
               <mat-cell *matCellDef="let user">
-                <kd-date [date]="user.objectMeta.creationTimestamp"
-                         relative></kd-date>
+                <a routerLink="/tenant/{{user.objectMeta.tenant}}"
+                   queryParamsHandling="preserve">
+                  {{user.objectMeta.tenant}}
+                </a>
               </mat-cell>
             </ng-container>
 
-            <ng-container [matColumnDef]="getColumns()[5]">
+            <ng-container [matColumnDef]="getColumns()[3]">
+              <mat-header-cell *matHeaderCellDef
+                               i18n>Type</mat-header-cell>
+              <mat-cell *matCellDef="let user">
+                {{user.objectMeta.type}}
+              </mat-cell>
+            </ng-container>
+
+            <ng-container [matColumnDef]="getColumns()[4]">
               <mat-header-cell *matHeaderCellDef
                                mat-sort-header
                                disableClear="true"
@@ -71,17 +99,20 @@
               </mat-cell>
             </ng-container>
 
-            <ng-container [matColumnDef]="getColumns()[2]">
+            <ng-container [matColumnDef]="getColumns()[5]">
               <mat-header-cell *matHeaderCellDef
                                i18n>Phase</mat-header-cell>
               <mat-cell *matCellDef="let user">{{user.phase}}</mat-cell>
             </ng-container>
 
-            <ng-container [matColumnDef]="getColumns()[3]">
+            <ng-container [matColumnDef]="getColumns()[6]">
               <mat-header-cell *matHeaderCellDef
-                               i18n>Type</mat-header-cell>
+                               mat-sort-header
+                               disableClear="true"
+                               i18n>Age</mat-header-cell>
               <mat-cell *matCellDef="let user">
-                {{user.objectMeta.type}}
+                <kd-date [date]="user.objectMeta.creationTimestamp"
+                         relative></kd-date>
               </mat-cell>
             </ng-container>
 
@@ -115,3 +146,4 @@
     </div>
   </div>
 </div>
+

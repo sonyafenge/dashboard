@@ -169,7 +169,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 	authHandler := auth.NewAuthHandler(authManager)
 	authHandler.Install(apiV1Ws)
 
-	settingsHandler := settings.NewSettingsHandler(sManager, tpManagers)
+	settingsHandler := settings.NewSettingsHandler(sManager, tpManager)
 	settingsHandler.Install(apiV1Ws)
 
 	systemBannerHandler := systembanner.NewSystemBannerHandler(sbManager)
@@ -1283,6 +1283,11 @@ func (apiHandler *APIHandlerV2) handleCreateTenant(request *restful.Request, res
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
+	userdetail, _ := db.GetUser(tenantSpec.Username)
+	if userdetail.ObjectMeta.Username != "" {
+		errors.HandleInternalError(response, errors.NewInternal("User already exists"))
+		return
+	}
 	client := ResourceAllocator(tenantSpec.Name, apiHandler.tpManager)
 	k8sClient := client.InsecureClient()
 	//k8sClient, err := client.Client(request)
@@ -1319,17 +1324,15 @@ func (apiHandler *APIHandlerV2) handleCreateTenant(request *restful.Request, res
 //for delete tenant
 func (apiHandler *APIHandlerV2) handleDeleteTenant(request *restful.Request, response *restful.Response) {
 	//tenant := request.PathParameter("tenant")
-	client := ResourceAllocator("system", apiHandler.tpManager)
-	k8sClient, err := client.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
-
 	tenantName := request.PathParameter("tenant")
+	client := ResourceAllocator(tenantName, apiHandler.tpManager)
+	k8sClient := client.InsecureClient()
+
 	if err := tenant.DeleteTenant(tenantName, k8sClient); err != nil {
 		errors.HandleInternalError(response, err)
 		return
+	} else {
+		db.DeleteTenantUser(tenantName)
 	}
 	response.WriteHeader(http.StatusOK)
 }
@@ -5916,71 +5919,81 @@ func (apiHandler *APIHandlerV2) handleDeleteUser(w *restful.Request, r *restful.
 		errors.HandleInternalError(r, err)
 		return
 	}
-	client := ResourceAllocator("system", apiHandler.tpManager)
-	k8sClient, err = client.Client(w)
-
 	tenantName := w.PathParameter("tenant")
+
 	userName := w.PathParameter("username")
 	userid := w.PathParameter("userid")
-
-	if err != nil {
-		errors.HandleInternalError(r, err)
+	userDetail, _ := db.GetUser(userName)
+	if userDetail.ObjectMeta.Username == "" {
+		errors.HandleInternalError(r, errors.NewInternal("User do not exists"))
 		return
 	}
-
-	userDetail, err := db.GetUser(userName)
-
-	if tenantName == userDetail.ObjectMeta.Username {
-		errors.HandleInternalError(r, er.New("cannot delete its parent user"))
+	client := ResourceAllocator(userDetail.ObjectMeta.Tenant, apiHandler.tpManager)
+	k8sClient = client.InsecureClient()
+	//k8sClient, err = client.Client(w)
+	//if err != nil {
+	//  errors.HandleInternalError(r, err)
+	//  return
+	//}
+	if tenantName == userDetail.ObjectMeta.Tenant && userDetail.ObjectMeta.Type == `tenant-admin` {
+		errors.HandleInternalError(r, er.New("Cannot delete admin users"))
 		return
 	}
 
 	if userDetail.ObjectMeta.Type == `tenant-admin` {
-		if err := tenant.DeleteTenant(userName, k8sClient); err != nil {
+		if err := tenant.DeleteTenant(userDetail.ObjectMeta.Tenant, k8sClient); err != nil {
 			errors.HandleInternalError(r, err)
 			return
+		} else {
+			count := db.DeleteTenantUser(userDetail.ObjectMeta.Tenant)
+			log.Printf("Deleted %d users of tenant %s", count, userDetail.ObjectMeta.Tenant)
 		}
-		if err := clusterrolebinding.DeleteClusterRoleBindings(userName, k8sClient); err != nil {
-			errors.HandleInternalError(r, err)
-			return
+		if err := clusterrolebinding.DeleteClusterRoleBindings(userDetail.ObjectMeta.Tenant+"-sa-rb", k8sClient); err != nil {
+			//errors.HandleInternalError(r, err)
+			//return
 		}
-		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
-			errors.HandleInternalError(r, err)
-			return
+		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, userDetail.ObjectMeta.Tenant+"-sa", k8sClient); err != nil {
+			//errors.HandleInternalError(r, err)
+			//return
 		}
-		if err := clusterrole.DeleteClusterRole(userName, k8sClient); err != nil {
-			errors.HandleInternalError(r, err)
-			return
+		if err := clusterrole.DeleteClusterRole(userDetail.ObjectMeta.Tenant+"-role", k8sClient); err != nil {
+			//errors.HandleInternalError(r, err)
+			//return
 		}
 	} else if userDetail.ObjectMeta.Type == `cluster-admin` {
 		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
-			errors.HandleInternalError(r, err)
-			return
+			//errors.HandleInternalError(r, err)
+			//return
 		}
 		if err := clusterrolebinding.DeleteClusterRoleBindings(userName, k8sClient); err != nil {
-			errors.HandleInternalError(r, err)
-			return
+			//errors.HandleInternalError(r, err)
+			//return
 		}
 	} else {
 		if userDetail.ObjectMeta.Type == `tenant-user` {
 			if err := serviceaccount.DeleteServiceAccountsWithMultiTenancy(userDetail.ObjectMeta.Tenant, userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
-				errors.HandleInternalError(r, err)
-				return
+				//errors.HandleInternalError(r, err)
+				//return
 			}
 			if err := rolebinding.DeleteRoleBindingsWithMultiTenancy(userDetail.ObjectMeta.Tenant, userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
-				errors.HandleInternalError(r, err)
-				return
+				//errors.HandleInternalError(r, err)
+				//return
 			}
 		}
 	}
+	msg := "User deleted successfully"
 	id, err := strconv.Atoi(userid)
-	deletedRows := db.DeleteUser(int64(id))
+	if userDetail.ObjectMeta.Type != `tenant-admin` {
 
-	if err != nil {
-		log.Fatalf("Unable to get user. %v", err)
+		deletedRows := db.DeleteUser(int64(id))
+
+		if err != nil {
+			log.Printf("Unable to get user. %v", err)
+			errors.HandleInternalError(r, err)
+			return
+		}
+		msg = fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
 	}
-	msg := fmt.Sprintf("User deleted successfully. Total rows/record affected %v", deletedRows)
-
 	res := response{
 		ID:      int64(id),
 		Message: msg,

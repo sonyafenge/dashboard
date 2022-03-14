@@ -1,16 +1,31 @@
+// Copyright 2020 Authors of Arktos.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {HttpParams} from '@angular/common/http';
 import {Component, Input, ViewChild} from '@angular/core';
 import {User, UserList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
 import {MatDrawer} from '@angular/material';
+
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {ResourceService} from '../../../services/resource/resource';
 import {NotificationsService} from '../../../services/global/notifications';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {MenuComponent} from '../../list/column/menu/component';
-import {UserApi} from "../../../services/global/userapi"
-import {VerberService} from "../../../services/global/verber"
+import {UserApi} from "../../../../../frontend/common/services/global/userapi"
+import {VerberService} from "../../../../../frontend/common/services/global/verber"
 import {NamespacedResourceService} from "../../../services/resource/resource";
 import {TenantDetail} from "@api/backendapi";
 
@@ -86,11 +101,11 @@ export class UserListComponent extends ResourceListWithStatuses<UserList, User> 
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'username', 'phase', 'type','age','role'];
+    return ['statusicon', 'username', 'tenant', 'type', 'role', 'phase', 'age'];
   }
 
   getDisplayColumns2(): string[] {
-    return ['statusicon', 'username', 'phase', 'type','age','role'];
+    return ['statusicon', 'username', 'tenant', 'phase', 'type','age','role'];
   }
 
   onClick(): void {

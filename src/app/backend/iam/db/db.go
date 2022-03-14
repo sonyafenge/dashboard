@@ -233,3 +233,33 @@ func DeleteUser(id int64) int64 {
 
 	return rowsAffected
 }
+
+func DeleteTenantUser(tenant string) int64 {
+
+	// create the postgres db connection
+	db := CreateConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	// create the delete sql query
+	sqlStatement := `DELETE FROM userdetails WHERE tenant=$1`
+
+	// execute the sql statement
+	res, err := db.Exec(sqlStatement, tenant)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// check how many rows affected
+	rowsAffected, err := res.RowsAffected()
+
+	if err != nil {
+		log.Fatalf("Error while checking the affected rows. %v", err)
+	}
+
+	fmt.Printf("Total rows/record affected %v", rowsAffected)
+
+	return rowsAffected
+}
