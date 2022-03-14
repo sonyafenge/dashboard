@@ -31,7 +31,7 @@ import {ActivatedRoute} from "@angular/router";
   templateUrl: './template.html',
 })
 export class TenantListComponent extends ResourceListWithStatuses<TenantList, Tenant> {
-  @Input() endpoint = EndpointManager.resource(Resource.tenant).list();
+  @Input() endpoint = EndpointManager.resource(Resource.tenant,false,true).list();
 
   displayName: string;
   typeMeta: TypeMeta;

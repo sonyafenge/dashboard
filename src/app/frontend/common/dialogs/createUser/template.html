@@ -11,14 +11,14 @@
         <mat-label>Type of user</mat-label>
         <mat-select  formControlName="usertype"
                      (selectionChange)="selectUserType($event.value)">
-
           <mat-option value="cluster-admin" *ngIf="userType=='cluster-admin'">Cluster Admin</mat-option>
-          <mat-option value="tenant-admin" *ngIf= "userType=='tenant-admin'">Tenant Admin</mat-option>
+          <mat-option value="tenant-admin" *ngIf= "userType=='cluster-admin' || userType=='tenant-admin'">Tenant Admin</mat-option>
           <mat-option value="tenant-user" *ngIf="userType=='tenant-admin'">Tenant User</mat-option>
         </mat-select>
         <input matInput >
       </mat-form-field>
     </div>
+
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill">
         <mat-label>Username</mat-label>
@@ -30,6 +30,7 @@
         <span class="red" *ngIf="username.hasError('maxlength')">Username should not be greater than 24 characters.</span>
       </div>
     </div>
+
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill">
         <mat-label>Password</mat-label>
@@ -43,6 +44,22 @@
         <span class="red" *ngIf="password.hasError('maxlength')">Password must contain 8-20 characters.</span>
       </div>
     </div>
+
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <mat-form-field appearance="fill" *ngIf="selected=='tenant-admin'">
+        <mat-label>Tenant</mat-label>
+        <mat-select formControlName="tenant"
+                    placeholder="tenant"
+                    i18n-placeholder
+                    required>
+          <mat-option *ngFor="let tenant of tenants"
+                      [value]="tenant">
+            {{tenant}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill" *ngIf="selected=='tenant-user'">
         <mat-label>Namespace</mat-label>
@@ -58,6 +75,7 @@
         </mat-select>
       </mat-form-field>
     </div>
+
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill"  *ngIf="selected=='tenant-user'" >
         <mat-label>Role </mat-label>

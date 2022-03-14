@@ -1,3 +1,17 @@
+// Copyright 2020 Authors of Arktos.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {Component, OnInit, ViewChild, ElementRef} from '@angular/core';
 import {Router, ActivatedRoute} from '@angular/router';
 import {Subject} from 'rxjs';
@@ -18,7 +32,7 @@ import {NotificationsService, NotificationSeverity} from 'common/services/global
 export class TenantSelectorComponent implements OnInit {
   private tenantUpdate_ = new Subject();
   private unsubscribe_ = new Subject();
-  private readonly endpoint_ = EndpointManager.resource(Resource.tenant);
+  private readonly endpoint_ = EndpointManager.resource(Resource.tenant,false,true);
 
   tenants: string[] = [];
   selectedTenant: string;
@@ -108,9 +122,6 @@ export class TenantSelectorComponent implements OnInit {
     }
   }
 
-  /**
-   * When state is loaded and tenants are fetched, perform basic validation.
-   */
   private onTenantLoaded_(): void {
     let newTenant = this.tenantService_.getAuthTenant();
     const targetTenant = this.selectedTenant;
@@ -127,9 +138,6 @@ export class TenantSelectorComponent implements OnInit {
     }
   }
 
-  /**
-   * Focuses tenant input field after clicking on tenant selector menu.
-   */
   private focusTenantInput_(): void {
     // Wrap in a timeout to make sure that element is rendered before looking for it.
     setTimeout(() => {
@@ -170,5 +178,4 @@ export class TenantSelectorComponent implements OnInit {
       return username
     }
   }
-
 }

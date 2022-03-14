@@ -16,6 +16,12 @@
 import {InjectionToken} from '@angular/core';
 import {MatTooltipDefaultOptions} from '@angular/material';
 
+const username = sessionStorage.getItem('parentTenant');
+const userType = sessionStorage.getItem('userType');
+const defaultNamespace = sessionStorage.getItem('namespace');
+const tenant = userType === 'cluster-admin' ? 'system' : username;
+const namespace = defaultNamespace === '' ? 'default' : defaultNamespace;
+
 export let CONFIG_DI_TOKEN = new InjectionToken<Config>('kd.config');
 
 export interface Config {
@@ -34,8 +40,8 @@ export const CONFIG: Config = {
   authTenantCookieName: 'tenant',
   csrfHeaderName: 'X-CSRF-TOKEN',
   skipLoginPageCookieName: 'skipLoginPage',
-  defaultNamespace: 'default',
-  systemTenantName: 'system',
+  defaultNamespace: namespace,
+  systemTenantName: tenant,
 };
 
 // Override default material tooltip values.

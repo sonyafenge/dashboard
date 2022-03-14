@@ -1349,21 +1349,22 @@ func (apiHandler *APIHandlerV2) handleDeleteTenant(request *restful.Request, res
 
 func (apiHandler *APIHandlerV2) handleGetTenantList(request *restful.Request, response *restful.Response) {
 	var tenantsList tenant.TenantList
+	tenantName := request.PathParameter("tenant")
+	cManager := ResourceAllocator(tenantName, apiHandler.tpManager)
+	_, err := cManager.Client(request)
+	if err != nil {
+		errors.HandleInternalError(response, err)
+		return
+	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
+
 	dataSelect := parseDataSelectPathParameter(request)
 	for _, tpManager := range apiHandler.tpManager {
 		k8sClient := tpManager.InsecureClient()
-
-		//k8sClient, err := tpManager.Client(request)
-		//if err != nil {
-		//	errors.HandleInternalError(response, err)
-		//	return
-		//}
-
 		dataSelect := dataselect.NewDataSelectQuery(dataselect.NoPagination, dataselect.NoSort, dataselect.NoFilter, dataselect.NoMetrics)
-		result, err := tenant.GetTenantList(k8sClient, dataSelect, tpManager.GetClusterName())
+		result, err := tenant.GetTenantList(k8sClient, dataSelect, tpManager.GetClusterName(), tenantName)
 		if err != nil {
 			errors.HandleInternalError(response, err)
 			return
@@ -1381,6 +1382,33 @@ func (apiHandler *APIHandlerV2) handleGetTenantList(request *restful.Request, re
 	tenantsList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 
 	response.WriteHeaderAndEntity(http.StatusOK, tenantsList)
+}
+
+type TenantCell tenant.Tenant
+
+func (self TenantCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
+	switch name {
+	case dataselect.NameProperty:
+		return dataselect.StdComparableString(self.ObjectMeta.Name)
+	case dataselect.CreationTimestampProperty:
+		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
+	default:
+		return nil
+	}
+}
+func toCells(std []tenant.Tenant) []dataselect.DataCell {
+	cells := make([]dataselect.DataCell, len(std))
+	for i := range std {
+		cells[i] = TenantCell(std[i])
+	}
+	return cells
+}
+func fromCells(cells []dataselect.DataCell) []tenant.Tenant {
+	std := make([]tenant.Tenant, len(cells))
+	for i := range std {
+		std[i] = tenant.Tenant(cells[i].(TenantCell))
+	}
+	return std
 }
 
 type TenantCell tenant.Tenant
@@ -6122,11 +6150,6 @@ func (apiHandler *APIHandlerV2) handleDeleteUser(w *restful.Request, r *restful.
 	}
 	client := ResourceAllocator(userDetail.ObjectMeta.Tenant, apiHandler.tpManager)
 	k8sClient = client.InsecureClient()
-	//k8sClient, err = client.Client(w)
-	//if err != nil {
-	//  errors.HandleInternalError(r, err)
-	//  return
-	//}
 	if tenantName == userDetail.ObjectMeta.Tenant && userDetail.ObjectMeta.Type == `tenant-admin` {
 		errors.HandleInternalError(r, er.New("Cannot delete admin users"))
 		return
@@ -6136,33 +6159,16 @@ func (apiHandler *APIHandlerV2) handleDeleteUser(w *restful.Request, r *restful.
 		var clusterRoleName = userDetail.ObjectMeta.Username + "-" + userDetail.ObjectMeta.Tenant + "-" + "role"
 		var saName = userDetail.ObjectMeta.Tenant + "-" + userDetail.ObjectMeta.Tenant + "-sa"
 		var clusterRoleBinding = userDetail.ObjectMeta.Username + "-" + userDetail.ObjectMeta.Tenant + "-" + "rb"
-		//if err := tenant.DeleteTenant(userDetail.ObjectMeta.Tenant, k8sClient); err != nil {
-		//	errors.HandleInternalError(r, err)
-		//	return
-		//} else {
-		//	count := db.DeleteTenantUser(userDetail.ObjectMeta.Tenant)
-		//	log.Printf("Deleted %d users of tenant %s", count, userDetail.ObjectMeta.Tenant)
-		//}
 		if err := clusterrolebinding.DeleteClusterRoleBindings(clusterRoleBinding, k8sClient); err != nil {
-			//errors.HandleInternalError(r, err)
-			//return
 		}
 		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, saName, k8sClient); err != nil {
-			//errors.HandleInternalError(r, err)
-			//return
 		}
 		if err := clusterrole.DeleteClusterRole(clusterRoleName, k8sClient); err != nil {
-			//errors.HandleInternalError(r, err)
-			//return
 		}
 	} else if userDetail.ObjectMeta.Type == `cluster-admin` {
 		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
-			//errors.HandleInternalError(r, err)
-			//return
 		}
 		if err := clusterrolebinding.DeleteClusterRoleBindings(userName, k8sClient); err != nil {
-			//errors.HandleInternalError(r, err)
-			//return
 		}
 	} else {
 		if userDetail.ObjectMeta.Type == `tenant-user` {
