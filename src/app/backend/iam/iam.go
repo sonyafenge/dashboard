@@ -273,3 +273,23 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 	log.Printf("Created tenant admin successfully : %s", user2.Username)
 	return user2, nil
 }
+
+func ResourceAllocator(tenant string, clients []clientapi.ClientManager) clientapi.ClientManager {
+	if tenant == "system" || tenant == "" {
+		log.Printf("selected config of %s cluster", clients[0].GetClusterName())
+		return clients[0]
+	}
+	if clienlen := len(clients); clienlen > 1 {
+		pref := []rune(strings.ToUpper(tenant))
+		log.Printf("prefix:%v", pref[0])
+		if pref[0] <= rune(77) {
+			log.Printf("selected config of %s cluster", clients[0].GetClusterName())
+			return clients[0]
+		} else {
+			log.Printf("selected config of %s cluster", clients[1].GetClusterName())
+			return clients[1]
+		}
+	}
+	log.Printf("selected config of %s cluster", clients[0].GetClusterName())
+	return clients[0]
+}

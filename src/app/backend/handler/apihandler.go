@@ -169,7 +169,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 	authHandler := auth.NewAuthHandler(authManager)
 	authHandler.Install(apiV1Ws)
 
-	settingsHandler := settings.NewSettingsHandler(sManager, tpManager)
+	settingsHandler := settings.NewSettingsHandler(sManager, tpManagers)
 	settingsHandler.Install(apiV1Ws)
 
 	systemBannerHandler := systembanner.NewSystemBannerHandler(sbManager)
