@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import {Component, OnInit, Inject,NgZone} from '@angular/core';
-import {MatDialog} from '@angular/material';
+import {MatDialog} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {ActivatedRoute} from '@angular/router';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material';
@@ -43,7 +43,6 @@ export interface UserToken {
 
 export interface CreateUserDialogMeta {
   tenants: string;
-  storageclusterid: string;
 }
 
 @Component({
@@ -75,6 +74,7 @@ export class CreateUserDialog implements OnInit {
   private currentTenant: string;
   private tenant_: string;
 
+  //validation
   usernameMaxLength = 24;
   usernamePattern: RegExp = new RegExp('^[a-z0-9]([-a-z-0-9]*[a-z0-9])?$');
 
@@ -86,9 +86,6 @@ export class CreateUserDialog implements OnInit {
 
   usertypeMaxLength = 24;
   usertypePattern: RegExp = new RegExp('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$');
-
-  storageidMaxLength =10;
-  storageidPattern: RegExp = new RegExp('^[0-9]$');
 
   secret: SecretDetail;
   secretName =""
@@ -143,13 +140,6 @@ export class CreateUserDialog implements OnInit {
             Validators.pattern(this.passwordPattern),
           ]),
         ],
-        storageclusterid :[
-          '',
-          Validators.compose([
-            Validators.maxLength(this.storageidMaxLength),
-            Validators.pattern(this.storageidPattern),
-          ]),
-        ],
       },
     );
     this.namespace.valueChanges.subscribe((namespace: string) => {
@@ -193,6 +183,7 @@ export class CreateUserDialog implements OnInit {
     this.getRole()
   }
 
+  //getting roles for a particular tenant
   getRole(){
     this.role.valueChanges.subscribe((role: string) => {
       if (this.name !== null) {
@@ -242,6 +233,7 @@ export class CreateUserDialog implements OnInit {
     return this.form1.get('namespace');
   }
 
+  //function to create a user
   createUser() {
     const currentType = sessionStorage.getItem('userType')
     if (this.usertype.value === 'tenant-admin' && currentType === 'cluster-admin') {
@@ -265,8 +257,6 @@ export class CreateUserDialog implements OnInit {
       this.namespaceUsed = this.selectednamespace
     }
 
-
-
     this.getToken(async (token_:any)=>{
       const userSpec= {name: this.username.value, password:this.password.value, token:token_,namespace:this.namespaceUsed, type:this.usertype.value,tenant:this.tenant_,role:this.role.value};
       if (this.selected === "tenant-user") {
@@ -275,7 +265,6 @@ export class CreateUserDialog implements OnInit {
       else {
         userSpec.role = '';
       }
-
 
       const userTokenPromise = await this.csrfToken_.getTokenForAction(this.tenant.value,'users');
       userTokenPromise.subscribe(csrfToken => {
@@ -296,26 +285,37 @@ export class CreateUserDialog implements OnInit {
     })
   }
 
-  createTenant(): void {
-    const tenantSpec= {name: this.username.value,storageclusterid: this.storageclusterid.value};
-    const tokenPromise = this.csrfToken_.getTokenForAction('system','tenant');
-    tokenPromise.subscribe(csrfToken => {
-      return this.http_
-        .post<{valid: boolean}>(
-          'api/v1/tenant',
-          {...tenantSpec},
-          {
-            headers: new HttpHeaders().set(this.config_.csrfHeaderName, csrfToken.token),
-          },
-        )
-        .subscribe(
-          () => {
-          },
-          () => {},
-        );
-    });
+//function to create a tenant-user
+  createTenantAdmin() {
+    const currentType = sessionStorage.getItem('userType')
+    {
+      const userSpec = {
+        name: this.username.value,
+        password: this.password.value,
+        type: this.usertype.value,
+        tenant: this.currentTenant
+      };
+      const userTokenPromise = this.csrfToken_.getTokenForAction(this.currentTenant, 'users');
+      userTokenPromise.subscribe(csrfToken => {
+        return this.http_
+          .post<{ valid: boolean }>(
+            'api/v1/users',
+            {...userSpec},
+            {
+              headers: new HttpHeaders().set(this.config_.csrfHeaderName, csrfToken.token),
+            },
+          )
+          .subscribe(
+            () => {
+            },
+            () => {
+            },
+          );
+      });
+    }
   }
 
+  //function to create a service-account
   createServiceAccount() {
     if( this.selected == "cluster-admin")
     {
@@ -363,26 +363,7 @@ export class CreateUserDialog implements OnInit {
     })
   }
 
-  createClusterRole(): void {
-    const clusterRoleSpec = {name:this.username.value, apiGroups:this.apiGroups, verbs:this.verbs, resources:this.resources};
-    const tokenPromise = this.csrfToken_.getTokenForAction(this.currentTenant,'clusterrole');
-    tokenPromise.subscribe(csrfToken => {
-      return this.http_
-        .post<{valid: boolean}>(
-          'api/v1/clusterrole',
-          {...clusterRoleSpec},
-          {
-            headers: new HttpHeaders().set(this.config_.csrfHeaderName, csrfToken.token),
-          },
-        )
-        .subscribe(
-          () => {
-          },
-          () => {},
-        );
-    });
-  }
-
+  //function to create a clusterrole binding
   createClusterRoleBinding(): void{
     if( this.usertype.value === "tenant-admin")
     {
@@ -407,6 +388,7 @@ export class CreateUserDialog implements OnInit {
     })
   }
 
+  //function to create a role binding
   createRoleBinding(): void{
     if(this.selected == "tenant-user"){
       this.tenantUsed = this.currentTenant
@@ -456,21 +438,21 @@ export class CreateUserDialog implements OnInit {
     }, 3000);
   }
 
+  //main user creating function
   createTenantUser() {
-    this.createServiceAccount()
     if(this.usertype.value === "tenant-user"){
+      this.createServiceAccount()
       this.createRoleBinding()
-    } else {
-      if(this.usertype.value === "cluster-admin") {
-        this.adminroleUsed = "admin-role"
-      }
-      else{
-        this.createTenant()
-        this.createClusterRole()
-      }
+      this.createUser()
+    } else if(this.usertype.value === "cluster-admin") {
+      this.createServiceAccount()
       this.createClusterRoleBinding()
+      //this.adminroleUsed = "admin-role"
+      this.createUser()
     }
-    this.createUser()
+    else{
+      this.createTenantAdmin()
+    }
   }
 
   decode(s: string): string {

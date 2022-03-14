@@ -1292,6 +1292,11 @@ func (apiHandler *APIHandlerV2) handleCreateTenant(request *restful.Request, res
 	}
 	client := ResourceAllocator(tenantSpec.Name, apiHandler.tpManager)
 	k8sClient := client.InsecureClient()
+	//k8sClient, err := client.Client(request)
+	//if err != nil {
+	//	errors.HandleInternalError(response, err)
+	//	return
+	//}
 
 	if err := tenant.CreateTenant(tenantSpec, k8sClient, client.GetClusterName()); err != nil {
 		errorMsg := Error{Msg: err.Error(), StatusCode: http.StatusConflict}

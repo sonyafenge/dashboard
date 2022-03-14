@@ -164,8 +164,9 @@ func CreateClusterAdmin() error {
 
 func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, error) {
 	const namespace = "default"
-	var clusterRoleName = user.Tenant + "-" + "role"
-	var saName = user.Tenant + "-sa"
+	var clusterRoleName = user.Username + "-" + user.Tenant + "-" + "role"
+	var saName = user.Tenant + "-" + user.Tenant + "-sa"
+	var clusterRoleBinding = user.Username + "-" + user.Tenant + "-" + "rb"
 	//clientManager := client.NewClientManager(args.Holder.GetKubeConfigFile(), args.Holder.GetApiServerHost())
 
 	// TODO Check if centaurus-dashboard namespace exists or not using GET method
@@ -193,7 +194,7 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 	apiGroups = append(apiGroups, "*")
 	resources = append(resources, "*")
 	clusterRoleSpec := &clusterrole.ClusterRoleSpec{
-		Name:      user.Tenant + "-" + "role",
+		Name:      clusterRoleName,
 		Verbs:     verbs,
 		APIGroups: apiGroups,
 		Resources: resources,
@@ -206,7 +207,7 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 
 	// Create Cluster Role Binding
 	clusterRoleBindingSpec := &clusterrolebinding.ClusterRoleBindingSpec{
-		Name: saName + "-rb",
+		Name: clusterRoleBinding,
 		Subject: rbac.Subject{
 			Kind:      "ServiceAccount",
 			APIGroup:  "",

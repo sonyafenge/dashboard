@@ -20,14 +20,11 @@ import {AbstractControl, Validators,FormBuilder} from '@angular/forms';
 import { FormGroup } from '@angular/forms';
 import {CONFIG} from "../../../index.config";
 import {CsrfTokenService} from "../../services/global/csrftoken";
-
 // @ts-ignore
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
 export interface CreateTenantDialogMeta {
   tenants: string[];
-  StorageClusterId: string []
-
 }
 
 @Component({
@@ -48,9 +45,6 @@ export class CreateTenantDialog implements OnInit {
 
   passwordMaxLength = 20;
   passwordPattern: RegExp = new RegExp('^[a-z\\A-Z\\0-9\\d_@.#$=!%^~)(\\]:\\*;\\?\\/\\,}{\'\\|<>\\[&\\+-]*$');
-
-  storageidMaxLength =3;
-  storageidPattern: RegExp = new RegExp('^[0-9]*$');
 
   constructor(
     public dialogRef: MatDialogRef<CreateTenantDialog>,
@@ -95,9 +89,6 @@ export class CreateTenantDialog implements OnInit {
   get tenant(): AbstractControl {
     return this.form1.get('tenant');
   }
-  get StorageClusterId(): AbstractControl {
-    return this.form1.get('StorageClusterId')
-  }
   get username(): AbstractControl {
     return this.form1.get('username')
   }
@@ -105,7 +96,7 @@ export class CreateTenantDialog implements OnInit {
     return this.form1.get('password')
   }
 
-  // To create new tenant
+  //creating tenant-admin with tenant
   createTenant(): void {
     if (!this.form1.valid) return;
     const tenantSpec= {name: this.tenant.value,username: this.username.value,password: this.password.value};
