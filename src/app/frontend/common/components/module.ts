@@ -45,7 +45,6 @@ import {PodStatusCardComponent} from './podstatus/component';
 import {PolicyRuleListComponent} from './policyrule/component';
 import {PropertyComponent} from './property/component';
 import {ProxyComponent} from './proxy/component';
-import {ResourceQuotaListComponent} from './quotas/component';
 import {ClusterRoleListComponent} from './resourcelist/clusterrole/component';
 import {ConfigMapListComponent} from './resourcelist/configmap/component';
 import {CRDListComponent} from './resourcelist/crd/component';
@@ -77,17 +76,17 @@ import {ZeroStateComponent} from './zerostate/component';
 import {ServiceAccountListComponent} from "./resourcelist/serviceaccount/component";
 import {TenantSelectorComponent} from './tenant/component';
 import {TenantListComponent} from './resourcelist/tenantlist/component';
+import {UserListComponent} from "./resourcelist/user/component";
+import {ResourceQuotasListComponent} from "./resourcelist/resourcequotalist/component";
+import {PartitionListComponent} from "./resourcelist/partitionlist/component";
 import {ResourcePartitionListComponent} from "./resourcelist/resourcepartition/component";
 import {TenantPartitionListComponent} from "./resourcelist/tenantpartition/component";
-import {TpTenantListComponent} from "./resourcelist/tptenants/component";
-import {PartitionListComponent} from "./resourcelist/partitionlist/component";
 import {RoleListComponent} from "./resourcelist/role/component";
-import {ResourceQuotasListComponent} from "./resourcelist/resourcequotalist/component";
-import {UserListComponent} from "./resourcelist/user/component";
-import {NetworkListComponent} from "./resourcelist/network/component";
-import {NetworkObjectListComponent} from "./resourcelist/networkobject/component";
-import {NetworkVersionListComponent} from "./resourcelist/networkversion/component";
-
+import {ResourceQuotaListComponent} from "./quotas/component";
+import {TpTenantListComponent} from "./resourcelist/tptenants/component";
+import {NetworkListComponent} from './resourcelist/network/component';
+import {NetworkObjectListComponent} from './resourcelist/networkobject/component';
+import {NetworkVersionListComponent} from './resourcelist/networkversion/component';
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -100,8 +99,10 @@ const components = [
   ActionbarComponent,
   AllocationChartComponent,
   ActionbarDetailTriggerComponent,
-
   BreadcrumbsComponent,
+  ResourcePartitionListComponent,
+  TenantPartitionListComponent,
+  TpTenantListComponent,
 
   CardComponent,
   CardListFilterComponent,
@@ -124,11 +125,9 @@ const components = [
   DateComponent,
   DeploymentListComponent,
   DefaultActionbar,
-
   EndpointListComponent,
   ExternalEndpointComponent,
   EventListComponent,
-
   HiddenPropertyComponent,
 
   IngressListComponent,
@@ -148,12 +147,10 @@ const components = [
   NodeListComponent,
   NamespaceSelectorComponent,
   NamespaceChangeDialog,
-  NetworkListComponent,
-  NetworkVersionListComponent,
-  NetworkObjectListComponent,
 
   ObjectMetaComponent,
 
+  PartitionListComponent,
   PodStatusCardComponent,
   PropertyComponent,
   ProxyComponent,
@@ -163,15 +160,14 @@ const components = [
   PersistentVolumeClaimListComponent,
   PolicyRuleListComponent,
   PinDefaultActionbar,
-  PartitionListComponent,
 
-  ResourceQuotaListComponent,
+  ResourceQuotasListComponent,
   ResourceLimitListComponent,
   ReplicaSetListComponent,
   RowDetailComponent,
-  ResourcePartitionListComponent,
   RoleListComponent,
-  ResourceQuotasListComponent,
+  ResourceQuotaListComponent,
+
 
   StorageClassListComponent,
   StatefulSetListComponent,
@@ -180,21 +176,24 @@ const components = [
   CpuSparklineComponent,
   MemorySparklineComponent,
   ScaleDefaultActionbar,
-  ServiceAccountListComponent,
 
   TextInputComponent,
   TriggerDefaultActionbar,
-  TenantPartitionListComponent,
-  TpTenantListComponent,
 
   UploadFileComponent,
-  UserListComponent,
 
   ZeroStateComponent,
   WorkloadStatusComponent,
 
   TenantSelectorComponent,
   TenantListComponent,
+
+  ServiceAccountListComponent,
+  UserListComponent,
+
+  NetworkListComponent,
+  NetworkObjectListComponent,
+  NetworkVersionListComponent,
 ];
 
 @NgModule({

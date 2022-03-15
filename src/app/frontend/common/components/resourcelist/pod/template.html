@@ -59,6 +59,7 @@ limitations under the License.
         <mat-cell *matCellDef="let pod">
           <a (click)="$event.stopPropagation()"
              [routerLink]="getDetailsHref(pod.objectMeta.name, pod.objectMeta.namespace)"
+             [state]="{namespace: pod.objectMeta.namespace}"
              queryParamsHandling="preserve">
             {{pod.objectMeta.name}}
           </a>

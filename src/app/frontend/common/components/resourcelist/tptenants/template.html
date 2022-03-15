@@ -29,7 +29,7 @@ limitations under the License.
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <kd-card role="table" [hidden]="isHidden()">
         <div title fxLayout="row" i18n>Tenants</div>
-        <div description><span class="kd-muted-light" i18n>Items:&nbsp;</span>{{tenantCount}}
+        <div description><span class="kd-muted-light" i18n>Items:&nbsp;</span>{{totalItems}}
         </div>
 
         <div content [hidden]="showZeroState()">
@@ -92,7 +92,7 @@ limitations under the License.
             <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
           </mat-table>
 
-          <mat-paginator [length]="tenantCount"
+          <mat-paginator [length]="totalItems"
                          [pageSize]="itemsPerPage"
                          [hidePageSize]="true"
                          [showFirstLastButtons]="true"></mat-paginator>
