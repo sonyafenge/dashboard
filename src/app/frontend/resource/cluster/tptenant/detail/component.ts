@@ -1,3 +1,17 @@
+// Copyright 2020 Authors of Arktos.
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {ComponentFactoryResolver} from '@angular/core'
@@ -13,6 +27,8 @@ import {
   PodList,
   ReplicaSet,
   ReplicaSetList,
+  ResourceQuota,
+  ResourceQuotaList,
   TenantDetail,
   TypeMeta,
 } from '@api/backendapi';
@@ -122,10 +138,6 @@ export class NamespaceListComponent extends ResourceListWithStatuses<NamespaceLi
     return ['statusicon', 'name', 'labels', 'phase', 'age'];
   }
 
-  getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'labels', 'phase', 'age'];
-  }
-  //added the code
   onClick(): void {
     this.verber_.showNamespaceCreateDialog(this.displayName, this.typeMeta, this.objectMeta); //added showNamespaceCreateDialog
   }
@@ -192,10 +204,6 @@ export class DeploymentListComponent extends ResourceListWithStatuses<Deployment
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
-  }
-
-  getDisplayColumns2(): string[] {
     return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
   }
 
@@ -274,10 +282,6 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
     return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'age'];
   }
 
-  getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'age'];
-  }
-
   private shouldShowNamespaceColumn_(): boolean {
     return this.namespaceService_.areMultipleNamespacesSelected();
   }
@@ -291,10 +295,15 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   }
 
   getDisplayStatus(pod: Pod): string {
+    // See kubectl printers.go for logic in kubectl:
+    // https://github.com/kubernetes/kubernetes/blob/39857f486511bd8db81868185674e8b674b1aeb9/pkg/printers/internalversion/printers.go
     let msgState = 'running';
     let reason = undefined;
 
+    // Init container statuses are currently not taken into account.
+    // However, init containers with errors will still show as failed because of warnings.
     if (pod.podStatus.containerStates) {
+      // Container states array may be null when no containers have started yet.
       for (let i = pod.podStatus.containerStates.length - 1; i >= 0; i--) {
         const state = pod.podStatus.containerStates[i];
         if (state.waiting) {
@@ -390,10 +399,6 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
     return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
   }
 
-  protected getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
-  }
-
   private shouldShowNamespaceColumn_(): boolean {
     return this.namespaceService_.areMultipleNamespacesSelected();
   }
@@ -407,3 +412,53 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
   }
 }
 
+export class ResourceQuotasListComponent extends ResourceListWithStatuses<ResourceQuotaList, ResourceQuota> {
+  @Input() endpoint = EndpointManager.resource(Resource.resourcequota, true, true).list();
+
+  tenantName: string;
+
+  constructor(
+    public readonly verber_: VerberService,
+    private readonly resourcequota_: NamespacedResourceService<ResourceQuotaList>,
+    notifications: NotificationsService,
+    private readonly tenant_: TenantService,
+    private readonly activatedRoute_: ActivatedRoute,
+  ) {
+
+    super('resourcequota', notifications);
+    this.id = ListIdentifier.resourcequota;
+    this.groupId = ListGroupIdentifier.cluster;
+
+    // Register action columns.
+    this.registerActionColumn<MenuComponent>('menu', MenuComponent);
+
+    this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
+    this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
+      this.tenant_.current() : this.activatedRoute_.snapshot.params.resourceName
+    sessionStorage.setItem('tenantName',this.tenantName);
+  }
+
+  isInSuccessState(): boolean {
+    return true;
+  }
+
+  getResourceObservable(params?: HttpParams): Observable<ResourceQuotaList> {
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/tenants/${this.tenantName}/resourcequota`
+    } else {
+      endpoint = this.endpoint
+    }
+
+    return this.resourcequota_.get(endpoint, undefined, undefined, params, this.tenantName);
+  }
+
+  map(resourcequotaList: ResourceQuotaList): ResourceQuota[] {
+    return resourcequotaList.items;
+  }
+
+  getDisplayColumns(): string[] {
+    return ['statusicon', 'name', 'namespace', 'age'];
+  }
+
+}

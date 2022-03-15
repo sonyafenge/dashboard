@@ -32,7 +32,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 export class PersistentVolumeListComponent extends ResourceListWithStatuses<
   PersistentVolumeList,
   PersistentVolume
-> {
+  > {
   @Input() endpoint = EndpointManager.resource(Resource.persistentVolume, false, true).list();
 
   constructor(
@@ -97,4 +97,5 @@ export class PersistentVolumeListComponent extends ResourceListWithStatuses<
       'age',
     ];
   }
+
 }

@@ -14,7 +14,7 @@
 
 import {Component, Input} from '@angular/core';
 import {ObjectMeta, Tenant, TenantList, TypeMeta} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';
+import {Observable} from 'rxjs/Observable';s
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {ResourceService} from '../../../services/resource/resource';
@@ -101,11 +101,6 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
     return ['statusicon', 'name', 'phase', 'age'];
   }
 
-  getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'phase', 'age'];
-  }
-
-  //added the code
   onClick(): void {
     this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);
   }

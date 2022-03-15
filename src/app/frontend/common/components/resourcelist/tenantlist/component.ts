@@ -16,7 +16,6 @@ import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
 import {ObjectMeta, Tenant, TenantList, TypeMeta} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
-
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {ResourceService} from '../../../services/resource/resource';
@@ -81,11 +80,7 @@ export class TenantListComponent extends ResourceListWithStatuses<TenantList, Te
     return ['statusicon', 'clusterName', 'name', 'phase', 'age'];
   }
 
-  getDisplayColumns2(): string[] {
-    return ['statusicon', 'clusterName', 'name', 'phase', 'age'];
-  }
-
   onClick(): void {
-    this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);
+    this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
   }
 }

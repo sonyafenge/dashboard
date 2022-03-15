@@ -17,21 +17,25 @@ import {HttpParams} from '@angular/common/http';
 import {Component, ComponentFactoryResolver, Input, OnDestroy} from '@angular/core';
 import {Event, Pod, PodList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
-import {takeUntil} from 'rxjs/operators';
-
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {NamespacedResourceService} from '../../../services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {ActivatedRoute} from "@angular/router";
+import {TenantService} from "../../../services/global/tenant";
 
 @Component({selector: 'kd-pod-list', templateUrl: './template.html'})
 export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   @Input() endpoint = EndpointManager.resource(Resource.pod, true, true).list();
 
+  tenantName: string;
+
   constructor(
     private readonly podList: NamespacedResourceService<PodList>,
+    private readonly activatedRoute_: ActivatedRoute,
+    private readonly tenant_: TenantService,
     resolver: ComponentFactoryResolver,
     notifications: NotificationsService,
   ) {
@@ -49,10 +53,20 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
 
     // Register dynamic columns.
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
+
+    this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
+      this.tenant_.current() : this.activatedRoute_.snapshot.params.resourceName
+    sessionStorage.setItem('tenantName',this.tenantName);
   }
 
   getResourceObservable(params?: HttpParams): Observable<PodList> {
-    return this.podList.get(this.endpoint, undefined, undefined, params);
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/tenants/${this.tenantName}/pod`
+    } else {
+      endpoint = this.endpoint
+    }
+    return this.podList.get(endpoint, undefined, undefined, params,this.tenantName);
   }
 
   map(podList: PodList): Pod[] {
@@ -71,7 +85,7 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
     return resource.podStatus.status === 'Succeeded' || resource.podStatus.status === 'Running';
   }
 
-  protected getDisplayColumns(): string[] {
+  getDisplayColumns(): string[] {
     return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'age'];
   }
 

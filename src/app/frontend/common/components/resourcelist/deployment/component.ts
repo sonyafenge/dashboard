@@ -23,6 +23,8 @@ import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {NamespacedResourceService} from '../../../services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {ActivatedRoute} from "@angular/router";
+import {TenantService} from "../../../services/global/tenant";
 
 @Component({
   selector: 'kd-deployment-list',
@@ -31,8 +33,12 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 export class DeploymentListComponent extends ResourceListWithStatuses<DeploymentList, Deployment> {
   @Input() endpoint = EndpointManager.resource(Resource.deployment, true, true).list();
 
+  tenantName: string;
+
   constructor(
     private readonly deployment_: NamespacedResourceService<DeploymentList>,
+    private readonly activatedRoute_: ActivatedRoute,
+    private readonly tenant_: TenantService,
     notifications: NotificationsService,
     resolver: ComponentFactoryResolver,
   ) {
@@ -50,10 +56,21 @@ export class DeploymentListComponent extends ResourceListWithStatuses<Deployment
 
     // Register dynamic columns.
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
+
+    this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
+      this.tenant_.current() : this.activatedRoute_.snapshot.params.resourceName
+    sessionStorage.setItem('tenant', this.tenantName);
   }
 
   getResourceObservable(params?: HttpParams): Observable<DeploymentList> {
-    return this.deployment_.get(this.endpoint, undefined, undefined, params);
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/tenants/${this.tenantName}/deployment`
+    } else {
+      endpoint = this.endpoint
+    }
+
+    return this.deployment_.get(endpoint, undefined, undefined, params, this.tenantName);
   }
 
   map(deploymentList: DeploymentList): Deployment[] {

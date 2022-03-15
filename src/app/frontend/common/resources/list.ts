@@ -41,10 +41,8 @@ import {Subject} from 'rxjs';
 import {Observable, ObservableInput} from 'rxjs/Observable';
 import {merge} from 'rxjs/observable/merge';
 import {startWith, switchMap, takeUntil} from 'rxjs/operators';
-
 import {CardListFilterComponent} from '../components/list/filter/component';
 import {RowDetailComponent} from '../components/list/rowdetail/component';
-import {ListIdentifier} from '../components/resourcelist/groupids';
 import {SEARCH_QUERY_STATE_PARAM} from '../params/params';
 import {GlobalSettingsService} from '../services/global/globalsettings';
 import {GlobalServicesModule} from '../services/global/module';
@@ -167,7 +165,6 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
         displayColumns.splice(afterColIdx + 1, 0, condition.col);
       }
     }
-
     return displayColumns.concat(...actionColumns);
   }
 
@@ -347,7 +344,7 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
 export abstract class ResourceListWithStatuses<
   T extends ResourceList,
   R extends Resource
-> extends ResourceListBase<T, R> {
+  > extends ResourceListBase<T, R> {
   private readonly bindings_: {[hash: number]: StateBinding<R>} = {};
   @ViewChildren('matrow', {read: ViewContainerRef})
   private readonly containers_: QueryList<ViewContainerRef>;

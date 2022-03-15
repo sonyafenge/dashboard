@@ -31,7 +31,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 export class StatefulSetListComponent extends ResourceListWithStatuses<
   StatefulSetList,
   StatefulSet
-> {
+  > {
   @Input() endpoint = EndpointManager.resource(Resource.statefulSet, true, true).list();
 
   constructor(

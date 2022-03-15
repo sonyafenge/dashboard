@@ -18,13 +18,13 @@ import {Component, ComponentFactoryResolver, Input} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Event, ReplicaSet, ReplicaSetList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
-
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {NamespacedResourceService} from '../../../services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {TenantService} from "../../../services/global/tenant";
 
 @Component({
   selector: 'kd-replica-set-list',
@@ -34,9 +34,12 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
   @Input() title: string;
   @Input() endpoint = EndpointManager.resource(Resource.replicaSet, true, true).list();
 
+  tenantName: string;
+
   constructor(
     private readonly replicaSet_: NamespacedResourceService<ReplicaSetList>,
     private readonly activatedRoute_: ActivatedRoute,
+    private readonly tenant_: TenantService,
     notifications: NotificationsService,
     resolver: ComponentFactoryResolver,
   ) {
@@ -54,10 +57,20 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
 
     // Register dynamic columns.
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
+    this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
+      this.tenant_.current() : this.activatedRoute_.snapshot.params.resourceName
+    sessionStorage.setItem('tenant',this.tenantName);
   }
 
   getResourceObservable(params?: HttpParams): Observable<ReplicaSetList> {
-    return this.replicaSet_.get(this.endpoint, undefined, undefined, params);
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/tenants/${this.tenantName}/replicaset`
+    } else {
+      endpoint = this.endpoint
+    }
+
+    return this.replicaSet_.get(endpoint, undefined, undefined, params, this.tenantName);
   }
 
   map(rsList: ReplicaSetList): ReplicaSet[] {

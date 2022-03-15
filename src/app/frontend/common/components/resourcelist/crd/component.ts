@@ -81,7 +81,4 @@ export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
     return ['statusicon','clusterName', 'name', 'group', 'fullName', 'namespaced',  'age'];
   }
 
-  getDisplayColumns2(): string[] {
-    return ['statusicon','clusterName', 'name', 'group', 'fullName', 'namespaced',  'age'];
-  }
 }

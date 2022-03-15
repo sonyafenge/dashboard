@@ -1,3 +1,17 @@
+// Copyright 2017 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {Component, Input} from '@angular/core';
 import {HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
@@ -16,6 +30,7 @@ import {MenuComponent} from '../../list/column/menu/component';
 export class NetworkObjectListComponent extends ResourceListBase<NetworkObjectList, NetworkObject> {
   @Input() endpoint: string;
   @Input() networkName: string;
+  networkObjectKind: string;
 
   constructor(
     private readonly networkObject_: NamespacedResourceService<NetworkObjectList>,
@@ -35,6 +50,7 @@ export class NetworkObjectListComponent extends ResourceListBase<NetworkObjectLi
   }
 
   map(networkObjectList: NetworkObjectList): NetworkObject[] {
+    this.networkObjectKind = networkObjectList.typeMeta.kind.split("List")[0]+"s"
     return networkObjectList.items;
   }
 
@@ -42,7 +58,4 @@ export class NetworkObjectListComponent extends ResourceListBase<NetworkObjectLi
     return ['name', 'namespace', 'age'];
   }
 
-  getDisplayColumns2(): string[] {
-    return ['name', 'namespace', 'age'];
-  }
 }

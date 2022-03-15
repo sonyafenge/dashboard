@@ -1,3 +1,17 @@
+// Copyright 2020 Authors of Arktos.
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {ComponentFactoryResolver} from '@angular/core'
@@ -31,14 +45,15 @@ import {TenantService} from "../../../../common/services/global/tenant";
   selector: 'kd-tenant-detail',
   templateUrl: './template.html',
 })
+
 export class TenantDetailComponent implements OnInit, OnDestroy {
   private tenantSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.tenant);
+  private readonly endpoint_ = EndpointManager.resource(Resource.tenant,false,false);
   tenant: TenantDetail;
   isInitialized = false;
 
   constructor(
-    private readonly tenant_: ResourceService<TenantDetail>,
+    private readonly tenant_: NamespacedResourceService<TenantDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
     private readonly notifications_: NotificationsService,
@@ -46,9 +61,9 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
-
+    const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
     this.tenantSubscription_ = this.tenant_
-      .get(this.endpoint_.detail(), resourceName)
+      .get(this.endpoint_.detail(), resourceName,resourceNamespace)
       .subscribe((d: TenantDetail) => {
         this.tenant = d;
         this.notifications_.pushErrors(d.errors);
@@ -121,10 +136,6 @@ export class NamespaceListComponent extends ResourceListWithStatuses<NamespaceLi
     return ['statusicon', 'name', 'labels', 'phase', 'age'];
   }
 
-  getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'labels', 'phase', 'age'];
-  }
-  //added the code
   onClick(): void {
     this.verber_.showNamespaceCreateDialog(this.displayName, this.typeMeta, this.objectMeta); //added showNamespaceCreateDialog
   }
@@ -191,10 +202,6 @@ export class DeploymentListComponent extends ResourceListWithStatuses<Deployment
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
-  }
-
-  getDisplayColumns2(): string[] {
     return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
   }
 
@@ -270,10 +277,6 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'age'];
-  }
-
-  getDisplayColumns2(): string[] {
     return ['statusicon', 'name', 'labels', 'node', 'status', 'restarts', 'cpu', 'mem', 'age'];
   }
 
@@ -394,10 +397,6 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
     return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
   }
 
-  protected getDisplayColumns2(): string[] {
-    return ['statusicon', 'name', 'labels', 'pods', 'age', 'images'];
-  }
-
   private shouldShowNamespaceColumn_(): boolean {
     return this.namespaceService_.areMultipleNamespacesSelected();
   }
@@ -457,10 +456,6 @@ export class ResourceQuotasListComponent extends ResourceListWithStatuses<Resour
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'namespace', 'age'];
-  }
-
-  getDisplayColumns2(): string[] {
     return ['statusicon', 'name', 'namespace', 'age'];
   }
 
