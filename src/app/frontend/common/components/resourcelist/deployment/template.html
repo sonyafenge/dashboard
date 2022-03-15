@@ -58,7 +58,8 @@ limitations under the License.
         <mat-cell *matCellDef="let deployment">
           <a (click)="$event.stopPropagation()"
              [routerLink]="getDetailsHref(deployment.objectMeta.name, deployment.objectMeta.namespace)"
-             queryParamsHandling="preserve">
+             queryParamsHandling="preserve"
+             [state]="{namespace: deployment.objectMeta.namespace}">
             {{deployment.objectMeta.name}}
           </a>
         </mat-cell>
