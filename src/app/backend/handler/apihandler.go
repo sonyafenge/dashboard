@@ -1411,32 +1411,6 @@ func fromCells(cells []dataselect.DataCell) []tenant.Tenant {
 	return std
 }
 
-type TenantCell tenant.Tenant
-
-func (self TenantCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {
-	switch name {
-	case dataselect.NameProperty:
-		return dataselect.StdComparableString(self.ObjectMeta.Name)
-	case dataselect.CreationTimestampProperty:
-		return dataselect.StdComparableTime(self.ObjectMeta.CreationTimestamp.Time)
-	default:
-		return nil
-	}
-}
-func toCells(std []tenant.Tenant) []dataselect.DataCell {
-	cells := make([]dataselect.DataCell, len(std))
-	for i := range std {
-		cells[i] = TenantCell(std[i])
-	}
-	return cells
-}
-func fromCells(cells []dataselect.DataCell) []tenant.Tenant {
-	std := make([]tenant.Tenant, len(cells))
-	for i := range std {
-		std[i] = tenant.Tenant(cells[i].(TenantCell))
-	}
-	return std
-}
 func (apiHandler *APIHandlerV2) handleGetTenantDetail(request *restful.Request, response *restful.Response) {
 	tenantName := request.PathParameter("name")
 	if len(apiHandler.tpManager) == 0 {
@@ -4279,7 +4253,7 @@ func (apiHandler *APIHandlerV2) handleGetNamespaceDetailWithMultiTenancy(request
 		//}
 
 		dataSelect := parseDataSelectPathParameter(request)
-		tenantList, err := tenant.GetTenantList(k8sClient, dataSelect, tpManager.GetClusterName())
+		tenantList, err := tenant.GetTenantList(k8sClient, dataSelect, tpManager.GetClusterName(), "system")
 		if err != nil {
 			errors.HandleInternalError(response, err)
 			return
