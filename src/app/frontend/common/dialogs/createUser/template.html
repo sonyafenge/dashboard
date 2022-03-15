@@ -27,7 +27,6 @@ limitations under the License.
         <mat-label>Type of user</mat-label>
         <mat-select  formControlName="usertype"
                      (selectionChange)="selectUserType($event.value)">
-
           <mat-option value="cluster-admin" *ngIf="userType=='cluster-admin'">Cluster Admin</mat-option>
           <mat-option value="tenant-admin" *ngIf= "userType=='cluster-admin' || userType=='tenant-admin'">Tenant Admin</mat-option>
           <mat-option value="tenant-user" *ngIf="userType=='tenant-admin'">Tenant User</mat-option>

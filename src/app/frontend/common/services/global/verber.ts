@@ -1,3 +1,17 @@
+// Copyright 2017 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {EventEmitter, Injectable} from '@angular/core';
 import {MatDialog, MatDialogConfig} from '@angular/material';
@@ -8,32 +22,23 @@ import {EditResourceDialog} from '../../dialogs/editresource/dialog';
 import {ScaleResourceDialog} from '../../dialogs/scaleresource/dialog';
 import {TriggerResourceDialog} from '../../dialogs/triggerresource/dialog';
 import {RawResource} from '../../resources/rawresource';
-
-// tenat dialog
-import { CreateTenantDialog } from './../../dialogs/createTenant/dialog';
-// user dialog
-import {CreateUserDialog} from './../../dialogs/createUser/dialog';
-// namespace dialog
-import {CreateNamespaceDialog} from '../../dialogs/createNamespace/dialog'; // namespace dialog
-// role dialog
-import {CreateRoleDialog} from '../../dialogs/createRole/dialog'; // role dialog
-// clusterrole dialog
+import {CreateTenantDialog } from '../../dialogs/createTenant/dialog';
+import {CreateUserDialog} from '../../dialogs/createUser/dialog';
+import {CreateNamespaceDialog} from '../../dialogs/createNamespace/dialog';
+import {CreateRoleDialog} from '../../dialogs/createRole/dialog';
 import {CreateClusterroleDialog} from '../../dialogs/createClusterrole/dialog';
-import { assignQuotaDialog } from '../../dialogs/assignQuota/dialog';
+import {CreateAssignQuotaDialog } from '../../dialogs/createAssignQuota/dialog';
 import {ResourceMeta} from './actionbar';
 import {TenantService} from './tenant';
-import {CreateNodeDialog} from "../../dialogs/createNode/dialog";
 
 @Injectable()
 export class VerberService {
   onCreate = new EventEmitter<boolean>();
-  onCreateTenant = new EventEmitter<boolean>(); //added
-  onCreateNode = new EventEmitter<boolean>(); //added
+  onCreateTenant = new EventEmitter<boolean>();
   onDelete = new EventEmitter<boolean>();
   onEdit = new EventEmitter<boolean>();
   onScale = new EventEmitter<boolean>();
   onTrigger = new EventEmitter<boolean>();
-  onCreateQuota = new EventEmitter<boolean>();
 
   constructor(
     private readonly dialog_: MatDialog,
@@ -42,7 +47,7 @@ export class VerberService {
 
   ) {}
 
-  // create tenant
+  // create Tenant dialog
   showTenantCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
@@ -53,7 +58,8 @@ export class VerberService {
         }
       });
   }
-  // create user
+
+  // create User dialog
   showUserCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
@@ -65,7 +71,7 @@ export class VerberService {
       });
   }
 
-  // create Namespace
+  // create Namespace  dialog
   showNamespaceCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
@@ -78,11 +84,11 @@ export class VerberService {
 
   }
 
-  //Create Quota
+  //Create Quota dialog
   showResourceQuotaCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
-      .open(assignQuotaDialog, dialogConfig)
+      .open(CreateAssignQuotaDialog, dialogConfig)
       .afterClosed()
       .subscribe(result => {
         if (result) {
@@ -90,7 +96,7 @@ export class VerberService {
       });
   }
 
-  // create Role
+  // create Role dialog
   showRoleCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
@@ -101,23 +107,12 @@ export class VerberService {
         }
       });
   }
-  // create Clusterrole
+
+  // create Clusterrole dialog
   showClusterroleCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
     this.dialog_
       .open(CreateClusterroleDialog, dialogConfig)
-      .afterClosed()
-      .subscribe(result => {
-        if (result) {
-        }
-      });
-  }
-
-  // create node
-  showNodeCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
-    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
-    this.dialog_
-      .open(CreateNodeDialog, dialogConfig)
       .afterClosed()
       .subscribe(result => {
         if (result) {
