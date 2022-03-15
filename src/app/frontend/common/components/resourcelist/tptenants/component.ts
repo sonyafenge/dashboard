@@ -14,7 +14,7 @@
 
 import {Component, Input} from '@angular/core';
 import {ObjectMeta, Tenant, TenantList, TypeMeta} from '@api/backendapi';
-import {Observable} from 'rxjs/Observable';s
+import {Observable} from 'rxjs/Observable';
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {ResourceService} from '../../../services/resource/resource';
