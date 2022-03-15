@@ -37,7 +37,7 @@ export class ClusterRoleDetailComponent implements OnInit, OnDestroy {
     private readonly clusterRole_: ResourceService<ClusterRoleDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly route_: ActivatedRoute,
-    private readonly notifications_: NotificationsService,
+    private readonly notifications_: NotificationsService
   ) {}
 
   ngOnInit(): void {

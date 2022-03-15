@@ -24,6 +24,7 @@ import {NotificationsService} from '../../../../common/services/global/notificat
 import {KdStateService} from '../../../../common/services/global/state';
 import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
 import {NamespacedResourceService} from '../../../../common/services/resource/resource';
+import {TenantService} from "../../../../common/services/global/tenant";
 
 @Component({
   selector: 'kd-deployment-detail',
@@ -43,6 +44,7 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
     private readonly deployment_: NamespacedResourceService<DeploymentDetail>,
     private readonly replicaSet_: NamespacedResourceService<ReplicaSet>,
     private readonly activatedRoute_: ActivatedRoute,
+    private readonly tenant_: TenantService,
     private readonly actionbar_: ActionbarService,
     private readonly kdState_: KdStateService,
     private readonly notifications_: NotificationsService,
@@ -50,22 +52,34 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
-    const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
+    const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace === undefined ?
+      window.history.state.namespace : this.activatedRoute_.snapshot.params.resourceNamespace;
+    const resourceTenant:string = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('tenant') : this.tenant_.current()
 
-    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace);
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/tenants/${resourceTenant}/deployment/${resourceNamespace}/${resourceName}`
+    } else {
+      endpoint = this.endpoint_.detail()
+    }
+
+    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace, resourceTenant);
     this.oldReplicaSetsEndpoint = this.endpoint_.child(
       resourceName,
       Resource.oldReplicaSet,
       resourceNamespace,
+      resourceTenant,
     );
     this.newReplicaSetEndpoint = this.endpoint_.child(
       resourceName,
       Resource.newReplicaSet,
       resourceNamespace,
+      resourceTenant,
     );
 
     this.deployment_
-      .get(this.endpoint_.detail(), resourceName, resourceNamespace)
+      .get(endpoint, resourceName, resourceNamespace, undefined, resourceTenant)
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((d: DeploymentDetail) => {
         this.deployment = d;

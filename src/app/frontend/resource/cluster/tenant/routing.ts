@@ -24,7 +24,7 @@ const TENANT_LIST_ROUTE: Route = {
   path: '',
   component: TenantListComponent,
   data: {
-    breadcrumb: 'Tenants',
+    breadcrumb: 'Tenant',
     parent: CLUSTER_ROUTE,
   },
 };

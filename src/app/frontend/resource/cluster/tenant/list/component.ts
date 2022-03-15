@@ -1,4 +1,4 @@
-// Copyright 2020 Authors of Arktos.
+//Copyright 2020 Authors of Arktos.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 
 @Component({
   selector: 'kd-tenant-list-view',
   template: '<kd-tenant-list></kd-tenant-list>',
 })
-export class TenantListComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit() {}
-}
+export class TenantListComponent {}
