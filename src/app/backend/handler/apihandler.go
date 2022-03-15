@@ -187,7 +187,7 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 			Writes(partition.TenantPartitionList{}))
 
 	apiV1Ws.Route(
-		apiV1Ws.GET("/tenant").
+		apiV1Ws.GET("/tenants/{tenant}/tenant").
 			To(apiHandler.handleGetTenantList).
 			Writes(tenant.TenantList{}))
 	apiV1Ws.Route(
