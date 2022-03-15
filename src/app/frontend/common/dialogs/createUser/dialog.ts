@@ -166,12 +166,21 @@ export class CreateUserDialog implements OnInit {
         this.name.updateValueAndValidity();
       }
     });
-    this.http_.get(`api/v1/tenants/${this.currentTenant}/tenant`).subscribe((result: TenantList) => {
+    this.http_.get(`api/v1/tenant`).subscribe((result: TenantList) => {
       this.tenants = result.tenants.map((tenant: Tenant) => tenant.objectMeta.name);
       console.log("list: ", this.tenants)
-      this.tenant.patchValue(
-        this.tenant.value,
-      );
+      if (this.usertype === 'tenant-admin') {
+        this.tenant.patchValue(
+          !this.tenantService_.isCurrentSystem()
+            ? this.route_.snapshot.params.tenant || this.tenants : this.currentTenant,
+        );
+      }
+      else if (this.usertype === 'cluster-admin'){
+        this.tenant.patchValue(
+          !this.tenantService_.isCurrentSystem()
+            ? this.route_.snapshot.params.tenant || this.tenants : this.tenants,
+        );
+      }
     });
 
     this.ngZone_.run(() => {
@@ -258,7 +267,7 @@ export class CreateUserDialog implements OnInit {
       this.tenant_ = "system"
     } else if(this.selected == "tenant-admin")
     {
-      this.tenant_ = this.currentTenant
+      this.tenant_ = this.username.value
     } else
     {
       this.tenant_ = this.currentTenant
@@ -274,10 +283,7 @@ export class CreateUserDialog implements OnInit {
         userSpec.role = '';
       }
 
-      if (this.currentTenant==='') {
-        this.currentTenant=this.tenantService_.current()
-      }
-      const userTokenPromise = await this.csrfToken_.getTokenForAction(this.currentTenant,'users');
+      const userTokenPromise = await this.csrfToken_.getTokenForAction(this.tenant.value,'users');
       userTokenPromise.subscribe(csrfToken => {
         return this.http_
           .post<{valid: boolean}>(
@@ -304,7 +310,7 @@ export class CreateUserDialog implements OnInit {
         name: this.username.value,
         password: this.password.value,
         type: this.usertype.value,
-        tenant: this.tenant.value,
+        tenant: this.currentTenant,
       };
       const userTokenPromise = this.csrfToken_.getTokenForAction(this.currentTenant, 'users');
       userTokenPromise.subscribe(csrfToken => {

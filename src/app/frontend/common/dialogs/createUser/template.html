@@ -1,3 +1,19 @@
+<!--
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
 <form [formGroup]="form1">
   <div class="row">
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
@@ -11,6 +27,7 @@
         <mat-label>Type of user</mat-label>
         <mat-select  formControlName="usertype"
                      (selectionChange)="selectUserType($event.value)">
+
           <mat-option value="cluster-admin" *ngIf="userType=='cluster-admin'">Cluster Admin</mat-option>
           <mat-option value="tenant-admin" *ngIf= "userType=='cluster-admin' || userType=='tenant-admin'">Tenant Admin</mat-option>
           <mat-option value="tenant-user" *ngIf="userType=='tenant-admin'">Tenant User</mat-option>
@@ -18,7 +35,6 @@
         <input matInput >
       </mat-form-field>
     </div>
-
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill">
         <mat-label>Username</mat-label>
@@ -30,7 +46,6 @@
         <span class="red" *ngIf="username.hasError('maxlength')">Username should not be greater than 24 characters.</span>
       </div>
     </div>
-
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill">
         <mat-label>Password</mat-label>
@@ -44,7 +59,6 @@
         <span class="red" *ngIf="password.hasError('maxlength')">Password must contain 8-20 characters.</span>
       </div>
     </div>
-
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill" *ngIf="selected=='tenant-admin'">
         <mat-label>Tenant</mat-label>
@@ -59,7 +73,6 @@
         </mat-select>
       </mat-form-field>
     </div>
-
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill" *ngIf="selected=='tenant-user'">
         <mat-label>Namespace</mat-label>
@@ -75,7 +88,6 @@
         </mat-select>
       </mat-form-field>
     </div>
-
     <div class="col-12 col-sm-12 col-md-12 col-lg-12">
       <mat-form-field appearance="fill"  *ngIf="selected=='tenant-user'" >
         <mat-label>Role </mat-label>
