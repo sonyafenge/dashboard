@@ -24,7 +24,7 @@ import {CsrfTokenService} from "../../services/global/csrftoken";
 // @ts-ignore
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
-export interface assignQuotaDialogMeta {
+export interface CreateAssignQuotaDialogMeta {
   quotaname: string[];
   tenants: string[];
   namespace: string[];
@@ -43,7 +43,7 @@ export interface assignQuotaDialogMeta {
   templateUrl: 'template.html',
 })
 
-export class assignQuotaDialog implements OnInit {
+export class CreateAssignQuotaDialog implements OnInit {
   form1: FormGroup;
 
   // validation
@@ -58,8 +58,8 @@ export class assignQuotaDialog implements OnInit {
 
   private readonly config_ = CONFIG;
   constructor(
-    public dialogRef: MatDialogRef<assignQuotaDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: assignQuotaDialogMeta,
+    public dialogRef: MatDialogRef<CreateAssignQuotaDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: CreateAssignQuotaDialogMeta,
     private readonly http_: HttpClient,
     private readonly csrfToken_: CsrfTokenService,
     private readonly matDialog_: MatDialog,

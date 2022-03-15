@@ -27,6 +27,11 @@ limitations under the License.
         <input type="text" matInput formControlName="namespace" required autocomplete="off"/>
         <mat-hint align="end">0/24</mat-hint>
       </mat-form-field>
+      <div class="error_sec" *ngIf="namespace.errors && (namespace.dirty || namespace.touched)">
+        <span class="red" *ngIf="namespace.errors.required">Name is required.</span>
+        <span class="red" *ngIf="namespace.hasError('pattern')">Name must be alphanumeric and may contain dashes.</span>
+        <span class="red" *ngIf="namespace.hasError('maxlength')">Name should not be greater than 63 characters.</span>
+      </div>
     </div>
   </div>
 
@@ -36,7 +41,7 @@ limitations under the License.
   <div class="col-12 col-sm-12 col-md-12 col-lg-12">
     <mat-dialog-actions align="end">
       <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-button [mat-dialog-close]="true" type="submit" (click)="createNamespace()">Create</button>
+      <button mat-button [mat-dialog-close]="true" type="submit" (click)="createNamespace()" [disabled]="!form1.valid">Create</button>
     </mat-dialog-actions>
   </div>
 </form>

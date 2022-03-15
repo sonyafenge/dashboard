@@ -1,3 +1,18 @@
+// Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 const baseHref = 'api/v1';
 
 export enum Resource {
@@ -35,6 +50,7 @@ export enum Resource {
   user = 'users',
   users = 'user',
   serviceaccount = 'serviceaccount',
+  imagePullSecret= 'imagePullSecret',
   network = 'crd',
   networkFull = 'network',
   networkObject = 'object',
@@ -63,14 +79,21 @@ class ResourceEndpoint {
     }/:name`;
   }
 
-  child(resourceName: string, relatedResource: Resource, resourceNamespace?: string): string {
+  child(resourceName: string, relatedResource: Resource, resourceNamespace?: string, tenant?: string): string {
     if (!resourceNamespace) {
       resourceNamespace = ':namespace';
     }
-
-    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
-      this.namespaced_ ? `/${resourceNamespace}` : ''
-    }/${resourceName}/${relatedResource}`;
+    let url = ''
+    if (tenant) {
+      url = `${baseHref}${this.tenanted_ ? `/tenants/${tenant}` : ''}/${this.resource_}${
+        this.namespaced_ ? `/${resourceNamespace}` : ''
+      }/${resourceName}/${relatedResource}`
+    } else {
+      url = `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
+        this.namespaced_ ? `/${resourceNamespace}` : ''
+      }/${resourceName}/${relatedResource}`
+    }
+    return url;
   }
 }
 

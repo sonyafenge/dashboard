@@ -18,7 +18,6 @@ import {Injectable} from '@angular/core';
 import {timer} from 'rxjs';
 import {Observable} from 'rxjs/Observable';
 import {publishReplay, refCount, switchMap, switchMapTo} from 'rxjs/operators';
-
 import {ResourceBase} from '../../resources/resource';
 import {GlobalSettingsService} from '../global/globalsettings';
 import {NamespaceService} from '../global/namespace';
@@ -86,7 +85,7 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
 
   private getNamespace_(): string {
     const currentNamespace = this.namespace_.current();
-    return this.namespace_.isMultiNamespace(currentNamespace) ? ' ' : currentNamespace;
+    return this.namespace_.isMultiNamespace(currentNamespace) ? '' : currentNamespace;
   }
 
   get(

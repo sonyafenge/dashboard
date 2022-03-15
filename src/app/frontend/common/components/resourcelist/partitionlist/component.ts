@@ -15,12 +15,10 @@
 import {HttpParams} from '@angular/common/http';
 import {Component, Input, OnInit} from '@angular/core';
 import {
-  ObjectMeta,
   ResourcePartition,
   ResourcePartitionList,
   TenantPartition,
-  TenantPartitionList,
-  TypeMeta
+  TenantPartitionList
 } from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
 import {ResourceListWithStatuses} from '../../../resources/list';
@@ -36,31 +34,15 @@ import {VerberService} from "../../../services/global/verber";
   templateUrl: './template.html',
 })
 export class PartitionListComponent implements  OnInit {
-
-  displayName:string;
-  typeMeta:TypeMeta;
-  objectMeta:ObjectMeta;
-
   constructor(
     readonly verber_: VerberService,
   ) {}
 
-
-  //added the code
-  onClick(): void {
-    this.verber_.showNodeCreateDialog(this.displayName, this.typeMeta, this.objectMeta); //added
-  }
-
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 }
 
 export class ResourcePartitionListComponent extends ResourceListWithStatuses<ResourcePartitionList, ResourcePartition> {
   @Input() endpointRp = EndpointManager.resource(Resource.resourcePartition).list();
-
-  displayName:string;
-  typeMeta:TypeMeta;
-  objectMeta:ObjectMeta;
 
   constructor(
     readonly verber_: VerberService,
@@ -94,17 +76,10 @@ export class ResourcePartitionListComponent extends ResourceListWithStatuses<Res
     return ['statusicon', 'name', 'nodecount','cpu','memory','health','etcd'];
   }
 
-  onClick(): void {
-    this.verber_.showNodeCreateDialog(this.displayName, this.typeMeta, this.objectMeta); //added
-  }
 }
 
 export class TenantPartitionListComponent extends ResourceListWithStatuses<TenantPartitionList, TenantPartition> {
   @Input() endpointTp = EndpointManager.resource(Resource.tenantPartition).list();
-
-  displayName:string;
-  typeMeta:TypeMeta;
-  objectMeta:ObjectMeta;
 
   constructor(
     readonly verber_: VerberService,
@@ -138,7 +113,4 @@ export class TenantPartitionListComponent extends ResourceListWithStatuses<Tenan
     return ['statusicon', 'name', 'tenantcount','pods','cpu','memory','health','etcd'];
   }
 
-  onClick(): void {
-    this.verber_.showNodeCreateDialog(this.displayName, this.typeMeta, this.objectMeta); //added
-  }
 }
