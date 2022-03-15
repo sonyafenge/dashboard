@@ -17,7 +17,6 @@ import {HttpParams} from '@angular/common/http';
 import {Component, ComponentFactoryResolver, Input} from '@angular/core';
 import {DaemonSet, DaemonSetList, Event} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
-
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';

@@ -15,17 +15,14 @@
 package settings
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/iam"
-
-	"log"
-	"net/http"
-
 	restful "github.com/emicklei/go-restful"
-
 	"github.com/kubernetes/dashboard/src/app/backend/args"
 	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"github.com/kubernetes/dashboard/src/app/backend/iam"
 	"github.com/kubernetes/dashboard/src/app/backend/settings/api"
+	"log"
+	"net/http"
 )
 
 // SettingsHandler manages all endpoints related to settings management.

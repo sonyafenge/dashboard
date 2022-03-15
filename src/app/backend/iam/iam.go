@@ -70,26 +70,6 @@ func CreateClusterAdmin() error {
 		//return err
 	}
 
-	// Create Cluster Role
-	//var verbs []string
-	//var apiGroups []string
-	//var resources []string
-	//verbs = append(verbs, "*")
-	//apiGroups = append(apiGroups, "", "extensions", "apps")
-	//resources = append(resources, "deployments", "pods", "services", "secrets", "namespaces")
-
-	//clusterRoleSpec := &clusterrole.ClusterRoleSpec{
-	//	Name:      roleName,
-	//	Verbs:     verbs,
-	//	APIGroups: apiGroups,
-	//	Resources: resources,
-	//}
-	//
-	//if err := clusterrole.CreateClusterRole(clusterRoleSpec, k8sClient); err != nil {
-	//	log.Printf("Create cluster role for admin user failed, err:%s ", err.Error())
-	//	return err
-	//}
-
 	// Create Cluster Role Binding
 	clusterRoleBindingSpec := &clusterrolebinding.ClusterRoleBindingSpec{
 		Name: "admin-cluster-role-binding",

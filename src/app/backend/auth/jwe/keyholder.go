@@ -132,7 +132,8 @@ func (self *rsaKeyHolder) init() {
 	log.Printf("Storing encryption key in a secret")
 	err := self.synchronizer.Create(self.getEncryptionKeyHolder())
 	if err != nil && !errors.IsAlreadyExists(err) {
-		panic(err)
+		log.Printf("Failed to store encryption key in a secret: %s", err)
+		return
 	}
 }
 

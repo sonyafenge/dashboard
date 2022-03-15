@@ -24,7 +24,11 @@ import {NamespacedResourceService} from '../../../services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 
-@Component({selector: 'kd-secret-list', templateUrl: './template.html'})
+@Component({
+  selector: 'kd-secret-list',
+  templateUrl: './template.html'
+})
+
 export class SecretListComponent extends ResourceListBase<SecretList, Secret> {
   @Input() endpoint = EndpointManager.resource(Resource.secret, true, true).list();
 
