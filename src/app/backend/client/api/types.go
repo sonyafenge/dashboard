@@ -31,7 +31,6 @@ import (
 const (
 	// Resource information that are used as csrf token storage. Can be accessible by multiple dashboard replicas.
 	CsrfTokenSecretName = "centaurus-dashboard-csrf"
-
 	// Name of the data var that holds the csrf token inside the secret.
 	CsrfTokenSecretData = "csrf"
 )

@@ -48,7 +48,6 @@ func CreateConnection() *sql.DB {
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %s", err)
 	}
-
 	fmt.Println("Successfully connected!")
 	// return the connection
 	return db
@@ -57,10 +56,8 @@ func CreateConnection() *sql.DB {
 // insert one user in the DB
 
 func InsertUser(user model.User) int64 {
-
 	// create the postgres db connection
 	db := CreateConnection()
-
 	// close the db connection
 	defer db.Close()
 
@@ -205,11 +202,9 @@ func GetAllUsers(tenant string) (*model.UserList, error) {
 		}
 		user.Phase = "Active"
 		user.TypeMeta.Kind = "User"
-
 		// append the user in the users slice
 		userList.Users = append(userList.Users, user)
 		count++
-
 	}
 	userList.ListMeta = api.ListMeta{TotalItems: count}
 	// return empty user on error
@@ -271,8 +266,6 @@ func DeleteTenantUser(tenant string) int64 {
 	if err != nil {
 		log.Fatalf("Error while checking the affected rows. %v", err)
 	}
-
 	fmt.Printf("Total rows/record affected %v", rowsAffected)
-
 	return rowsAffected
 }

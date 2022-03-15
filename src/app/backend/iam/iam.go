@@ -17,22 +17,21 @@ package iam
 
 import (
 	"errors"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrole"
-	"log"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/args"
 	"github.com/kubernetes/dashboard/src/app/backend/client"
+	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
 	"github.com/kubernetes/dashboard/src/app/backend/iam/db"
 	"github.com/kubernetes/dashboard/src/app/backend/iam/model"
+	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrole"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/clusterrolebinding"
 	ns "github.com/kubernetes/dashboard/src/app/backend/resource/namespace"
 	"github.com/kubernetes/dashboard/src/app/backend/resource/serviceaccount"
 	rbac "k8s.io/api/rbac/v1"
+	"log"
+	"os"
+	"strings"
+	"time"
 )
 
 // Create cluster Admin
@@ -151,8 +150,6 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 
 	// TODO Check if centaurus-dashboard namespace exists or not using GET method
 	k8sClient := client.InsecureClient()
-
-	// Create tenant
 
 	// Create Service Account
 	serviceAccountSpec := new(serviceaccount.ServiceAccountSpec)

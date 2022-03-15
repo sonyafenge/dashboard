@@ -40,12 +40,10 @@ type ServiceAccountList struct {
 func GetServiceAccountList(client client.Interface, namespace *common.NamespaceQuery,
 	dsQuery *dataselect.DataSelectQuery) (*ServiceAccountList, error) {
 	saList, err := client.CoreV1().ServiceAccounts(namespace.ToRequestParam()).List(api.ListEverything)
-
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return nil, criticalError
 	}
-
 	return toServiceAccountList(saList.Items, nonCriticalErrors, dsQuery), nil
 }
 
@@ -53,12 +51,10 @@ func GetServiceAccountList(client client.Interface, namespace *common.NamespaceQ
 func GetServiceAccountListWithMultiTenancy(client client.Interface, tenant string, namespace *common.NamespaceQuery,
 	dsQuery *dataselect.DataSelectQuery) (*ServiceAccountList, error) {
 	saList, err := client.CoreV1().ServiceAccountsWithMultiTenancy(namespace.ToRequestParam(), tenant).List(api.ListEverything)
-
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil {
 		return nil, criticalError
 	}
-
 	return toServiceAccountList(saList.Items, nonCriticalErrors, dsQuery), nil
 }
 
@@ -76,14 +72,11 @@ func toServiceAccountList(serviceAccounts []v1.ServiceAccount, nonCriticalErrors
 		Items:    make([]ServiceAccount, 0),
 		Errors:   nonCriticalErrors,
 	}
-
 	saCells, filteredTotal := dataselect.GenericDataSelectWithFilter(toCells(serviceAccounts), dsQuery)
 	serviceAccounts = fromCells(saCells)
-
 	newServiceAccountList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 	for _, sa := range serviceAccounts {
 		newServiceAccountList.Items = append(newServiceAccountList.Items, toServiceAccount(&sa))
 	}
-
 	return newServiceAccountList
 }

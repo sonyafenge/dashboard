@@ -15,17 +15,15 @@
 package handler
 
 import (
-	"encoding/json"
-	"github.com/kubernetes/dashboard/src/app/backend/systembanner"
-	"net/http"
-	"testing"
-
 	"bytes"
-	"reflect"
-	"strings"
-
+	"encoding/json"
 	restful "github.com/emicklei/go-restful"
 	"github.com/kubernetes/dashboard/src/app/backend/args"
+	"github.com/kubernetes/dashboard/src/app/backend/systembanner"
+	"net/http"
+	"reflect"
+	"strings"
+	"testing"
 	//"github.com/kubernetes/dashboard/src/app/backend/auth"
 	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
 	"github.com/kubernetes/dashboard/src/app/backend/auth/jwe"

@@ -16,8 +16,6 @@
 package pod
 
 import (
-	"log"
-
 	"github.com/kubernetes/dashboard/src/app/backend/api"
 	"github.com/kubernetes/dashboard/src/app/backend/errors"
 	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
@@ -27,19 +25,17 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "k8s.io/client-go/kubernetes"
+	"log"
 )
 
 // PodListComponent contains a list of Pods in the cluster.
 type PodList struct {
 	ListMeta          api.ListMeta       `json:"listMeta"`
 	CumulativeMetrics []metricapi.Metric `json:"cumulativeMetrics"`
-
 	// Basic information about resources status on the list.
 	Status common.ResourceStatus `json:"status"`
-
 	// Unordered list of Pods.
 	Pods []Pod `json:"pods"`
-
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
 }
@@ -102,7 +98,6 @@ func GetPodListWithMultiTenancy(client k8sClient.Interface, metricClient metrica
 		PodList:   common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant, nsQuery, metaV1.ListOptions{}, 1),
 		EventList: common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
 	}
-
 	return GetPodListFromChannels(channels, dsQuery, metricClient)
 }
 
@@ -158,7 +153,6 @@ func ToPodList(pods []v1.Pod, events []v1.Event, nonCriticalErrors []error, dsQu
 	if err != nil {
 		podList.CumulativeMetrics = make([]metricapi.Metric, 0)
 	}
-
 	return podList
 }
 
@@ -175,6 +169,5 @@ func toPod(pod *v1.Pod, metrics *MetricsByPod, warnings []common.Event) Pod {
 	if m, exists := metrics.MetricsMap[pod.UID]; exists {
 		podDetail.Metrics = &m
 	}
-
 	return podDetail
 }

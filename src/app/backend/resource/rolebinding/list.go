@@ -46,7 +46,6 @@ func GetRoleBindingList(client kubernetes.Interface, nsQuery *common.NamespaceQu
 	channels := &common.ResourceChannels{
 		RoleBindingList: common.GetRoleBindingListChannel(client, 1),
 	}
-
 	return GetRoleBindingListFromChannels(channels, dsQuery)
 }
 
@@ -75,12 +74,10 @@ func toRoleBindingList(roleBindings []rbac.RoleBinding, nonCriticalErrors []erro
 		ListMeta: api.ListMeta{TotalItems: len(roleBindings)},
 		Errors:   nonCriticalErrors,
 	}
-
 	items := make([]RoleBinding, 0)
 	for _, item := range roleBindings {
 		items = append(items, toRoleBinding(item))
 	}
-
 	roleBindingCells, filteredTotal := dataselect.GenericDataSelectWithFilter(toCells(items), dsQuery)
 	result.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 	result.Items = fromCells(roleBindingCells)

@@ -26,17 +26,13 @@ import (
 type RoleBindingSpec struct {
 	// Name of the role-binding.
 	Name string `json:"name"`
-
 	// Namespace for which role binding is to be created.
 	Namespace string `json:"namespace"`
-
 	// Tenant of the role-binding
 	Tenant string `json:"tenant"`
-
 	// Subject contains a reference to the object or user identities a role binding applies to.  This can either hold a direct API object reference,
 	// or a value for non-objects such as user and group names.
 	Subject v1.Subject `json:"subject"`
-
 	// RoleRef contains information that points to the role being used
 	RoleRef v1.RoleRef `json:"role_ref"`
 }
@@ -69,7 +65,6 @@ func CreateRoleBindings(spec *RoleBindingSpec, client kubernetes.Interface) erro
 		Subjects: subjects,
 		RoleRef:  roleRef,
 	}
-
 	_, err := client.RbacV1().RoleBindings(spec.Namespace).Create(rolebinding)
 	return err
 }
@@ -109,7 +104,6 @@ func CreateRoleBindingsWithMultiTenancy(spec *RoleBindingSpec, client kubernetes
 		Subjects: subjects,
 		RoleRef:  roleRef,
 	}
-
 	_, err := client.RbacV1().RoleBindingsWithMultiTenancy(spec.Namespace, spec.Tenant).Create(rolebinding)
 	return err
 }
