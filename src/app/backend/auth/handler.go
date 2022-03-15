@@ -35,25 +35,6 @@ func AuthAllocator(tenantname string, auths []authApi.AuthManager) authApi.AuthM
 	if tenantname == "system" {
 		return auths[0]
 	}
-	//if authlen := len(auths); authlen > 1 {
-	//  start := 65
-	//  quo, rem := func(dvdnd, dvsr int) (quo, rem int) {
-	//    quo = dvdnd / dvsr
-	//    rem = dvdnd % dvsr
-	//    return quo, rem
-	//  }(26, authlen)
-	//  tenantpref := []rune(strings.ToUpper(tenantname))
-	//  temp := start + quo + rem
-	//  for i := 0; i < len(auths); i++ {
-	//    if tenantpref[0] <= rune(temp) {
-	//      log.Printf("match: %d", i)
-	//      log.Println("current auth manager")
-	//      return auths[i]
-	//    } else {
-	//      temp = temp + quo
-	//    }
-	//  }
-	//}
 	if authlen := len(auths); authlen > 1 {
 		pref := []rune(strings.ToUpper(tenantname))
 		log.Printf("prefix:%v", pref[0])

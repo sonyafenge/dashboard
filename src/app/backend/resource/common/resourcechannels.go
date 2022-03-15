@@ -120,9 +120,7 @@ type ResourceChannels struct {
 
 	// List and error channels to ClusterRoleBindings
 	ClusterRoleBindingList ClusterRoleBindingListChannel
-
-	// List and error channels to VM
-	VMList VMListChannel
+	VMList                 VMListChannel
 }
 
 // ServiceListChannel is a list and error channels to Services.

@@ -93,6 +93,10 @@ func (self *SettingsHandler) handleSettingsGlobalCanI(request *restful.Request, 
 
 func (self *SettingsHandler) handleSettingsGlobalGet(request *restful.Request, response *restful.Response) {
 	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
 	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
 
 	log.Printf("cookie_tenant is: %s", c.Value)
@@ -115,6 +119,10 @@ func (self *SettingsHandler) handleSettingsGlobalSave(request *restful.Request, 
 	}
 
 	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
 	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
 
 	log.Printf("cookie_tenant is: %s", c.Value)
@@ -134,6 +142,10 @@ func (self *SettingsHandler) handleSettingsGlobalSave(request *restful.Request, 
 
 func (self *SettingsHandler) handleSettingsGetPinned(request *restful.Request, response *restful.Response) {
 	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
 	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
 
 	log.Printf("cookie_tenant is: %s", c.Value)
@@ -156,6 +168,10 @@ func (self *SettingsHandler) handleSettingsSavePinned(request *restful.Request, 
 	}
 
 	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
 	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
 
 	log.Printf("cookie_tenant is: %s", c.Value)
@@ -181,6 +197,10 @@ func (self *SettingsHandler) handleSettingsDeletePinned(request *restful.Request
 	}
 
 	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
 	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
 
 	log.Printf("cookie_tenant is: %s", c.Value)

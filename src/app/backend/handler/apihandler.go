@@ -1410,7 +1410,6 @@ func fromCells(cells []dataselect.DataCell) []tenant.Tenant {
 	}
 	return std
 }
-
 func (apiHandler *APIHandlerV2) handleGetTenantDetail(request *restful.Request, response *restful.Response) {
 	tenantName := request.PathParameter("name")
 	if len(apiHandler.tpManager) == 0 {
@@ -3778,9 +3777,6 @@ func (apiHandler *APIHandlerV2) handleGetRolesWithMultiTenancy(request *restful.
 		errors.HandleInternalError(response, err)
 		return
 	}
-	//var namespaces []string
-	//namespaces = append(namespaces, Namespace)
-	//namespace := common.NewNamespaceQuery(namespaces)
 	namespace := request.PathParameter("namespace")
 	result, err := role.GetRolesWithMultiTenancy(k8sClient, tenant, namespace)
 	//role.GetRoleList(k8sClient, namespace, result)
@@ -6133,6 +6129,7 @@ func (apiHandler *APIHandlerV2) handleDeleteUser(w *restful.Request, r *restful.
 		var clusterRoleName = userDetail.ObjectMeta.Username + "-" + userDetail.ObjectMeta.Tenant + "-" + "role"
 		var saName = userDetail.ObjectMeta.Tenant + "-" + userDetail.ObjectMeta.Tenant + "-sa"
 		var clusterRoleBinding = userDetail.ObjectMeta.Username + "-" + userDetail.ObjectMeta.Tenant + "-" + "rb"
+
 		if err := clusterrolebinding.DeleteClusterRoleBindings(clusterRoleBinding, k8sClient); err != nil {
 		}
 		if err := serviceaccount.DeleteServiceAccount(userDetail.ObjectMeta.NameSpace, saName, k8sClient); err != nil {
@@ -6147,12 +6144,8 @@ func (apiHandler *APIHandlerV2) handleDeleteUser(w *restful.Request, r *restful.
 	} else {
 		if userDetail.ObjectMeta.Type == `tenant-user` {
 			if err := serviceaccount.DeleteServiceAccountsWithMultiTenancy(userDetail.ObjectMeta.Tenant, userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
-				//errors.HandleInternalError(r, err)
-				//return
 			}
 			if err := rolebinding.DeleteRoleBindingsWithMultiTenancy(userDetail.ObjectMeta.Tenant, userDetail.ObjectMeta.NameSpace, userName, k8sClient); err != nil {
-				//errors.HandleInternalError(r, err)
-				//return
 			}
 		}
 	}

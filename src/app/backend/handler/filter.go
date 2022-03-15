@@ -146,7 +146,6 @@ func validateXSRFFilter(csrfKey string) restful.FilterFunction {
 			resp.WriteErrorString(http.StatusUnauthorized, err.Error()+"\n")
 			return
 		}
-
 		chain.ProcessFilter(req, resp)
 	}
 }

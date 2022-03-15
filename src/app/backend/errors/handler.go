@@ -137,6 +137,9 @@ func HandleHTTPError(err error) int {
 	if err == nil {
 		return http.StatusInternalServerError
 	}
+	if err.Error() == "Invalid Username or Password" {
+		return http.StatusUnauthorized
+	}
 	if err.Error() == MsgTokenExpiredError || err.Error() == MsgLoginUnauthorizedError || err.Error() == MsgEncryptionKeyChanged {
 		return http.StatusUnauthorized
 	}

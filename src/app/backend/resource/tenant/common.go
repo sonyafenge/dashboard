@@ -23,8 +23,7 @@ import (
 	"log"
 )
 
-// The code below allows to perform complex data section on []api.Tenant
-
+// TenantSpec is a specification of tenant to create.
 type TenantSpec struct {
 	// Name of the tenant.
 	Name             string `json:"name"`
@@ -65,6 +64,7 @@ func DeleteTenant(tenantName string, client kubernetes.Interface) error {
 	return err
 }
 
+// The code below allows to perform complex data section on []api.Tenant
 type TenantCell v1.Tenant
 
 func (self TenantCell) GetProperty(name dataselect.PropertyName) dataselect.ComparableValue {

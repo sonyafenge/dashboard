@@ -1,3 +1,18 @@
+// Copyright 2017 The Kubernetes Authors.
+// Copyright 2020 Authors of Arktos - file modified.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package api
 
 import (
@@ -115,7 +130,6 @@ const (
 	ResourceKindReplicaSet               = "replicaset"
 	ResourceKindReplicationController    = "replicationcontroller"
 	ResourceKindResourceQuota            = "resourcequota"
-	ResourceKindClusterRoleBinding       = "clusterrolebinding"
 	ResourceKindRole                     = "role"
 	ResourceKindRoleBinding              = "rolebinding"
 	ResourceKindSecret                   = "secret"
@@ -124,8 +138,11 @@ const (
 	ResourceKindStatefulSet              = "statefulset"
 	ResourceKindStorageClass             = "storageclass"
 	ResourceKindClusterRole              = "clusterrole"
+	ResourceKindClusterRoleBinding       = "clusterrolebinding"
 	ResourceKindEndpoint                 = "endpoint"
 	ResourceKindTenant                   = "tenant"
+	ResourceKindUser                     = "user"
+	ResourceKindClusterPartition         = "partition"
 )
 
 // ClientType represents type of client that is used to perform generic operations on resources.
@@ -175,18 +192,21 @@ var KindToAPIMapping = map[string]APIMapping{
 	ResourceKindCustomResourceDefinition: {"customresourcedefinitions", ClientTypeAPIExtensionsClient, false},
 	ResourceKindPod:                      {"pods", ClientTypeDefault, true},
 	ResourceKindReplicaSet:               {"replicasets", ClientTypeExtensionClient, true},
-	ResourceKindRole:                     {"roles", ClientTypeDefault, false},
-	ResourceKindRoleBinding:              {"rolebindings", ClientTypeRbacClient, true},
 	ResourceKindReplicationController:    {"replicationcontrollers", ClientTypeDefault, true},
 	ResourceKindResourceQuota:            {"resourcequotas", ClientTypeDefault, true},
-	ResourceKindClusterRoleBinding:       {"clusterrolebindings", ClientTypeRbacClient, false},
 	ResourceKindSecret:                   {"secrets", ClientTypeDefault, true},
 	ResourceKindService:                  {"services", ClientTypeDefault, true},
 	ResourceKindServiceAccount:           {"servicesaccounts", ClientTypeDefault, true},
+	ResourceKindRole:                     {"roles", ClientTypeDefault, false},
+	ResourceKindRoleBinding:              {"rolebindings", ClientTypeRbacClient, true},
 	ResourceKindStatefulSet:              {"statefulsets", ClientTypeAppsClient, true},
 	ResourceKindStorageClass:             {"storageclasses", ClientTypeStorageClient, false},
 	ResourceKindEndpoint:                 {"endpoints", ClientTypeDefault, true},
 	ResourceKindClusterRole:              {"clusterroles", ClientTypeRbacClient, false},
+	ResourceKindClusterRoleBinding:       {"clusterrolebindings", ClientTypeRbacClient, false},
+	ResourceKindTenant:                   {"tenants", ClientTypeDefault, false},
+	ResourceKindUser:                     {"users", ClientTypeDefault, false},
+	ResourceKindClusterPartition:         {"partition", ClientTypeDefault, false},
 }
 
 // IsSelectorMatching returns true when an object with the given selector targets the same

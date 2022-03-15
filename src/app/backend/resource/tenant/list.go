@@ -50,6 +50,7 @@ func GetTenantList(client client.Interface, dsQuery *dataselect.DataSelectQuery,
 	if criticalError != nil {
 		return nil, criticalError
 	}
+
 	return toTenantList(tenants.Items, nonCriticalErrors, dsQuery, clusterName, tenant), nil
 }
 
