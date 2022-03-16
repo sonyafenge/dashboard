@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: centaurus-dashboard
-  name: centaurus-dashboard
-  namespace: centaurus-dashboard
-spec:
-  ports:
-    - port: 80
-      targetPort: 9090
-  selector:
-    k8s-app: centaurus-dashboard
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# Import config.
+ROOT_DIR="$(cd $(dirname "${BASH_SOURCE}")/../.. && pwd -P)"
+source "${ROOT_DIR}/aio/scripts/conf.sh"
+
+function install_codegen() {
+    chmod +x ${CODEGEN_BIN}
+}
+
+install_codegen

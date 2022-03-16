@@ -21,7 +21,7 @@ function start-ci-heapster {
   say "\nRunning heapster in standalone mode"
   docker run --net=host -d k8s.gcr.io/heapster-amd64:${HEAPSTER_VERSION} \
              --heapster-port ${HEAPSTER_PORT} \
-             --source=kubernetes:http://127.0.0.1:8080?inClusterConfig=false&auth=""
+             --source=centaurus:http://127.0.0.1:8080?inClusterConfig=false&auth=""
 
   say "\nWaiting for heapster to be started"
   for i in {1..150}
@@ -36,12 +36,12 @@ function start-ci-heapster {
 }
 
 function start-kind {
-  ${KIND_BIN} create cluster --name="k8s-cluster-ci"
+  ${KIND_BIN} create cluster --name="k8s-cluster-ci" --image=kindest/node:v1.20.2
   ensure-kubeconfig
   if [ "${CI}" = true ] ; then
     start-ci-heapster
   fi
-  say "\nKubernetes cluster is ready to use"
+  say "\nCentaurus cluster is ready to use"
 }
 
 # Execute script.

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "kubernetes-dashboard": {
+    "centaurus-dashboard": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -65,19 +65,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "kubernetes-dashboard:build",
+            "browserTarget": "centaurus-dashboard:build",
             "port": 8080
           },
           "configurations": {
             "production": {
-              "browserTarget": "kubernetes-dashboard:build:production"
+              "browserTarget": "centaurus-dashboard:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "kubernetes-dashboard:build"
+            "browserTarget": "centaurus-dashboard:build"
           }
         },
         "test": {
@@ -111,7 +111,7 @@
       }
     }
   },
-  "defaultProject": "kubernetes-dashboard",
+  "defaultProject": "centaurus-dashboard",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "kd",

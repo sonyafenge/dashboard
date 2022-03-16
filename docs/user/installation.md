@@ -2,7 +2,7 @@
 
 ## Official release
 
-**IMPORTANT:** Before upgrading from older version of Dashboard to 1.7+ make sure to delete Cluster Role Binding for `kubernetes-dashboard` Service Account, otherwise Dashboard will have full admin access to the cluster.
+**IMPORTANT:** Before upgrading from older version of Dashboard to 1.7+ make sure to delete Cluster Role Binding for `centaurus-dashboard` Service Account, otherwise Dashboard will have full admin access to the cluster.
 
 ### Quick setup
 
@@ -14,10 +14,10 @@ To access Dashboard directly (without `kubectl proxy`) valid certificates should
 
 By default self-signed certificates are generated and stored in-memory. In case you would like to use your custom certificates follow the below steps, otherwise skip directly to the Dashboard deploy part.
 
-Custom certificates have to be stored in a secret named `kubernetes-dashboard-certs` in the same namespace as Kubernetes Dashboard. Assuming that you have `dashboard.crt` and `dashboard.key` files stored under `$HOME/certs` directory, you should create secret with contents of these files:
+Custom certificates have to be stored in a secret named `centaurus-dashboard-certs` in the same namespace as Kubernetes Dashboard. Assuming that you have `dashboard.crt` and `dashboard.key` files stored under `$HOME/certs` directory, you should create secret with contents of these files:
 
 ```
-kubectl create secret generic kubernetes-dashboard-certs --from-file=$HOME/certs -n kubernetes-dashboard
+kubectl create secret generic centaurus-dashboard-certs --from-file=$HOME/certs -n centaurus-dashboard
 ```
 
 Afterwards, you are ready to deploy Dashboard using the following command:
@@ -52,12 +52,12 @@ $ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0
 
 Once installed, the deployment is not automatically updated. In order to update it you need to delete the deployment's pods and wait for it to be recreated. After recreation, it should use the latest image.
 
-Delete all Dashboard pods (assuming that Dashboard is deployed in kubernetes-dashboard namespace):
+Delete all Dashboard pods (assuming that Dashboard is deployed in centaurus-dashboard namespace):
 
 ```
-kubectl -n kubernetes-dashboard delete $(kubectl -n kubernetes-dashboard get pod -o name | grep dashboard)
+kubectl -n centaurus-dashboard delete $(kubectl -n centaurus-dashboard get pod -o name | grep dashboard)
 pod "dashboard-metrics-scraper-fb986f88d-gnfnk" deleted
-pod "kubernetes-dashboard-7d8b9cc8d-npljm" deleted
+pod "centaurus-dashboard-7d8b9cc8d-npljm" deleted
 ```
 
 ----

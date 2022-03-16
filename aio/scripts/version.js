@@ -19,9 +19,9 @@ Object.assign(gitInfo.semver || {}, {
 });
 
 const file =
-    resolve(__dirname, '..', '..', 'src/', 'app', 'frontend', 'environments', 'version.ts');
+  resolve(__dirname, '..', '..', 'src/', 'app', 'frontend', 'environments', 'version.ts');
 writeFileSync(
-    file, `// Copyright 2017 The Kubernetes Authors.
+  file, `// Copyright 2017 The Kubernetes Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,6 +42,6 @@ import {VersionInfo} from '@api/frontendapi';
 // prettier-ignore
 export const version: VersionInfo = ${JSON.stringify(gitInfo, null, 2).replace(/\"/g, '\'')};
 `,
-    {encoding: 'utf-8'});
+  {encoding: 'utf-8'});
 
 console.log(`Version ${gitInfo.raw} saved to ${relative(resolve(__dirname, '..'), file)}`);

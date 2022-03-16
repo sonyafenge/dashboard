@@ -16,22 +16,22 @@ kind: Deployment
 apiVersion: apps/v1
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 spec:
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      k8s-app: kubernetes-dashboard-head
+      k8s-app: centaurus-dashboard-head
   template:
     metadata:
       labels:
-        k8s-app: kubernetes-dashboard-head
+        k8s-app: centaurus-dashboard-head
     spec:
       containers:
-        - name: kubernetes-dashboard-head
+        - name: centaurus-dashboard-head
           image: kubernetesdashboarddev/dashboard:head
           imagePullPolicy: Always
           ports:
@@ -39,13 +39,13 @@ spec:
               protocol: TCP
           args:
             - --auto-generate-certificates
-            - --namespace=kubernetes-dashboard-head
-            # Uncomment the following line to manually specify Kubernetes API server Host
+            - --namespace=centaurus-dashboard-head
+            # Uncomment the following line to manually specify centaurus API server Host
             # If not specified, Dashboard will attempt to auto discover the API server and connect
             # to it. Uncomment only if the default does not work.
             # - --apiserver-host=http://my-address:port
           volumeMounts:
-            - name: kubernetes-dashboard-certs
+            - name: centaurus-dashboard-certs
               mountPath: /certs
               # Create on-disk volume to store exec logs
             - mountPath: /tmp
@@ -58,13 +58,13 @@ spec:
             initialDelaySeconds: 30
             timeoutSeconds: 30
       volumes:
-        - name: kubernetes-dashboard-certs
+        - name: centaurus-dashboard-certs
           secret:
-            secretName: kubernetes-dashboard-certs
+            secretName: centaurus-dashboard-certs
         - name: tmp-volume
           emptyDir: {}
-      serviceAccountName: kubernetes-dashboard-head
+      serviceAccountName: centaurus-dashboard-head
       # Comment the following tolerations if Dashboard must not be deployed on master
       tolerations:
-        - key: node-role.kubernetes.io/master
+        - key: node-role.centaurus.io/master
           effect: NoSchedule

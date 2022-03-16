@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kind: Service
-apiVersion: v1
-metadata:
-  labels:
-    k8s-app: centaurus-dashboard
-  name: centaurus-dashboard
-  namespace: centaurus-dashboard
-spec:
-  ports:
-    - port: 80
-      targetPort: 9090
-  selector:
-    k8s-app: centaurus-dashboard
+# `golangci-lint` can not check files on different directory.
+# It would reports "named files must all be in one directory" error.
+# So we need to check whole files in once without filepaths from `lint-staged`.
+# lint-staged passes all staged filepaths at once.
+# So this script will be called only once.
+golangci-lint run -c .golangci.yml --fix src/app/backend/...
