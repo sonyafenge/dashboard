@@ -17,8 +17,8 @@ package plugin
 import (
 	"fmt"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	pluginclientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	pluginclientset "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/client/clientset/versioned"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

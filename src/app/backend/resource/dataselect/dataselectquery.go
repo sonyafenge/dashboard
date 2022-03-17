@@ -15,7 +15,7 @@
 package dataselect
 
 import (
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
 )
 
 // Options for GenericDataSelect which takes []GenericDataCell and returns selected data.

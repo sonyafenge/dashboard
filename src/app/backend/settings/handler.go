@@ -15,13 +15,12 @@
 package settings
 
 import (
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/iam"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/settings/api"
 	restful "github.com/emicklei/go-restful"
-	"github.com/kubernetes/dashboard/src/app/backend/args"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/iam"
-	"github.com/kubernetes/dashboard/src/app/backend/settings/api"
-	"log"
 	"net/http"
 )
 

@@ -28,8 +28,6 @@ import {KdStateService} from '../../services/global/state';
 import {EndpointManager, Resource} from '../../services/resource/endpoint';
 import {ResourceService} from '../../services/resource/resource';
 
-import {NamespaceChangeDialog} from './changedialog/dialog';
-
 @Component({
   selector: 'kd-namespace-selector',
   templateUrl: './template.html',

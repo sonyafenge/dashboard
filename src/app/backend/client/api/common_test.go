@@ -18,7 +18,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kubernetes/dashboard/src/app/backend/client/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
 	v1 "k8s.io/api/authorization/v1"
 )
 

@@ -18,8 +18,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/kubernetes/dashboard/src/app/backend/plugin/apis/v1alpha1"
-	fakePluginClientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned/fake"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/plugin/apis/v1alpha1"
+	fakePluginClientset "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/client/clientset/versioned/fake"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	fakeK8sClient "k8s.io/client-go/kubernetes/fake"

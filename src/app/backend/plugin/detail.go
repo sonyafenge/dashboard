@@ -15,7 +15,7 @@
 package plugin
 
 import (
-	pluginclientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
+	pluginclientset "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/client/clientset/versioned"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )

@@ -21,8 +21,8 @@ import (
 	rand "math/rand"
 	"time"
 
-	v1alpha1 "github.com/kubernetes/dashboard/src/app/backend/plugin/apis/v1alpha1"
-	"github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/apis/v1alpha1"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/plugin/client/clientset/versioned/scheme"
 	apiserverupdate "k8s.io/client-go/apiserverupdate"
 	rest "k8s.io/client-go/rest"
 	klog "k8s.io/klog"

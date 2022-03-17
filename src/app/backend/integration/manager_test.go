@@ -17,9 +17,9 @@ package integration
 import (
 	"testing"
 
-	"github.com/kubernetes/dashboard/src/app/backend/client"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/integration/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/integration/api"
 )
 
 func areErrorsEqual(err1, err2 error) bool {

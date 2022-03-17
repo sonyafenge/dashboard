@@ -16,8 +16,8 @@
 package job
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
 	batch "k8s.io/api/batch/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "k8s.io/client-go/kubernetes"

@@ -23,11 +23,11 @@ import (
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 )
 
 func TestGetJobListFromChannels(t *testing.T) {

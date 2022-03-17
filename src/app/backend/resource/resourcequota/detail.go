@@ -16,10 +16,10 @@
 package resourcequota
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"

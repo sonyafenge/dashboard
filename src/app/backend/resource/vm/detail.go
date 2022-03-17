@@ -18,23 +18,25 @@ package vm
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	errorHandler "github.com/kubernetes/dashboard/src/app/backend/errors"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/controller"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolumeclaim"
-	p "github.com/kubernetes/dashboard/src/app/backend/resource/pod"
+	"log"
+	"math"
+	"strconv"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	errorHandler "github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/controller"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/persistentvolumeclaim"
+	p "github.com/CentaurusInfra/dashboard/src/app/backend/resource/pod"
 	v1 "k8s.io/api/core/v1"
 	res "k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
-	"log"
-	"math"
-	"strconv"
 )
 
 // VirtualMachineDetail is a presentation layer view of Kubernetes Pod resource.

@@ -20,9 +20,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 	restful "github.com/emicklei/go-restful"
-	"github.com/kubernetes/dashboard/src/app/backend/args"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
 	"k8s.io/client-go/rest"
 )
 

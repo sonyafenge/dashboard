@@ -30,11 +30,11 @@ import (
 	"k8s.io/client-go/rest"
 	heapster "k8s.io/heapster/metrics/api/v1/types"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/client"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	integrationapi "github.com/kubernetes/dashboard/src/app/backend/integration/api"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	integrationapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/api"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
 )
 
 func areErrorsEqual(err1, err2 error) bool {

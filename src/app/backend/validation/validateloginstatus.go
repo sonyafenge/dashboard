@@ -15,9 +15,9 @@
 package validation
 
 import (
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client"
 	restful "github.com/emicklei/go-restful"
-	"github.com/kubernetes/dashboard/src/app/backend/args"
-	"github.com/kubernetes/dashboard/src/app/backend/client"
 )
 
 // LoginStatus is returned as a response to login status check. Used by the frontend to determine if is logged in

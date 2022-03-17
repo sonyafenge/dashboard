@@ -6,6 +6,7 @@
     ]
   },
   "rules": {
+    "no-any": false,
     "ban-ts-ignore": false,
     "interface-over-type-literal": false,
     "deprecation": false,

@@ -16,9 +16,9 @@
 package auth
 
 import (
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 

@@ -18,7 +18,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/kubernetes/dashboard/src/app/backend/resource/logs"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/logs"
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

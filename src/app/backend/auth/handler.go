@@ -15,15 +15,13 @@
 package auth
 
 import (
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/validation"
+	"github.com/emicklei/go-restful"
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/emicklei/go-restful"
-
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/validation"
 )
 
 // AuthHandler manages all endpoints related to dashboard auth, such as login.

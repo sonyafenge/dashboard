@@ -24,13 +24,16 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	//"github.com/kubernetes/dashboard/src/app/backend/auth"
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	"github.com/kubernetes/dashboard/src/app/backend/auth/jwe"
-	//"github.com/kubernetes/dashboard/src/app/backend/client"
-	//"github.com/kubernetes/dashboard/src/app/backend/settings"
-	"github.com/kubernetes/dashboard/src/app/backend/sync"
-	//"github.com/kubernetes/dashboard/src/app/backend/systembanner"
+
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/auth"
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/auth/jwe"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/settings"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/sync"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/systembanner"
+	"github.com/emicklei/go-restful"
 	"k8s.io/client-go/kubernetes/fake"
 )
 

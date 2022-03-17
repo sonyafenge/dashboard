@@ -26,7 +26,7 @@ import (
 	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	restclient "k8s.io/client-go/rest"
 
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 )
 
 type clientFunc func(req *http.Request) (*http.Response, error)

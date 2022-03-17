@@ -22,8 +22,8 @@ import (
 	sync "sync"
 	"time"
 
-	v1alpha1 "github.com/kubernetes/dashboard/src/app/backend/plugin/apis/v1alpha1"
-	scheme "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/apis/v1alpha1"
+	scheme "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/client/clientset/versioned/scheme"
 	errors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"

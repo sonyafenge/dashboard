@@ -14,7 +14,6 @@
 
 import {NgModule} from '@angular/core';
 import {Route, RouterModule} from '@angular/router';
-
 import {CreateComponent} from './component';
 
 const CREATE_ROUTE: Route = {

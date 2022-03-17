@@ -48,9 +48,9 @@ func TestShouldRejectRequest(t *testing.T) {
 		{"#!/namespace/kube-system", false},
 		{"#!/secret/test/test-secret?namespace=test", false},
 		{"#!/secret/kube-system/test-secret", false},
-		{"#!/secret/kube-system/kubernetes-dashboard-key-holder", true},
-		{"#!/secret/test/kubernetes-dashboard-certs", true},
-		{"#!/secret/kube-system/kubernetes-dashboard-certs", true},
+		{"#!/secret/kube-system/centaurus-dashboard-key-holder", true},
+		{"#!/secret/test/centaurus-dashboard-certs", true},
+		{"#!/secret/kube-system/centaurus-dashboard-certs", true},
 	}
 
 	for _, c := range cases {

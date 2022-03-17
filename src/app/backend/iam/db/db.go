@@ -18,8 +18,8 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/iam/model"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/iam/model"
 	"log"
 	"os"
 )

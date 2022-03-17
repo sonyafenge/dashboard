@@ -16,7 +16,7 @@
 package model
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
 	"time"
 )
 

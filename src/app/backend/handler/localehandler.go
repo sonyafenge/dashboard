@@ -22,8 +22,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
 	"github.com/golang/glog"
-	"github.com/kubernetes/dashboard/src/app/backend/args"
 	"golang.org/x/text/language"
 )
 

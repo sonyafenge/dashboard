@@ -1,9 +1,9 @@
 package partition
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
-	resource "github.com/kubernetes/dashboard/src/app/backend/resource/node"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
+	resource "github.com/CentaurusInfra/dashboard/src/app/backend/resource/node"
 	v1 "k8s.io/api/core/v1"
 	client "k8s.io/client-go/kubernetes"
 )

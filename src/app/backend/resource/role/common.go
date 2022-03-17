@@ -17,7 +17,7 @@ package role
 import (
 	"log"
 
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	v1 "k8s.io/api/rbac/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

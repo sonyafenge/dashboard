@@ -15,8 +15,8 @@
 package customresourcedefinition
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
