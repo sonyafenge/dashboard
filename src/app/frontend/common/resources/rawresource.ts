@@ -35,13 +35,19 @@ export class RawResource {
     }
 
     else if (resourceUrl.includes('/User')) {
-      if (`${objectMeta.name}` != sessionStorage.getItem('username')) {
+      if (`${objectMeta.name}` !== sessionStorage.getItem('username')) {
         resourceUrl = `api/v1/tenants/${tenant}/users/${objectMeta.name}/${objectMeta.id}`
       }
       else {
         return null;
       }
     }
+
+    else if (resourceUrl.includes('/virtualmachine')) {
+      resourceUrl = `api/v1/tenants/${tenant}/_raw/pod/namespace/${objectMeta.namespace}/name/${objectMeta.name}`
+    }
+
     return resourceUrl;
   }
 }
+
