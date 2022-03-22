@@ -63,9 +63,10 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
   }
 
   getResourceObservable(params?: HttpParams): Observable<ReplicaSetList> {
+    const partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(`${this.tenantName}`) + '/' : ''
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${this.tenantName}/replicaset`
+      endpoint = `api/v1/${partition}tenants/${this.tenantName}/replicaset`
     } else {
       endpoint = this.endpoint
     }

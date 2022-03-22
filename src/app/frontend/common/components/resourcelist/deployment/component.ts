@@ -63,9 +63,10 @@ export class DeploymentListComponent extends ResourceListWithStatuses<Deployment
   }
 
   getResourceObservable(params?: HttpParams): Observable<DeploymentList> {
+    const partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(`${this.tenantName}`) + '/' : ''
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${this.tenantName}/deployment`
+      endpoint = `api/v1/${partition}tenants/${this.tenantName}/deployment`
     } else {
       endpoint = this.endpoint
     }

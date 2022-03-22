@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
 import {ObjectMeta, Tenant, TenantList, TypeMeta} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
+
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {ResourceService} from '../../../services/resource/resource';
@@ -56,8 +58,12 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
     this.nodeName = this.route_.snapshot.params.resourceName
 
     const routeInfo = this.router_.getCurrentNavigation();
-    this.clusterName = (routeInfo.extras.state['clusterName']).toString();
-
+    if ( routeInfo === null || routeInfo.extras.state === undefined ) {
+      this.clusterName = sessionStorage.getItem(`${this.clusterName}`)
+    } else {
+      this.clusterName = (routeInfo.extras.state['clusterName']).toString();
+      sessionStorage.setItem(`${this.clusterName}`, this.clusterName)
+    }
 
     // Register status icon handlers
     this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
@@ -103,5 +109,10 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
 
   onClick(): void {
     this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);
+  }
+
+  setPartition(partitionName:string, $event:any) {
+    const resourceName = $event.target.innerHTML.replace(/^\s+|\s+$/gm,'');
+    sessionStorage.setItem(`${resourceName}`,partitionName);
   }
 }

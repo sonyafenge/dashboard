@@ -26,7 +26,12 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {ActivatedRoute} from "@angular/router";
 import {TenantService} from "../../../services/global/tenant";
 
-@Component({selector: 'kd-pod-list', templateUrl: './template.html'})
+@Component
+({
+  selector: 'kd-pod-list',
+  templateUrl: './template.html'
+})
+
 export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   @Input() endpoint = EndpointManager.resource(Resource.pod, true, true).list();
 
@@ -60,9 +65,10 @@ export class PodListComponent extends ResourceListWithStatuses<PodList, Pod> {
   }
 
   getResourceObservable(params?: HttpParams): Observable<PodList> {
+    const partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(`${this.tenantName}`) + '/' : ''
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${this.tenantName}/pod`
+      endpoint = `api/v1/${partition}tenants/${this.tenantName}/pod`
     } else {
       endpoint = this.endpoint
     }

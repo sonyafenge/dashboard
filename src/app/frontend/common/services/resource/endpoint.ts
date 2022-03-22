@@ -28,6 +28,7 @@ export enum Resource {
   replicaSet = 'replicaset',
   oldReplicaSet = 'oldreplicaset',
   newReplicaSet = 'newreplicaset',
+  replicationController = 'replicationcontroller',
   statefulSet = 'statefulset',
   node = 'node',
   namespace = 'namespace',
@@ -36,10 +37,6 @@ export enum Resource {
   clusterRole = 'clusterrole',
   configMap = 'configmap',
   persistentVolumeClaim = 'persistentvolumeclaim',
-  resourcequota = 'resourcequota',
-  resourcePartition = 'resourcepartition',
-  role = 'role',
-  tenantPartition = 'tenantpartition',
   secret = 'secret',
   ingress = 'ingress',
   service = 'service',
@@ -47,10 +44,13 @@ export enum Resource {
   container = 'container',
   tenant = 'tenant',
   partition = 'partition',
+  resourcequota = 'resourcequota',
+  role = 'role',
   user = 'users',
   users = 'user',
-  serviceaccount = 'serviceaccount',
-  imagePullSecret= 'imagePullSecret',
+  serviceaccount= 'serviceaccount',
+  resourcePartition = 'resourcepartition',
+  tenantPartition = 'tenantpartition',
   network = 'crd',
   networkFull = 'network',
   networkObject = 'object',
@@ -65,16 +65,18 @@ class ResourceEndpoint {
     private readonly resource_: Resource,
     private readonly namespaced_ = false,
     private readonly tenanted_ = false,
-  ) {}
+    private readonly partitioned_ = false,
+  ) {
+  }
 
   list(): string {
-    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
+    return `${baseHref}${this.partitioned_ ? '/partition/:partition' : ''}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
       this.namespaced_ ? '/:namespace' : ''
     }`;
   }
 
   detail(): string {
-    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
+    return `${baseHref}${this.partitioned_ ? '/partition/:partition' : ''}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
       this.namespaced_ ? '/:namespace' : ''
     }/:name`;
   }
@@ -110,8 +112,8 @@ class UtilityEndpoint {
 }
 
 export class EndpointManager {
-  static resource(resource: Resource, namespaced?: boolean, tenanted?: boolean): ResourceEndpoint {
-    return new ResourceEndpoint(resource, namespaced, tenanted);
+  static resource(resource: Resource, namespaced?: boolean, tenanted?: boolean, partitioned?: boolean): ResourceEndpoint {
+    return new ResourceEndpoint(resource, namespaced, tenanted, partitioned);
   }
 
   static utility(utility: Utility): UtilityEndpoint {

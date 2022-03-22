@@ -16,6 +16,7 @@ import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
 import {ObjectMeta, Tenant, TenantList, TypeMeta} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
+
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {ResourceService} from '../../../services/resource/resource';
@@ -24,6 +25,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {MenuComponent} from '../../list/column/menu/component';
 import {VerberService} from '../../../services/global/verber';
 import {ActivatedRoute} from "@angular/router";
+import {isNil} from "lodash";
 
 @Component({
   selector: 'kd-tenant-list',
@@ -35,10 +37,6 @@ export class TenantListComponent extends ResourceListWithStatuses<TenantList, Te
   displayName: string;
   typeMeta: TypeMeta;
   objectMeta: ObjectMeta;
-  nodeName: string
-  clusterName: string
-  tenantList: Tenant[]
-  tenantCount: number
 
   constructor(
     readonly verber_: VerberService,
@@ -50,8 +48,6 @@ export class TenantListComponent extends ResourceListWithStatuses<TenantList, Te
     this.id = ListIdentifier.tenant;
     this.groupId = ListGroupIdentifier.cluster;
 
-    this.nodeName = this.activatedRoute_.snapshot.params.resourceName
-
     // Register status icon handlers
     this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
     this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
@@ -61,11 +57,11 @@ export class TenantListComponent extends ResourceListWithStatuses<TenantList, Te
   }
 
   getResourceObservable(params?: HttpParams): Observable<TenantList> {
-    return this.tenant_.get(this.endpoint, undefined,params);
+    return this.tenant_.get(this.endpoint, undefined, params);
   }
 
   map(tenantList: TenantList): Tenant[] {
-    return  tenantList.tenants
+    return tenantList.tenants
   }
 
   isInErrorState(resource: Tenant): boolean {
@@ -77,10 +73,16 @@ export class TenantListComponent extends ResourceListWithStatuses<TenantList, Te
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'clusterName', 'name', 'phase', 'age'];
+    return ['statusicon', 'name', 'clusterName', 'phase', 'age'];
   }
 
   onClick(): void {
-    this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);
+    this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
   }
+
+  setPartition(partitionName:string, $event:any) {
+    const resourceName = $event.target.innerHTML.replace(/^\s+|\s+$/gm,'');
+    sessionStorage.setItem(`${resourceName}`,partitionName);
+  }
+
 }

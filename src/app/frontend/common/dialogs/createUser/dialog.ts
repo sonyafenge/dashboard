@@ -36,6 +36,7 @@ import {NamespaceService} from "../../services/global/namespace";
 // @ts-ignore
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
+
 export interface UserToken {
   token: string;
 }
@@ -71,7 +72,6 @@ export class CreateUserDialog implements OnInit {
 
   private readonly config_ = CONFIG
 
-  //validation
   usernameMaxLength = 24;
   usernamePattern: RegExp = new RegExp('^[a-z0-9]([-a-z-0-9]*[a-z0-9])?$');
 
@@ -105,6 +105,7 @@ export class CreateUserDialog implements OnInit {
     private readonly ngZone_: NgZone,
     private readonly tenants_: NamespacedResourceService<TenantDetail>,
     private readonly namespace_: NamespaceService,
+    //private readonly tenant_: TenantService
   ) {}
 
   ngOnInit(): void {
@@ -168,16 +169,28 @@ export class CreateUserDialog implements OnInit {
     });
     this.http_.get(`api/v1/tenants/${this.currentTenant}/tenant`).subscribe((result: TenantList) => {
       this.tenants = result.tenants.map((tenant: Tenant) => tenant.objectMeta.name);
-      console.log("list: ", this.tenants)
       this.tenant.patchValue(
-         this.tenant.value,
+        this.tenant.value,
       );
+      // if (this.usertype === 'tenant-admin') {
+      //   this.tenant.patchValue(
+      //     !this.tenantService_.isCurrentSystem()
+      //       ? this.route_.snapshot.params.tenant || this.tenants : this.currentTenant,
+      //   );
+      // }
+      // else if (this.usertype === 'cluster-admin'){
+      //   this.tenant.patchValue(
+      //     !this.tenantService_.isCurrentSystem()
+      //       ? this.route_.snapshot.params.tenant || this.tenants : this.tenants,
+      //   );
+      // }
     });
 
     this.ngZone_.run(() => {
       const usertype = sessionStorage.getItem('userType');
       this.userType = usertype
     });
+
   }
 
   passwordTimeout() {
@@ -198,7 +211,6 @@ export class CreateUserDialog implements OnInit {
     this.getRole()
   }
 
-  //getting roles for a particular tenant
   getRole(){
     this.role.valueChanges.subscribe((role: string) => {
       if (this.name !== null) {
@@ -222,26 +234,36 @@ export class CreateUserDialog implements OnInit {
   get name(): AbstractControl {
     return this.form1.get('name');
   }
+  // get tenant(): any {
+  //   return this.tenantService_.current()
+  // }
   get role(): any {
     return this.form1.get('role');
   }
   get username(): AbstractControl {
     return this.form1.get('username');
   }
+
   get password(): AbstractControl {
     return this.form1.get('password');
   }
+
   get usertype(): any {
     return this.form1.get('usertype');
   }
+
+  get storageclusterid(): AbstractControl {
+    return this.form1.get('storageclusterid');
+  }
+
   get namespace(): AbstractControl {
     return this.form1.get('namespace');
   }
+
   get tenant(): any {
     return this.form1.get('tenant');
   }
 
-  //function to create a user
   createUser() {
     const currentType = sessionStorage.getItem('userType')
     if (this.usertype.value === 'tenant-admin' && currentType === 'cluster-admin') {
@@ -264,6 +286,8 @@ export class CreateUserDialog implements OnInit {
       this.tenant_ = this.currentTenant
       this.namespaceUsed = this.selectednamespace
     }
+
+
 
     this.getToken(async (token_:any)=>{
       const userSpec= {name: this.username.value, password:this.password.value, token:token_,namespace:this.namespaceUsed, type:this.usertype.value,tenant:this.tenant_,role:this.role.value};
@@ -296,7 +320,6 @@ export class CreateUserDialog implements OnInit {
     })
   }
 
-  //function to create a tenant-admin
   createTenantAdmin() {
     const currentType = sessionStorage.getItem('userType')
     {
@@ -340,7 +363,6 @@ export class CreateUserDialog implements OnInit {
     }
   }
 
-  //function to create a service-account
   createServiceAccount() {
     if( this.selected == "cluster-admin")
     {
@@ -388,7 +410,6 @@ export class CreateUserDialog implements OnInit {
     })
   }
 
-  //function to create a cluster-role binding
   createClusterRoleBinding(): void{
     if( this.usertype.value === "tenant-admin")
     {
@@ -413,7 +434,6 @@ export class CreateUserDialog implements OnInit {
     })
   }
 
-  //function to create a role binding
   createRoleBinding(): void{
     if(this.selected == "tenant-user"){
       this.tenantUsed = this.currentTenant
@@ -463,7 +483,6 @@ export class CreateUserDialog implements OnInit {
     }, 3000);
   }
 
-  //main user creating function
   createTenantUser() {
     if(this.usertype.value === "tenant-user"){
       this.createServiceAccount()
@@ -472,6 +491,7 @@ export class CreateUserDialog implements OnInit {
     } else if(this.usertype.value === "cluster-admin") {
       this.createServiceAccount()
       this.createClusterRoleBinding()
+      //this.adminroleUsed = "admin-role"
       this.createUser()
     }
     else{

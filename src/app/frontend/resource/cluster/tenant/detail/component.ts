@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 import {HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {ComponentFactoryResolver} from '@angular/core'
@@ -48,7 +47,7 @@ import {TenantService} from "../../../../common/services/global/tenant";
 
 export class TenantDetailComponent implements OnInit, OnDestroy {
   private tenantSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.tenant,false,false);
+  private readonly endpoint_ = EndpointManager.resource(Resource.tenant,false,false, true);
   tenant: TenantDetail;
   isInitialized = false;
 
@@ -61,9 +60,9 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
-    const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
+    const resourcePartition = sessionStorage.getItem(`${resourceName}`);
     this.tenantSubscription_ = this.tenant_
-      .get(this.endpoint_.detail(), resourceName,resourceNamespace)
+      .get(this.endpoint_.detail(), resourceName, undefined, undefined,undefined, resourcePartition)
       .subscribe((d: TenantDetail) => {
         this.tenant = d;
         this.notifications_.pushErrors(d.errors);
@@ -458,5 +457,4 @@ export class ResourceQuotasListComponent extends ResourceListWithStatuses<Resour
   getDisplayColumns(): string[] {
     return ['statusicon', 'name', 'namespace', 'age'];
   }
-
 }
