@@ -21,6 +21,7 @@ import (
 	"github.com/CentaurusInfra/dashboard/src/app/backend/iam"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/settings/api"
 	restful "github.com/emicklei/go-restful"
+	"log"
 	"net/http"
 )
 
@@ -105,7 +106,6 @@ func (self *SettingsHandler) handleSettingsGlobalGet(request *restful.Request, r
 		errors.HandleInternalError(response, err)
 		return
 	}
-
 	result := self.manager.GetGlobalSettings(client)
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
@@ -180,7 +180,6 @@ func (self *SettingsHandler) handleSettingsSavePinned(request *restful.Request, 
 		errors.HandleInternalError(response, err)
 		return
 	}
-
 	if err := self.manager.SavePinnedResource(client, pinnedResource); err != nil {
 		errors.HandleInternalError(response, err)
 		return

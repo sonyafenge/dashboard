@@ -16,6 +16,11 @@ limitations under the License.
 
 <div class="kd-login-container kd-bg-background login_container" fxFlex>
 
+  <!-- <mat-card *ngFor="let error of errors" class="kd-error-container kd-bg-error kd-accent">
+    <img src="/assets/images/danger.svg">
+    <div class="kd-error-text">{{error.status}} ({{error.code}}): {{error.message}}</div>
+  </mat-card> -->
+
   <kd-card titleClasses="kd-card-top-radius kd-bg-primary kd-accent" class="kd-login-card" [expandable]="false">
     <div content>
       <img class="image-logo" src="/assets/images/logo_centaurus.svg">
@@ -23,18 +28,18 @@ limitations under the License.
         <ng-container [ngSwitch]="selectedAuthenticationMode">
           <mat-form-field *ngSwitchCase="loginModes.Token" class="kd-login-input">
             <input matInput id="token" name="token" i18n-placeholder placeholder="Enter token" type="password" required
-              (change)="onChange($event)">
+                   (change)="onChange($event)">
           </mat-form-field>
 
           <div *ngSwitchCase="loginModes.Basic" fxLayout="column">
             <mat-form-field fxFlex class="kd-login-input">
               <input id="username" name="username" matInput i18n-placeholder placeholder="Username" [(ngModel)]="username" required autocomplete="off"
-                (change)="onChange($event)">
+                     (change)="onChange($event)">
             </mat-form-field>
 
             <mat-form-field fxFlex class="kd-login-input">
               <input id="password" name="password" matInput i18n-placeholder placeholder="Password" [(ngModel)]="password" type="password" autocomplete="off"
-                required (change)="onChange($event)">
+                     required (change)="onChange($event)">
             </mat-form-field>
           </div>
 
@@ -50,12 +55,9 @@ limitations under the License.
           </div>
 
         </ng-container>
-        <div fxFlex="none" fxLayout="row">
+        <div align="right">
           <button mat-raised-button color="primary" type="submit" class="kd-login-button" [disabled]="username === '' || password == ''" i18n>
             Sign in
-          </button>
-          <button mat-button color="primary" type="button" class="kd-login-button" (click)="skip()" i18n>
-            Skip
           </button>
         </div>
       </form>

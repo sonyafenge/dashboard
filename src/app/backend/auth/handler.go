@@ -15,13 +15,15 @@
 package auth
 
 import (
-	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/validation"
-	"github.com/emicklei/go-restful"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/emicklei/go-restful"
+
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/validation"
 )
 
 // AuthHandler manages all endpoints related to dashboard auth, such as login.
@@ -33,6 +35,7 @@ func AuthAllocator(tenantname string, auths []authApi.AuthManager) authApi.AuthM
 	if tenantname == "system" {
 		return auths[0]
 	}
+
 	if authlen := len(auths); authlen > 1 {
 		pref := []rune(strings.ToUpper(tenantname))
 		log.Printf("prefix:%v", pref[0])
@@ -85,6 +88,10 @@ func (self AuthHandler) handleLogin(request *restful.Request, response *restful.
 	}
 	if loginSpec.NameSpace == "" {
 		loginSpec.NameSpace = "default"
+	}
+	if loginSpec.Tenant == "" {
+		response.WriteError(http.StatusUnauthorized, errors.NewUnauthorized("Invalid username or password"))
+		return
 	}
 	authmanager := AuthAllocator(loginSpec.Tenant, self.manager)
 	loginResponse, err := authmanager.Login(loginSpec)
