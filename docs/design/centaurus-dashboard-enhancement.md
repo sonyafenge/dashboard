@@ -35,8 +35,19 @@ None of these are reflected in the current version of Dashboard UI. User will ne
 
 ## Overview
 
+### Dashboard architecture
+
+Centaurus dashboard has frontend(angular8), backend(golang) and database (PostgreSQL). backend service can send request to specific partition's api-server of Centaurus cluster (tested for 2TP and 2RP centaurus cluster).
+
+![](../images/centaurus-dashboard-architecture.png)
+
 ### User Management
-Centaurus cluster will have a default cluster admin(Username:`centaurus` and password: `Centaurus@123`) which will get created automatically while setting up dashboard service.
+In centaurus, we will have 3 types of users i.e. Cluster admin, Tenant admin and Tenant user.
+* **Cluster admin** can manage all type of users i.e. supported cluster admin, tenant admin and tenant users.
+* **Tenant admin** can manage supported tenant admin and tenant users created under that particular tenant
+* **Tenant user** can manage resources in a particular namespace.
+
+* Centaurus cluster will have a default cluster admin(Username:`centaurus` and password: `Centaurus@123`) which will get created automatically while setting up dashboard service.
 
 #### IAM service details
 IAM service is a service that manages users, roles, and permissions.
@@ -44,6 +55,22 @@ This service will be used to manage Centaurus user's username and password which
 Internally , IAM service will map a token to  username and password for a user.
 
 ![](images/image-1.png)
+
+To store user details, we have used database (PostgreSQL), with following attributes
+
+Table name: **userdetail**
+
+| Column    | Details                                                                    |
+|---------|--------------------------------------------------------------------------|
+| UserId     | Unique ID for each user            |
+| Username     | User's name which can be used to login dashboard                          |
+| Password  | Passoword which can be used to login dashboard                    |
+| Token    | Token genenrated while user's creation                     |
+| Type    |  It can be `cluster-admin`, `tenant-admin` or `tenant-user`|
+| Tenant    | User's tenant name ( for supported cluster admin, it will be `system`     |
+| Namespace | Namespace assigned to **Tenant-user** ( for others its value will be `default` |
+| Role | Role name assigned to user |
+| CreationTime    | User's creation time                                |
 
 ### Centaurus cluster management ( Support of using multiple config file of Centaurus cluster)
 Earlier, dashboard was supporting single kube-config file or can connect to one api-server only. In centaurus cluster (n-TP and n-RP cluster), we have multiple config files (one for each Rp/TP). In this enhancement, dashboard service is modified to send request to multiple api-servers and manage resources.
@@ -72,6 +99,10 @@ Cluster admin can perform following operation using Dashboard UI:
 
 #### Tenant Creation
 When user will create a new tenant, dashboard service will create a tenant admin for that tenant with username and password provided by cluster admin user.
+
+For 2 Tenant partition, all tenants' name starting with alphabet **a** to **m**, will get created in **Tenant partition-1(TP-1)** and all tenants's name starting with **n** to **z**, will get created in **Tenant partion-2(TP-2)**
+
+![](../images/image-9.png)
 
 Following YAML is being used to create Cluster admin
 ```bigquery
