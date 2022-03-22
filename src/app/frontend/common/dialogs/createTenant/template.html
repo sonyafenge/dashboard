@@ -28,7 +28,7 @@ limitations under the License.
       </mat-form-field>
       <div class="error_sec" *ngIf="tenant.errors && (tenant.dirty || tenant.touched)">
         <span class="red" *ngIf="tenant.errors.required">Name is required.</span>
-        <span class="red" *ngIf="tenant.hasError('pattern')">Name must be alphanumeric and may contain dashes.</span>
+        <span class="red" *ngIf="tenant.hasError('pattern')">Name must be in lowercase, alphanumeric and may contain dashes.</span>
         <span class="red" *ngIf="tenant.hasError('maxlength')">Name should not be greater than 24 characters.</span>
       </div>
     </div>

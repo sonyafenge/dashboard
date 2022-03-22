@@ -45,8 +45,8 @@ export class NamespaceDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
 
-    const resourceTenant:any = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('tenantName') : this.tenant_.current()
+    const resourceTenant = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('namespaceTenant') : this.tenant_.current()
 
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {

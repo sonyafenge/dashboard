@@ -16,7 +16,6 @@ import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
 import {ObjectMeta, ResourceQuota, ResourceQuotaList, TypeMeta} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
-
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {NamespacedResourceService} from '../../../services/resource/resource';
@@ -56,8 +55,8 @@ export class ResourceQuotasListComponent extends ResourceListWithStatuses<Resour
 
     this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
     this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
-      this.tenant_.current() : this.activatedRoute_.snapshot.params.resourceName
-    sessionStorage.setItem('tenantName',this.tenantName);
+      this.tenant_.current() : this.tenant_.resourceTenant()
+    sessionStorage.setItem('resourceQuotaTenant', this.tenantName);
   }
 
   isInSuccessState(): boolean {
@@ -65,7 +64,7 @@ export class ResourceQuotasListComponent extends ResourceListWithStatuses<Resour
   }
 
   getResourceObservable(params?: HttpParams): Observable<ResourceQuotaList> {
-    const partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(`${this.tenantName}`) + '/' : ''
+    const partition = this.tenantName === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
       endpoint = `api/v1/${partition}tenants/${this.tenantName}/resourcequota`

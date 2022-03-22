@@ -18,6 +18,7 @@ import {Component, ComponentFactoryResolver, Input} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Event, ReplicaSet, ReplicaSetList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
+
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
@@ -58,12 +59,12 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
     // Register dynamic columns.
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
     this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
-      this.tenant_.current() : this.activatedRoute_.snapshot.params.resourceName
-    sessionStorage.setItem('tenant',this.tenantName);
+      this.tenant_.current() : this.tenant_.resourceTenant()
+    sessionStorage.setItem('replicaSetTenant', this.tenantName);
   }
 
   getResourceObservable(params?: HttpParams): Observable<ReplicaSetList> {
-    const partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(`${this.tenantName}`) + '/' : ''
+    const partition = this.tenantName === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
       endpoint = `api/v1/${partition}tenants/${this.tenantName}/replicaset`

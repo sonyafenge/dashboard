@@ -49,8 +49,8 @@ export class PodDetailComponent implements OnInit, OnDestroy {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace === undefined ?
       window.history.state.namespace : this.activatedRoute_.snapshot.params.resourceNamespace;
-    const resourceTenant:any = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('tenantName') : this.tenant_.current()
+    const resourceTenant = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('podTenant') : this.tenant_.current()
 
     let endpoint = ''
 

@@ -34,7 +34,9 @@ export class TenantService {
     if (this.isSystemTenant_) {
       this.currentTenant_ = tenant;
     }
+
   }
+
 
   current(): string {
     const username = sessionStorage.getItem('parentTenant');

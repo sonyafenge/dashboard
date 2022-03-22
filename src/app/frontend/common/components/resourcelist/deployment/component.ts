@@ -58,12 +58,12 @@ export class DeploymentListComponent extends ResourceListWithStatuses<Deployment
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
 
     this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
-      this.tenant_.current() : this.activatedRoute_.snapshot.params.resourceName
-    sessionStorage.setItem('tenant', this.tenantName);
+      this.tenant_.current() : this.tenant_.resourceTenant()
+    sessionStorage.setItem('deploymentTenant', this.tenantName);
   }
 
   getResourceObservable(params?: HttpParams): Observable<DeploymentList> {
-    const partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(`${this.tenantName}`) + '/' : ''
+    const partition = this.tenantName === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
       endpoint = `api/v1/${partition}tenants/${this.tenantName}/deployment`

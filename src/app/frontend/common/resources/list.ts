@@ -139,8 +139,8 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
     this.unsubscribe_.complete();
   }
 
-  getDetailsHref(resourceName: string, namespace?: string): string {
-    return this.stateName_ ? this.kdState_.href(this.stateName_, resourceName, namespace) : '';
+  getDetailsHref(resourceName: string, namespace?: string, tenant?: string): string {
+    return this.stateName_ ? this.kdState_.href(this.stateName_, resourceName, namespace, tenant) : '';
   }
 
   getData(): DataSource<R> {
@@ -344,7 +344,7 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
 export abstract class ResourceListWithStatuses<
   T extends ResourceList,
   R extends Resource
-> extends ResourceListBase<T, R> {
+  > extends ResourceListBase<T, R> {
   private readonly bindings_: {[hash: number]: StateBinding<R>} = {};
   @ViewChildren('matrow', {read: ViewContainerRef})
   private readonly containers_: QueryList<ViewContainerRef>;

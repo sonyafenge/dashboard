@@ -54,8 +54,8 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace === undefined ?
       window.history.state.namespace : this.activatedRoute_.snapshot.params.resourceNamespace;
-    const resourceTenant:string = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('tenant') : this.tenant_.current()
+    const resourceTenant = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('deploymentTenant') : this.tenant_.current()
 
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
