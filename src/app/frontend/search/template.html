@@ -13,6 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<style>
+  :host ::ng-deep.detail_sec {
+    display: none !important;
+  }
+</style>
 
 <div [hidden]="shouldShowZeroState()">
   <div class="kd-card-group-header kd-muted"
@@ -23,8 +28,8 @@ limitations under the License.
                           [hideable]="true"></kd-cluster-role-list>
     <kd-namespace-list (onchange)="onListUpdate($event)"
                        [hideable]="true"></kd-namespace-list>
-    <kd-node-list (onchange)="onListUpdate($event)"
-                  [hideable]="true"></kd-node-list>
+    <!--    <kd-node-list (onchange)="onListUpdate($event)"-->
+    <!--                  [hideable]="true"></kd-node-list>-->
     <kd-persistent-volume-list (onchange)="onListUpdate($event)"
                                [hideable]="true"></kd-persistent-volume-list>
     <kd-storage-class-list (onchange)="onListUpdate($event)"

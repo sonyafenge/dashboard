@@ -27,7 +27,9 @@ import {
   ViewChildren,
   ViewContainerRef,
 } from '@angular/core';
-import {MatPaginator, MatSort, MatTableDataSource} from '@angular/material';
+import {MatPaginator} from '@angular/material/paginator';
+import {MatSort} from '@angular/material/sort';
+import {MatTableDataSource} from '@angular/material/table';
 import {Router} from '@angular/router';
 import {Event as KdEvent, Resource, ResourceList} from '@api/backendapi';
 import {
@@ -37,12 +39,12 @@ import {
   ColumnWhenCondition,
   OnListChangeEvent,
 } from '@api/frontendapi';
-import {Subject} from 'rxjs';
-import {Observable, ObservableInput} from 'rxjs/Observable';
-import {merge} from 'rxjs/observable/merge';
-import {startWith, switchMap, takeUntil} from 'rxjs/operators';
+import {isObservable, merge, Observable, ObservableInput, Subject} from 'rxjs';
+import {startWith, switchMap, takeUntil, tap} from 'rxjs/operators';
+
 import {CardListFilterComponent} from '../components/list/filter/component';
 import {RowDetailComponent} from '../components/list/rowdetail/component';
+import {ListIdentifier} from '../components/resourcelist/groupids';
 import {SEARCH_QUERY_STATE_PARAM} from '../params/params';
 import {GlobalSettingsService} from '../services/global/globalsettings';
 import {GlobalServicesModule} from '../services/global/module';
@@ -64,7 +66,6 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
   private router_: Router;
   protected readonly kdState_: KdStateService;
   protected readonly settingsService_: GlobalSettingsService;
-
   protected readonly namespaceService_: NamespaceService;
   isLoading = false;
   totalItems = 0;
@@ -117,12 +118,8 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
 
     this.getObservableWithDataSelect_()
       .pipe(startWith({}))
-      .pipe(
-        switchMap(() => {
-          this.isLoading = true;
-          return this.getResourceObservable(this.getDataSelectParams_());
-        }),
-      )
+      .pipe(tap(_ => (this.isLoading = true)))
+      .pipe(switchMap(() => this.getResourceObservable(this.getDataSelectParams_())))
       .pipe(takeUntil(this.unsubscribe_))
       .subscribe((data: T) => {
         this.notifications_.pushErrors(data.errors);
@@ -190,11 +187,7 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
     } as ActionColumnDef<ActionColumn>);
   }
 
-  protected registerDynamicColumn(
-    col: string,
-    afterCol: string,
-    whenCallback: ColumnWhenCallback,
-  ): void {
+  protected registerDynamicColumn(col: string, afterCol: string, whenCallback: ColumnWhenCallback): void {
     this.dynamicColumns_.push({
       col,
       afterCol,
@@ -247,9 +240,7 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
       result = params;
     }
 
-    return result
-      .set('itemsPerPage', `${this.itemsPerPage}`)
-      .set('page', `${this.matPaginator_.pageIndex + 1}`);
+    return result.set('itemsPerPage', `${this.itemsPerPage}`).set('page', `${this.matPaginator_.pageIndex + 1}`);
   }
 
   private filter_(params?: HttpParams): HttpParams {
@@ -258,7 +249,7 @@ export abstract class ResourceListBase<T extends ResourceList, R extends Resourc
       result = params;
     }
 
-    const filterByQuery = this.cardFilter_.query ? `name,${this.cardFilter_.query}` : '';
+    const filterByQuery = this.cardFilter_ !== undefined && this.cardFilter_.query ? `name,${this.cardFilter_.query}` : '';
     if (filterByQuery) {
       return result.set('filterBy', filterByQuery);
     }
@@ -440,11 +431,7 @@ export abstract class ResourceListWithStatuses<
     return false;
   }
 
-  protected registerBinding(
-    iconName: IconName,
-    iconClass: string,
-    callbackFunction: StatusCheckCallback<R>,
-  ): void {
+  protected registerBinding(iconName: IconName, iconClass: string, callbackFunction: StatusCheckCallback<R>): void {
     const icon = new Icon(String(iconName), iconClass);
     this.bindings_[icon.hash()] = {icon, callbackFunction};
   }
