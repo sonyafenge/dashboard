@@ -48,6 +48,8 @@ export class NamespaceDetailComponent implements OnInit, OnDestroy {
     const resourceTenant = this.tenant_.current() === 'system' ?
       sessionStorage.getItem('namespaceTenant') : this.tenant_.current()
 
+    const partition = resourceTenant === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
+
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
       endpoint = `api/v1/tenants/${resourceTenant}/namespace/${resourceName}`

@@ -97,7 +97,7 @@ func GetPodDetail(client kubernetes.Interface, metricClient metricapi.MetricClie
 	log.Printf("Getting details of %s pod in %s namespace", name, namespace)
 
 	channels := &common.ResourceChannels{
-		ConfigMapList: common.GetConfigMapListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
+		ConfigMapList: common.GetConfigMapListChannel(client, common.NewSameNamespaceQuery(namespace), 1, ""),
 		SecretList:    common.GetSecretListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
 	}
 

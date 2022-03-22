@@ -35,7 +35,7 @@ func CreateNamespace(spec *NamespaceSpec, tenant string, client kubernetes.Inter
 	log.Printf("Creating namespace %s", spec.Name)
 
 	if tenant == "" {
-		tenant = "default"
+		tenant = "system"
 	}
 
 	if spec.Tenant == "" {

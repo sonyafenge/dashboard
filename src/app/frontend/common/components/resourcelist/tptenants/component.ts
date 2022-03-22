@@ -59,10 +59,10 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
 
     const routeInfo = this.router_.getCurrentNavigation();
     if ( routeInfo === null || routeInfo.extras.state === undefined ) {
-      this.clusterName = sessionStorage.getItem('tpClusterName')
+      this.clusterName = sessionStorage.getItem(`${this.clusterName}`)
     } else {
       this.clusterName = (routeInfo.extras.state['clusterName']).toString();
-      sessionStorage.setItem('tpClusterName', this.clusterName)
+      sessionStorage.setItem(`${this.clusterName}`, this.clusterName)
     }
 
     // Register status icon handlers
@@ -80,7 +80,7 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
   map(tenantList: TenantList): Tenant[] {
     this.tenantList = []
     this.tenantCount = 0
-    if (tenantList.tenants.length > 0 && tenantList.tenants !== null) {
+    if (tenantList.tenants !== null) {
       const tenantsList: any = [];
       tenantList.tenants.map((tenant)=>{
         // @ts-ignore
@@ -118,6 +118,6 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
       sessionStorage.removeItem('currentTpTenant')
     }
     sessionStorage.setItem('currentTpTenant', resourceName)
-    sessionStorage.setItem(`${resourceName}`,partitionName);
+    sessionStorage.setItem(`${resourceName}`,partitionName);;
   }
 }

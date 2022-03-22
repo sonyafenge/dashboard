@@ -51,12 +51,14 @@ export class ResourceQuotaDetailComponent implements OnInit, OnDestroy {
     const resourceNamespace = this.route_.snapshot.params.resourceNamespace === undefined ?
       window.history.state.namespace : this.route_.snapshot.params.resourceNamespace;
     const resourceTenant = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('systemTenant') : this.tenant_.current()
+      sessionStorage.getItem('resourceQuotaTenant') : this.tenant_.current()
+
+    const partition = resourceTenant === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
 
     this.allocationData = [];
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${resourceTenant}/resourcequota/${resourceNamespace}/${resourceName}`
+      endpoint = `api/v1/${partition}tenants/${resourceTenant}/resourcequota/${resourceNamespace}/${resourceName}`
     } else {
       endpoint = this.endpoint_.detail()
     }

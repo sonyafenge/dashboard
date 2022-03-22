@@ -19,14 +19,26 @@ import (
 	"encoding/base64"
 	er "errors"
 	"fmt"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/iam"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/partition"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/vm"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/CentaurusInfra/dashboard/src/app/backend/iam/db"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/iam/model"
+	_ "github.com/lib/pq" // postgres golang driver
+
 	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/auth"
 	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
 	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/iam"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/iam/db"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/iam/model"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/integration"
 	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/plugin"
@@ -48,7 +60,6 @@ import (
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/logs"
 	ns "github.com/CentaurusInfra/dashboard/src/app/backend/resource/namespace"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/node"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/partition"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/persistentvolume"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/persistentvolumeclaim"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/pod"
@@ -63,25 +74,16 @@ import (
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/statefulset"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/storageclass"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/tenant"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/vm"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/scaling"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/settings"
 	settingsApi "github.com/CentaurusInfra/dashboard/src/app/backend/settings/api"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/systembanner"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/validation"
 	restful "github.com/emicklei/go-restful"
-	_ "github.com/lib/pq" // postgres golang driver
 	"golang.org/x/net/xsrftoken"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/remotecommand"
-	"log"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
@@ -4729,36 +4731,37 @@ func (apiHandler *APIHandlerV2) handleGetNamespaceDetail(request *restful.Reques
 }
 
 func (apiHandler *APIHandlerV2) handleGetNamespaceDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
-	tenant := request.PathParameter("tenant")
-	if len(apiHandler.tpManager) == 0 {
-		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
-	}
-	client := ResourceAllocator("", tenant, apiHandler.tpManager)
-	c, err := request.Request.Cookie("tenant")
-	var CookieTenant string
-	if err != nil {
-		log.Printf("Cookie error: %v", err)
-		CookieTenant = tenant
-	} else {
-		CookieTenant = c.Value
-	}
-	log.Printf("cookie_tenant is: %s", CookieTenant)
-	var k8sClient kubernetes.Interface
-	if tenant != CookieTenant {
-		k8sClient = client.InsecureClient()
-	} else {
-		k8sClient, err = client.Client(request)
+	tnt := request.PathParameter("tenant")
+	var result *ns.NamespaceDetail
+
+	for _, tpManager := range apiHandler.tpManager {
+		k8sClient := tpManager.InsecureClient()
+
+		//k8sClient, err := tpManager.Client(request)
+		//if err != nil {
+		//	errors.HandleInternalError(response, err)
+		//	return
+		//}
+
+		dataSelect := parseDataSelectPathParameter(request)
+		tenantList, err := tenant.GetTenantList(k8sClient, dataSelect, tpManager.GetClusterName(), "system")
 		if err != nil {
 			errors.HandleInternalError(response, err)
 			return
 		}
+		for _, tnts := range tenantList.Tenants {
+			if tnt == tnts.ObjectMeta.Name {
+				tnts.ClusterName = tpManager.GetClusterName()
+				name := request.PathParameter("name")
+				result, err = ns.GetNamespaceDetailWithMultiTenancy(k8sClient, tnt, name)
+				if err != nil {
+					errors.HandleInternalError(response, err)
+					return
+				}
+			}
+		}
 	}
-	name := request.PathParameter("name")
-	result, err := ns.GetNamespaceDetailWithMultiTenancy(k8sClient, tenant, name)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
 
@@ -4786,10 +4789,11 @@ func (apiHandler *APIHandlerV2) handleGetNamespaceEvents(request *restful.Reques
 
 func (apiHandler *APIHandlerV2) handleGetNamespaceEventsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
+	partition := request.PathParameter("partition")
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
-	client := ResourceAllocator("", tenant, apiHandler.tpManager)
+	client := ResourceAllocator(partition, tenant, apiHandler.tpManager)
 	c, err := request.Request.Cookie("tenant")
 	var CookieTenant string
 	if err != nil {
@@ -4800,7 +4804,7 @@ func (apiHandler *APIHandlerV2) handleGetNamespaceEventsWithMultiTenancy(request
 	}
 	log.Printf("cookie_tenant is: %s", CookieTenant)
 	var k8sClient kubernetes.Interface
-	if tenant != CookieTenant {
+	if tenant != CookieTenant || partition != "" {
 		k8sClient = client.InsecureClient()
 	} else {
 		k8sClient, err = client.Client(request)
@@ -4968,7 +4972,7 @@ func (apiHandler *APIHandlerV2) handleGetConfigMapList(request *restful.Request,
 
 	namespace := parseNamespacePathParameter(request)
 	dataSelect := parseDataSelectPathParameter(request)
-	result, err := configmap.GetConfigMapList(k8sClient, namespace, dataSelect)
+	result, err := configmap.GetConfigMapListWithMultiTenancy(k8sClient, tenant, namespace, dataSelect)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -4990,7 +4994,7 @@ func (apiHandler *APIHandlerV2) handleGetConfigMapDetail(request *restful.Reques
 
 	namespace := request.PathParameter("namespace")
 	name := request.PathParameter("configmap")
-	result, err := configmap.GetConfigMapDetail(k8sClient, namespace, name)
+	result, err := configmap.GetConfigMapDetailWithMultiTenancy(k8sClient, namespace, name, tenant)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return

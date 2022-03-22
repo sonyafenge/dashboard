@@ -970,15 +970,17 @@ type ConfigMapListChannel struct {
 // GetConfigMapListChannel returns a pair of channels to a ConfigMap list and errors that both must be read
 // numReads times.
 func GetConfigMapListChannel(client client.Interface, nsQuery *NamespaceQuery,
-	numReads int) ConfigMapListChannel {
-
+	numReads int, tenant string) ConfigMapListChannel {
+	//if tenant==""{
+	//  tenant="system"
+	//}
 	channel := ConfigMapListChannel{
 		List:  make(chan *v1.ConfigMapList, numReads),
 		Error: make(chan error, numReads),
 	}
 
 	go func() {
-		list, err := client.CoreV1().ConfigMapsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		list, err := client.CoreV1().ConfigMapsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []v1.ConfigMap
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {
