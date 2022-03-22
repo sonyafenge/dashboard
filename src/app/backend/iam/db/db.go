@@ -56,8 +56,10 @@ func CreateConnection() *sql.DB {
 // insert one user in the DB
 
 func InsertUser(user model.User) int64 {
+
 	// create the postgres db connection
 	db := CreateConnection()
+
 	// close the db connection
 	defer db.Close()
 
@@ -202,9 +204,11 @@ func GetAllUsers(tenant string) (*model.UserList, error) {
 		}
 		user.Phase = "Active"
 		user.TypeMeta.Kind = "User"
+
 		// append the user in the users slice
 		userList.Users = append(userList.Users, user)
 		count++
+
 	}
 	userList.ListMeta = api.ListMeta{TotalItems: count}
 	// return empty user on error
@@ -225,6 +229,36 @@ func DeleteUser(id int64) int64 {
 
 	// execute the sql statement
 	res, err := db.Exec(sqlStatement, id)
+
+	if err != nil {
+		log.Fatalf("Unable to execute the query. %v", err)
+	}
+
+	// check how many rows affected
+	rowsAffected, err := res.RowsAffected()
+
+	if err != nil {
+		log.Fatalf("Error while checking the affected rows. %v", err)
+	}
+
+	fmt.Printf("Total rows/record affected %v", rowsAffected)
+
+	return rowsAffected
+}
+
+func DeleteAllUser() int64 {
+
+	// create the postgres db connection
+	db := CreateConnection()
+
+	// close the db connection
+	defer db.Close()
+
+	// create the delete sql query
+	sqlStatement := `DELETE * FROM userdetails`
+
+	// execute the sql statement
+	res, err := db.Exec(sqlStatement)
 
 	if err != nil {
 		log.Fatalf("Unable to execute the query. %v", err)
@@ -266,6 +300,8 @@ func DeleteTenantUser(tenant string) int64 {
 	if err != nil {
 		log.Fatalf("Error while checking the affected rows. %v", err)
 	}
+
 	fmt.Printf("Total rows/record affected %v", rowsAffected)
+
 	return rowsAffected
 }

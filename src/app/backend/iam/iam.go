@@ -17,22 +17,21 @@ package iam
 
 import (
 	"errors"
-	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
-	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/clusterrole"
-	"log"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/client"
+	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/iam/db"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/iam/model"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/clusterrole"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/clusterrolebinding"
 	ns "github.com/CentaurusInfra/dashboard/src/app/backend/resource/namespace"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/serviceaccount"
 	rbac "k8s.io/api/rbac/v1"
+	"log"
+	"os"
+	"strings"
+	"time"
 )
 
 // Create cluster Admin
@@ -69,6 +68,26 @@ func CreateClusterAdmin() error {
 		log.Printf("Create service account for admin user failed, err:%s ", err.Error())
 		//return err
 	}
+
+	// Create Cluster Role
+	//var verbs []string
+	//var apiGroups []string
+	//var resources []string
+	//verbs = append(verbs, "*")
+	//apiGroups = append(apiGroups, "", "extensions", "apps")
+	//resources = append(resources, "deployments", "pods", "services", "secrets", "namespaces")
+
+	//clusterRoleSpec := &clusterrole.ClusterRoleSpec{
+	//	Name:      roleName,
+	//	Verbs:     verbs,
+	//	APIGroups: apiGroups,
+	//	Resources: resources,
+	//}
+	//
+	//if err := clusterrole.CreateClusterRole(clusterRoleSpec, k8sClient); err != nil {
+	//	log.Printf("Create cluster role for admin user failed, err:%s ", err.Error())
+	//	return err
+	//}
 
 	// Create Cluster Role Binding
 	clusterRoleBindingSpec := &clusterrolebinding.ClusterRoleBindingSpec{
@@ -134,6 +153,13 @@ func CreateClusterAdmin() error {
 		NameSpace:         "default",
 		CreationTimestamp: time.Now(),
 	}
+	userDetail, err := db.GetUser(user.Username)
+	if err != nil {
+		log.Printf("Get user for admin user failed, err:%s \n", err.Error())
+	}
+	if userDetail.ObjectMeta.Username == admin && userDetail.ObjectMeta.Token != string(token) {
+		db.DeleteAllUser()
+	}
 
 	// call insertUser function and pass the user data
 	insertID := db.InsertUser(user)
@@ -151,6 +177,8 @@ func TenantAdmin(user model.User, client clientapi.ClientManager) (model.User, e
 
 	// TODO Check if centaurus-dashboard namespace exists or not using GET method
 	k8sClient := client.InsecureClient()
+
+	// Create tenant
 
 	// Create Service Account
 	serviceAccountSpec := new(serviceaccount.ServiceAccountSpec)

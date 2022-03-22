@@ -16,14 +16,13 @@
 package deployment
 
 import (
-	apps "k8s.io/api/apps/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	client "k8s.io/client-go/kubernetes"
-
 	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/replicaset"
+	apps "k8s.io/api/apps/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	client "k8s.io/client-go/kubernetes"
 )
 
 //GetDeploymentNewReplicaSet returns old replica sets targeting Deployment with given name
@@ -89,7 +88,7 @@ func GetDeploymentNewReplicaSetWithMultiTenancy(client client.Interface, dsQuery
 
 	newReplicaSet := &replicaset.ReplicaSet{}
 
-	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, metaV1.TenantAll).Get(deploymentName, metaV1.GetOptions{})
+	deployment, err := client.AppsV1().DeploymentsWithMultiTenancy(namespace, tenant).Get(deploymentName, metaV1.GetOptions{})
 	if err != nil {
 		return newReplicaSet, err
 	}
