@@ -86,7 +86,7 @@ type ResourceQuotaDetailList struct {
 
 func AddResourceQuotas(client k8sClient.Interface, namespace string, tenant string, spec *ResourceQuotaSpec) (*v1.ResourceQuota, error) {
 	if tenant == "" {
-		tenant = "default"
+		tenant = "system"
 	}
 	ns, err := client.CoreV1().NamespacesWithMultiTenancy(tenant).Get(namespace, metaV1.GetOptions{})
 	if err != nil {
@@ -160,7 +160,7 @@ func AddResourceQuotas(client k8sClient.Interface, namespace string, tenant stri
 
 func DeleteResourceQuota(client k8sClient.Interface, namespace string, tenant string, name string) error {
 	if tenant == "" {
-		tenant = "default"
+		tenant = "system"
 	}
 	ns, err := client.CoreV1().NamespacesWithMultiTenancy(tenant).Get(namespace, metaV1.GetOptions{})
 	if err != nil {
@@ -171,6 +171,7 @@ func DeleteResourceQuota(client k8sClient.Interface, namespace string, tenant st
 	if err != nil {
 		return nil
 	}
+
 	return nil
 }
 
@@ -189,12 +190,14 @@ func GetResourceQuotaList(client k8sClient.Interface, namespace *common.Namespac
 		detail := ToResourceQuotaDetail(&item)
 		result.Items = append(result.Items, *detail)
 	}
+
 	return result, nil
+
 }
 
 func GetResourceQuotaListsWithMultiTenancy(client k8sClient.Interface, namespace string, tenant string) (*ResourceQuotaDetailList, error) {
 	if tenant == "" {
-		tenant = "default"
+		tenant = "system"
 	}
 	ns, err := client.CoreV1().NamespacesWithMultiTenancy(tenant).Get(namespace, metaV1.GetOptions{})
 	if err != nil {
@@ -213,12 +216,14 @@ func GetResourceQuotaListsWithMultiTenancy(client k8sClient.Interface, namespace
 		detail := ToResourceQuotaDetail(&item)
 		result.Items = append(result.Items, *detail)
 	}
+
 	return result, nil
+
 }
 
 func GetResourceQuotaDetails(client k8sClient.Interface, namespace string, tenant string, name string) (*ResourceQuotaDetail, error) {
 	if tenant == "" {
-		tenant = "default"
+		tenant = "system"
 	}
 	ns, err := client.CoreV1().NamespacesWithMultiTenancy(tenant).Get(namespace, metaV1.GetOptions{})
 	if err != nil {
@@ -235,8 +240,11 @@ func GetResourceQuotaDetails(client k8sClient.Interface, namespace string, tenan
 			detail := ToResourceQuotaDetail(&item)
 			itemNew = detail
 		}
+
 	}
+
 	return itemNew, nil
+
 }
 
 type ResourceQuotaCell ResourceQuota

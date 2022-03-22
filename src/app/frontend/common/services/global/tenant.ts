@@ -21,6 +21,7 @@ export class TenantService {
   private isSystemTenant_: boolean;
   private authTenant_: string;
   private currentTenant_ = '';
+  private resourceTenant_ = '';
 
   private readonly tenantRegex = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?)$/; // TODO: need to verify
 
@@ -44,6 +45,19 @@ export class TenantService {
       this.currentTenant_ = username
     }
     return this.currentTenant_;
+  }
+
+  resourceTenant(): string {
+    if (sessionStorage.getItem('currentTenant')) {
+      this.resourceTenant_ = sessionStorage.getItem('currentTenant')
+    } else if (sessionStorage.getItem('currentTpTenant')) {
+      this.resourceTenant_ = sessionStorage.getItem('currentTpTenant')
+    }
+    return this.resourceTenant_
+  }
+
+  tenantPartition(): string {
+    return sessionStorage.getItem(this.resourceTenant())
   }
 
   setAuthTenant(tenant: string) {

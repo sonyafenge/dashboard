@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {QuotaAllocationStatus, ResourceQuotaDetail} from '@api/backendapi';
@@ -50,19 +51,21 @@ export class ResourceQuotaDetailComponent implements OnInit, OnDestroy {
     const resourceName = this.route_.snapshot.params.resourceName;
     const resourceNamespace = this.route_.snapshot.params.resourceNamespace === undefined ?
       window.history.state.namespace : this.route_.snapshot.params.resourceNamespace;
-    const resourceTenant:any = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('tenantName') : this.tenant_.current()
+    const resourceTenant = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('resourceQuotaTenant') : this.tenant_.current()
+
+    const partition = resourceTenant === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
 
     this.allocationData = [];
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${resourceTenant}/resourcequota/${resourceNamespace}/${resourceName}`
+      endpoint = `api/v1/${partition}tenants/${resourceTenant}/resourcequota/${resourceNamespace}/${resourceName}`
     } else {
       endpoint = this.endpoint_.detail()
     }
 
     this.resourceQuota_
-      .get(endpoint, resourceName, resourceNamespace, resourceTenant)
+      .get(endpoint, resourceName, resourceNamespace, undefined, resourceTenant)
       .pipe(first())
       .subscribe((d: ResourceQuotaDetail) => {
         this.resourceQuota = d;
