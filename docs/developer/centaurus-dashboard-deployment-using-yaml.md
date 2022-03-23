@@ -88,7 +88,7 @@ wget https://raw.githubusercontent.com/Click2Cloud-Centaurus/Documentation/main/
 docker-compose up -d
 ```
 
-User can access dashboard on **https://<IP-address>:9443/#/login** with username `centaurus` and password `Centaurus@123`(Please use IP address of workstation machine, where you have performed all the steps)
+User can access dashboard on **https://IP-address:9443/#/login** with username `centaurus` and password `Centaurus@123`(Please use IP address of workstation machine, where you have performed all the steps)
 
 ![](img.png)
 
