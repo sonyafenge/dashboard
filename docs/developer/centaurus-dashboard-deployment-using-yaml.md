@@ -85,10 +85,11 @@ openssl rsa -in certs/dashboard.key -out certs/dashboard.key
 openssl req -sha256 -new -key certs/dashboard.key -out certs/dashboard.csr -subj "/CN=$(hostname -i | awk '{print $1}')"
 openssl x509 -req -sha256 -days 365 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
 wget https://raw.githubusercontent.com/Click2Cloud-Centaurus/Documentation/main/deployment_scripts/docker-compose.yml
+# TODO remove above link and use "wget https://raw.githubusercontent.com/CentaurusInfra/dashboard/centaurus/docker-compose.yaml"
 docker-compose up -d
 ```
 
-User can access dashboard on **https://IP-address:9443/#/login** with username `centaurus` and password `Centaurus@123`(Please use IP address of workstation machine, where you have performed all the steps)
+User can access dashboard on **https://hostmachineIP:9443/#/login** with username `centaurus` and password `Centaurus@123`(Please use IP address of workstation machine as hostmachineIP, where you have performed all the steps)
 
 ![](img.png)
 
@@ -97,5 +98,6 @@ User can access dashboard on **https://IP-address:9443/#/login** with username `
 
 To terminate arktos cluster, run the following:
 ```bash
+docker-compose down
 sudo ./cluster/kube-down.sh
 ```
