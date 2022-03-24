@@ -1,0 +1,39 @@
+version: '3.3'
+services:
+  postgresdb:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=somePassword
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5432:5432'
+    volumes:
+      - /var/lib/postgres-data:/var/lib/postgresql/data
+
+  dashboard:
+    image: c2cengg20190034/dashboard:dev  # TODO change image to "centaurus/dashboard:latest" while merging the PR
+    restart: always
+    environment:
+      - DB_HOST=postgresdb
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=somePassword
+      - KUBECONFIG_DIR=/var/run/centaurus-configs
+    command:
+      - --kubeconfig=/var/run/centaurus-configs/kubeconfig-proxy
+      - --auto-generate-certificates
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - 9443:8443
+    volumes:
+      - ./cluster:/var/run/centaurus-configs:ro
+      - ./certs/:/certs:ro
+      - /tmp/:/tmp:rw

@@ -18,6 +18,7 @@ Make sure the following software is installed and added to the $PATH variable:
 
 ```bash
 git clone https://github.com/Click2Cloud-Centaurus/dashboard.git $HOME/dashboard -b dev-21
+# TODO while merging PR change it to "git clone https://github.com/CentaurusInfra/dashboard.git $HOME/dashboard -b centaurus
 cd $HOME/dashboard
 ```
 
@@ -71,7 +72,7 @@ Place all your configs in above config directory or in `/opt/centaurus-configs` 
 * TP config file name (for TP-1): `kubeconfig.tp-1`
 * TP config file name (for RP-1): `kubeconfig.rp-1`
 
-If you want to use environment variables, set the following parameters
+If you want to use environment variables, set the following parameters (optional)
 
 
 ```bash
