@@ -67,6 +67,7 @@ export class EventListComponent extends ResourceListWithStatuses<EventList, Even
   }
 
   getResourceObservable(params?: HttpParams): Observable<EventList> {
+    this.tenantName = this.tenantName === '' ? this.tenant_.current() : this.tenantName
     return this.eventList.get(this.endpoint, undefined, undefined, params, this.tenantName, this.partition);
   }
 
