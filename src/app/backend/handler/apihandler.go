@@ -1488,9 +1488,6 @@ func fromCells(cells []dataselect.DataCell) []tenant.Tenant {
 func (apiHandler *APIHandlerV2) handleGetTenantDetail(request *restful.Request, response *restful.Response) {
 	tenantName := request.PathParameter("name")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -1904,9 +1901,6 @@ func (apiHandler *APIHandlerV2) handleGetServiceDetail(request *restful.Request,
 func (apiHandler *APIHandlerV2) handleGetServiceDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -1968,9 +1962,6 @@ func (apiHandler *APIHandlerV2) handleGetServiceEvent(request *restful.Request, 
 func (apiHandler *APIHandlerV2) handleGetServiceEventWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -2119,9 +2110,6 @@ func (apiHandler *APIHandlerV2) handleGetServicePods(request *restful.Request, r
 func (apiHandler *APIHandlerV2) handleGetServicePodsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -2719,9 +2707,6 @@ func (apiHandler *APIHandlerV2) handleGetReplicaSets(request *restful.Request, r
 func (apiHandler *APIHandlerV2) handleGetReplicaSetsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -2783,9 +2768,6 @@ func (apiHandler *APIHandlerV2) handleGetReplicaSetDetail(request *restful.Reque
 func (apiHandler *APIHandlerV2) handleGetReplicaSetDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -2849,9 +2831,6 @@ func (apiHandler *APIHandlerV2) handleGetReplicaSetPods(request *restful.Request
 func (apiHandler *APIHandlerV2) handleGetReplicaSetPodsWithMutiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -2916,9 +2895,6 @@ func (apiHandler *APIHandlerV2) handleGetReplicaSetServices(request *restful.Req
 func (apiHandler *APIHandlerV2) handleGetReplicaSetServicesWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -2983,9 +2959,6 @@ func (apiHandler *APIHandlerV2) handleGetReplicaSetEvents(request *restful.Reque
 func (apiHandler *APIHandlerV2) handleGetReplicaSetEventsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -3180,9 +3153,6 @@ func (apiHandler *APIHandlerV2) handleGetDeployments(request *restful.Request, r
 func (apiHandler *APIHandlerV2) handleGetDeploymentsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -3244,9 +3214,6 @@ func (apiHandler *APIHandlerV2) handleGetDeploymentDetail(request *restful.Reque
 func (apiHandler *APIHandlerV2) handleGetDeploymentDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -3308,9 +3275,6 @@ func (apiHandler *APIHandlerV2) handleGetDeploymentEvents(request *restful.Reque
 func (apiHandler *APIHandlerV2) handleGetDeploymentEventsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -3436,9 +3400,6 @@ func (apiHandler *APIHandlerV2) handleGetDeploymentNewReplicaSet(request *restfu
 func (apiHandler *APIHandlerV2) handleGetDeploymentNewReplicaSetWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -3501,9 +3462,6 @@ func (apiHandler *APIHandlerV2) handleGetPods(request *restful.Request, response
 func (apiHandler *APIHandlerV2) handleGetPodsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -3586,9 +3544,6 @@ func (apiHandler *APIHandlerV2) handleGetPodDetail(request *restful.Request, res
 func (apiHandler *APIHandlerV2) handleGetPodDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -4500,9 +4455,6 @@ func (apiHandler *APIHandlerV2) handleAddResourceQuota(request *restful.Request,
 func (apiHandler *APIHandlerV2) handleGetResourceQuotaList(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -4565,9 +4517,6 @@ func (apiHandler *APIHandlerV2) handleGetResourceQuotaDetails(request *restful.R
 	log.Printf("Get Quota List calling details")
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -4867,9 +4816,6 @@ func (apiHandler *APIHandlerV2) handleGetNamespaces(request *restful.Request, re
 func (apiHandler *APIHandlerV2) handleGetNamespacesWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -4926,9 +4872,6 @@ func (apiHandler *APIHandlerV2) handleGetNamespaceDetail(request *restful.Reques
 func (apiHandler *APIHandlerV2) handleGetNamespaceDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}
@@ -4986,9 +4929,6 @@ func (apiHandler *APIHandlerV2) handleGetNamespaceEvents(request *restful.Reques
 func (apiHandler *APIHandlerV2) handleGetNamespaceEventsWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
 	partition := request.PathParameter("partition")
-	if partition == ":partition" {
-		partition = ""
-	}
 	if len(apiHandler.tpManager) == 0 {
 		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
 	}

@@ -59,7 +59,15 @@ export class TenantService {
   }
 
   tenantPartition(): string {
-    return sessionStorage.getItem(this.resourceTenant())
+    let partition = ''
+    if (sessionStorage.getItem('currentTenant')) {
+      partition = sessionStorage.getItem(sessionStorage.getItem('currentTenant'));
+    } else if (sessionStorage.getItem('currentTpTenant')) {
+      partition = sessionStorage.getItem(sessionStorage.getItem('currentTpTenant'));
+    } else {
+      partition = sessionStorage.getItem(this.resourceTenant());
+    }
+    return partition
   }
 
   setAuthTenant(tenant: string) {

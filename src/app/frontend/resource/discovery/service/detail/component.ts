@@ -30,12 +30,14 @@ import {TenantService} from "../../../../common/services/global/tenant";
 })
 export class ServiceDetailComponent implements OnInit, OnDestroy {
   private serviceSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.service, true, true, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.service, true, true);
   service: ServiceDetail;
   isInitialized = false;
   podListEndpoint: string;
   eventListEndpoint: string;
-  private tenantName: string;
+  tenantName: string;
+  partition: string;
+  partitionName: string;
 
   constructor(
     private readonly service_: NamespacedResourceService<ServiceDetail>,
@@ -43,22 +45,29 @@ export class ServiceDetailComponent implements OnInit, OnDestroy {
     private readonly activatedRoute_: ActivatedRoute,
     private readonly tenant_: TenantService,
     private readonly notifications_: NotificationsService,
-  ) {}
+  ) {
+    this.tenantName = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('currentTenant') : this.tenant_.current()
+    this.partitionName = this.tenantName === 'system' ? sessionStorage.getItem(sessionStorage.getItem('currentTenant')) : ''
+    this.partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(sessionStorage.getItem('currentTenant')) + '/' : ''
+  }
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
 
-    this.tenantName = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('currentTenant') : this.tenant_.current()
+    this.podListEndpoint = this.endpoint_.child(resourceName, Resource.pod, resourceNamespace, this.tenantName, this.partitionName);
+    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace, this.tenantName, this.partitionName);
 
-    const partition = this.tenantName === 'system' ? this.tenant_.tenantPartition() : ''
-
-    this.podListEndpoint = this.endpoint_.child(resourceName, Resource.pod, resourceNamespace, this.tenantName, partition);
-    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace, this.tenantName, partition);
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/${this.partition}tenants/${this.tenantName}/service/${resourceNamespace}/${resourceName}`
+    } else {
+      endpoint = this.endpoint_.detail()
+    }
 
     this.serviceSubscription_ = this.service_
-      .get(this.endpoint_.detail(), resourceName, resourceNamespace, undefined, this.tenantName, partition)
+      .get(endpoint, resourceName, resourceNamespace, undefined, this.tenantName, this.partitionName)
       .subscribe((d: ServiceDetail) => {
         this.service = d;
         this.notifications_.pushErrors(d.errors);
