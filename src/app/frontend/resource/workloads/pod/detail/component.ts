@@ -51,11 +51,11 @@ export class PodDetailComponent implements OnInit, OnDestroy {
       window.history.state.namespace : this.activatedRoute_.snapshot.params.resourceNamespace;
     const resourceTenant = this.tenant_.current() === 'system' ?
       sessionStorage.getItem('podTenant') : this.tenant_.current()
+    const partition = resourceTenant === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
 
     let endpoint = ''
-
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${resourceTenant}/pod/${resourceNamespace}/${resourceName}`
+      endpoint = `api/v1/${partition}tenants/${resourceTenant}/pod/${resourceNamespace}/${resourceName}`
     } else {
       endpoint = this.endpoint_.detail()
     }

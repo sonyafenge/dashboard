@@ -56,26 +56,28 @@ export class DeploymentDetailComponent implements OnInit, OnDestroy {
       window.history.state.namespace : this.activatedRoute_.snapshot.params.resourceNamespace;
     const resourceTenant = this.tenant_.current() === 'system' ?
       sessionStorage.getItem('deploymentTenant') : this.tenant_.current()
-
+    const partition = resourceTenant === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${resourceTenant}/deployment/${resourceNamespace}/${resourceName}`
+      endpoint = `api/v1/${partition}tenants/${resourceTenant}/deployment/${resourceNamespace}/${resourceName}`
     } else {
       endpoint = this.endpoint_.detail()
     }
-
-    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace, resourceTenant);
+    const resourcePartition = resourceTenant === 'system' ? this.tenant_.tenantPartition() : ''
+    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace, resourceTenant, resourcePartition);
     this.oldReplicaSetsEndpoint = this.endpoint_.child(
       resourceName,
       Resource.oldReplicaSet,
       resourceNamespace,
       resourceTenant,
+      resourcePartition,
     );
     this.newReplicaSetEndpoint = this.endpoint_.child(
       resourceName,
       Resource.newReplicaSet,
       resourceNamespace,
       resourceTenant,
+      resourcePartition,
     );
 
     this.deployment_

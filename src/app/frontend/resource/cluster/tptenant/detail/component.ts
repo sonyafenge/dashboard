@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 import {HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs/Observable';
 import {ComponentFactoryResolver} from '@angular/core'
@@ -63,6 +64,10 @@ export class TpTenantDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourcePartition = sessionStorage.getItem(`${resourceName}`);
+    if (sessionStorage.getItem('currentTenant')) {
+      sessionStorage.removeItem('currentTenant')
+    }
+    sessionStorage.setItem('currentTenant', resourceName);
     this.tenantSubscription_ = this.tenant_
       .get(this.endpoint_.detail(), resourceName, undefined, undefined,undefined, resourcePartition)
       .subscribe((d: TenantDetail) => {

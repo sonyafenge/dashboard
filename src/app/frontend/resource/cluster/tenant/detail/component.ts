@@ -61,6 +61,11 @@ export class TenantDetailComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourcePartition = sessionStorage.getItem(`${resourceName}`);
+    if (sessionStorage.getItem('currentTenant')) {
+      sessionStorage.removeItem('currentTenant')
+    }
+    sessionStorage.setItem('currentTenant', resourceName);
+
     this.tenantSubscription_ = this.tenant_
       .get(this.endpoint_.detail(), resourceName, undefined, undefined,undefined, resourcePartition)
       .subscribe((d: TenantDetail) => {
@@ -457,4 +462,5 @@ export class ResourceQuotasListComponent extends ResourceListWithStatuses<Resour
   getDisplayColumns(): string[] {
     return ['statusicon', 'name', 'namespace', 'age'];
   }
+
 }

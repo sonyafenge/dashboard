@@ -42,6 +42,7 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
   clusterName: string;
   tenantList: Tenant[];
   tenantCount: number;
+  pageNo: number;
 
   constructor(
     readonly verber_: VerberService,
@@ -59,10 +60,10 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
 
     const routeInfo = this.router_.getCurrentNavigation();
     if ( routeInfo === null || routeInfo.extras.state === undefined ) {
-      this.clusterName = sessionStorage.getItem(`${this.clusterName}`)
+      this.clusterName = sessionStorage.getItem('tpClusterName')
     } else {
       this.clusterName = (routeInfo.extras.state['clusterName']).toString();
-      sessionStorage.setItem(`${this.clusterName}`, this.clusterName)
+      sessionStorage.setItem('tpClusterName', this.clusterName)
     }
 
     // Register status icon handlers
@@ -73,14 +74,15 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
     this.registerActionColumn<MenuComponent>('menu', MenuComponent);
   }
 
-  getResourceObservable(): Observable<TenantList> {
+  getResourceObservable(params?: HttpParams): Observable<TenantList> {
+    this.pageNo =  Number(params.get("page"))
     return this.tenant_.get(this.endpoint, undefined);
   }
 
   map(tenantList: TenantList): Tenant[] {
     this.tenantList = []
     this.tenantCount = 0
-    if (tenantList.tenants !== null) {
+    if (tenantList.tenants.length > 0 && tenantList.tenants !== null) {
       const tenantsList: any = [];
       tenantList.tenants.map((tenant)=>{
         // @ts-ignore
@@ -89,8 +91,8 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
           tenantsList.push(tenant);
         }
       })
-      this.tenantList = tenantsList
-      this.totalItems = this.tenantList.length
+      this.tenantList = tenantsList.slice((this.pageNo - 1) * 10, this.pageNo * 10)
+      this.totalItems = tenantsList.length
     }
     return this.tenantList;
   }

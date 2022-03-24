@@ -29,6 +29,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -149,7 +150,12 @@ func main() {
 			tpclients = append(tpclients, newclientmanager)
 		}
 	}
-
+	log.Printf("tp-clients before: %v", tpclients[0].GetClusterName())
+	// sort client according to TP
+	sort.Slice(tpclients[:], func(i, j int) bool {
+		return tpclients[i].GetClusterName() < tpclients[j].GetClusterName()
+	})
+	log.Printf("tp-clients after: %v", tpclients[0].GetClusterName())
 	log.Printf("Successful initial request to the apiserver, version: %s", versionInfo.String())
 
 	// Create table in Postgres Database

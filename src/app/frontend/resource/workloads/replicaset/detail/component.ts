@@ -52,16 +52,19 @@ export class ReplicaSetDetailComponent implements OnInit, OnDestroy {
     const resourceTenant = this.tenant_.current() === 'system' ?
       sessionStorage.getItem('replicaSetTenant') : this.tenant_.current()
 
+    const partition = resourceTenant === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
+
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${resourceTenant}/replicaset/${resourceNamespace}/${resourceName}`
+      endpoint = `api/v1/${partition}tenants/${resourceTenant}/replicaset/${resourceNamespace}/${resourceName}`
     } else {
       endpoint = this.endpoint_.detail()
     }
+    const resourcePartition = resourceTenant === 'system' ? this.tenant_.tenantPartition() : ''
 
-    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace, resourceTenant);
-    this.podListEndpoint = this.endpoint_.child(resourceName, Resource.pod, resourceNamespace, resourceTenant);
-    this.serviceListEndpoint = this.endpoint_.child(resourceName, Resource.service, resourceNamespace, resourceTenant);
+    this.eventListEndpoint = this.endpoint_.child(resourceName, Resource.event, resourceNamespace, resourceTenant, resourcePartition);
+    this.podListEndpoint = this.endpoint_.child(resourceName, Resource.pod, resourceNamespace, resourceTenant, resourcePartition);
+    this.serviceListEndpoint = this.endpoint_.child(resourceName, Resource.service, resourceNamespace, resourceTenant, resourcePartition);
 
     this.replicaSetSubscription_ = this.replicaSet_
       .get(endpoint, resourceName, resourceNamespace, undefined, resourceTenant)
