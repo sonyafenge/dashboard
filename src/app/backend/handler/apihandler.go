@@ -802,6 +802,10 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 		apiV1Ws.GET("/tenants/{tenant}/secret/{namespace}/{name}").
 			To(apiHandler.handleGetSecretDetailWithMultiTenancy).
 			Writes(secret.SecretDetail{}))
+  apiV1Ws.Route(
+    apiV1Ws.GET("/partition/{partition}/tenants/{tenant}/secret/{namespace}/{name}").
+      To(apiHandler.handleGetSecretDetailWithMultiTenancy).
+      Writes(secret.SecretDetail{}))
 	apiV1Ws.Route(
 		apiV1Ws.POST("/tenants/{tenant}/secret").
 			To(apiHandler.handleCreateImagePullSecretWithMultiTenancy).
@@ -5047,15 +5051,31 @@ func (apiHandler *APIHandlerV2) handleGetSecretDetail(request *restful.Request, 
 
 func (apiHandler *APIHandlerV2) handleGetSecretDetailWithMultiTenancy(request *restful.Request, response *restful.Response) {
 	tenant := request.PathParameter("tenant")
-	if len(apiHandler.tpManager) == 0 {
-		apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
-	}
-	client := ResourceAllocator("", tenant, apiHandler.tpManager)
-	k8sClient, err := client.Client(request)
-	if err != nil {
-		errors.HandleInternalError(response, err)
-		return
-	}
+  partition := request.PathParameter("partition")
+  if len(apiHandler.tpManager) == 0 {
+    apiHandler.tpManager = append(apiHandler.tpManager, apiHandler.defaultClientmanager)
+  }
+  client := ResourceAllocator(partition, tenant, apiHandler.tpManager)
+  c, err := request.Request.Cookie("tenant")
+  var CookieTenant string
+  if err != nil {
+    log.Printf("Cookie error: %v", err)
+    CookieTenant = tenant
+  } else {
+    CookieTenant = c.Value
+  }
+  log.Printf("cookie_tenant is: %s", CookieTenant)
+  var k8sClient kubernetes.Interface
+  if tenant != CookieTenant || partition != "" {
+    k8sClient = client.InsecureClient()
+  } else {
+    k8sClient, err = client.Client(request)
+    if err != nil {
+      errors.HandleInternalError(response, err)
+      return
+    }
+  }
+
 	namespace := request.PathParameter("namespace")
 	name := request.PathParameter("name")
 	result, err := secret.GetSecretDetailWithMultiTenancy(k8sClient, tenant, namespace, name)
