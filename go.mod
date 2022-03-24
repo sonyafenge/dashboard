@@ -12,6 +12,7 @@ require (
 	github.com/googleapis/gnostic v0.2.0 // indirect
 	github.com/igm/sockjs-go v2.0.1+incompatible // indirect
 	github.com/imdario/mergo v0.3.6 // indirect
+	github.com/kubernetes/dashboard v1.10.1
 	github.com/lib/pq v1.10.4
 	github.com/prometheus/client_golang v1.0.0
 	github.com/spf13/pflag v1.0.5
