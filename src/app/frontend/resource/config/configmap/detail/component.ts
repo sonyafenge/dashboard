@@ -34,6 +34,7 @@ export class ConfigMapDetailComponent implements OnInit, OnDestroy {
   configMap: ConfigMapDetail;
   isInitialized = false;
   private tenantName: string;
+  private partition: string;
 
   constructor(
     private readonly configMap_: NamespacedResourceService<ConfigMapDetail>,
@@ -41,20 +42,19 @@ export class ConfigMapDetailComponent implements OnInit, OnDestroy {
     private readonly activatedRoute_: ActivatedRoute,
     private readonly tenant_: TenantService,
     private readonly notifications_: NotificationsService,
-  ) {}
+  ) {
+    this.tenantName = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('currentTenant') : this.tenant_.current()
+    this.partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(sessionStorage.getItem('currentTenant')) + '/' : ''
+  }
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
 
-    this.tenantName = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('currentTenant') : this.tenant_.current()
-
-    const partition = this.tenantName === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
-
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/${partition}tenants/${this.tenantName}/configmap/${resourceNamespace}/${resourceName}`
+      endpoint = `api/v1/${this.partition}tenants/${this.tenantName}/configmap/${resourceNamespace}/${resourceName}`
     } else {
       endpoint = this.endpoint_.detail()
     }
@@ -72,5 +72,13 @@ export class ConfigMapDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.configMapSubscription_.unsubscribe();
     this.actionbar_.onDetailsLeave.emit();
+  }
+
+  getConfigMapData(cm: ConfigMapDetail): string {
+    if (!cm) {
+      return '';
+    }
+
+    return JSON.stringify(cm.data);
   }
 }
