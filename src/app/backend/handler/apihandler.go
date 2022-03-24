@@ -498,7 +498,15 @@ func CreateHTTPAPIHandler(iManager integration.IntegrationManager, tpManager cli
 			To(apiHandler.handleGetDeploymentDetailWithMultiTenancy).
 			Writes(deployment.DeploymentDetail{}))
 	apiV1Ws.Route(
+		apiV1Ws.GET("/partition/{partition}/tenants/{tenant}/deployment/{namespace}/{deployment}").
+			To(apiHandler.handleGetDeploymentDetailWithMultiTenancy).
+			Writes(deployment.DeploymentDetail{}))
+	apiV1Ws.Route(
 		apiV1Ws.GET("/tenants/{tenant}/deployment/{namespace}/{deployment}/event").
+			To(apiHandler.handleGetDeploymentEventsWithMultiTenancy).
+			Writes(common.EventList{}))
+	apiV1Ws.Route(
+		apiV1Ws.GET("/partition/{partition}/tenants/{tenant}/deployment/{namespace}/{deployment}/event").
 			To(apiHandler.handleGetDeploymentEventsWithMultiTenancy).
 			Writes(common.EventList{}))
 	apiV1Ws.Route(
