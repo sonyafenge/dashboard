@@ -81,4 +81,8 @@ export class CRDListComponent extends ResourceListWithStatuses<CRDList, CRD> {
     return ['statusicon','clusterName', 'name', 'group', 'fullName', 'namespaced',  'age'];
   }
 
+  setPartitionName($event: any, partitionName: string) {
+    const crdName = $event.target.innerHTML.replace(/^\s+|\s+$/gm,'');
+    sessionStorage.setItem('crdPartition', partitionName)
+  }
 }

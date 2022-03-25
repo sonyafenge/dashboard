@@ -15,8 +15,8 @@
 import {ObjectMeta, TypeMeta} from '@api/backendapi';
 
 export class RawResource {
-  static getUrl(tenant: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): string {
-    let resourceUrl = 'api/v1' + (tenant ? `/tenants/${tenant}` : '') + `/_raw/${typeMeta.kind}`;
+  static getUrl(tenant: string, typeMeta: TypeMeta, objectMeta: ObjectMeta, partition?: string): string {
+    let resourceUrl = 'api/v1' + (partition ? `/partition/${partition}` : '') + (tenant ? `/tenants/${tenant}` : '') + `/_raw/${typeMeta.kind}`;
 
     if (objectMeta.namespace !== undefined && !resourceUrl.includes('/User')) {
       resourceUrl += `/namespace/${objectMeta.namespace}`;

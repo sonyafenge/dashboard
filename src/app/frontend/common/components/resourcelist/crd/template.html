@@ -51,6 +51,7 @@ limitations under the License.
                          i18n>Name</mat-header-cell>
         <mat-cell *matCellDef="let crd">
           <a [routerLink]="getDetailsHref(crd.objectMeta.name)"
+             (click) = setPartitionName($event,crd.clusterName)
              queryParamsHandling="preserve">{{crd.names.kind}}</a>
         </mat-cell>
       </ng-container>
