@@ -46,7 +46,7 @@ export class EventListComponent extends ResourceListWithStatuses<EventList, Even
     this.registerBinding(this.icon.none, '', this.isNormal.bind(this));
 
     this.tenantName = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('currentTenant') : this.tenant_.current()
+      this.tenant_.resourceTenant() : this.tenant_.current()
     this.partition = this.tenantName === 'system' ? this.tenant_.tenantPartition() : ''
   }
 
@@ -67,6 +67,7 @@ export class EventListComponent extends ResourceListWithStatuses<EventList, Even
   }
 
   getResourceObservable(params?: HttpParams): Observable<EventList> {
+    this.tenantName = this.tenantName === '' ? this.tenant_.current() : this.tenantName
     return this.eventList.get(this.endpoint, undefined, undefined, params, this.tenantName, this.partition);
   }
 

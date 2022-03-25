@@ -9,7 +9,7 @@ Make sure the following software is installed and added to the $PATH variable:
 * Curl 7+
 * Git 2.13.2+
 * Docker 1.13.1+ ([installation manual](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/))
-* Golang 1.13.9+ ([installation manual](https://golang.org/dl/))
+* Golang 1.15.0+ ([installation manual](https://golang.org/dl/))
   * Dashboard uses `go mod` for go dependency management, so enable it with running `export GO111MODULE=on`.
 * Node.js 12 and npm 6 ([installation with nvm](https://github.com/creationix/nvm#usage))
 * Gulp.js 4+ ([installation manual](https://github.com/gulpjs/gulp/blob/master/docs/getting-started/1-quick-start.md))
@@ -71,17 +71,6 @@ Note: Default file is `$HOME/.kube/config` or pass the argument `--kubeconfig` w
 Place all your configs in above config directory or in `/opt/centaurus-configs` and should named as shown below
 * TP config file name (for TP-1): `kubeconfig.tp-1`
 * TP config file name (for RP-1): `kubeconfig.rp-1`
-
-If you want to use environment variables, set the following parameters (optional)
-
-
-```bash
-export USE_ENV_CONFIGS=true # Default value: false
-export TP1_CONFIG= base64 encoded config
-export TP2_CONFIG= base64 encoded config
-export RP1_CONFIG= base64 encoded config
-export RP2_CONFIG= base64 encoded config
-```
 
 6. Deploy postgres container
 ```bash

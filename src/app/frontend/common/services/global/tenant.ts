@@ -50,9 +50,9 @@ export class TenantService {
   }
 
   resourceTenant(): string {
-    if (sessionStorage.getItem('currentTenant')) {
+    if (sessionStorage.getItem('currentTenant') && sessionStorage.getItem('reqFromTenant')) {
       this.resourceTenant_ = sessionStorage.getItem('currentTenant')
-    } else if (sessionStorage.getItem('currentTpTenant')) {
+    } else if (sessionStorage.getItem('currentTpTenant') && sessionStorage.getItem('reqFromTpTenant')) {
       this.resourceTenant_ = sessionStorage.getItem('currentTpTenant')
     }
     return this.resourceTenant_
@@ -60,9 +60,9 @@ export class TenantService {
 
   tenantPartition(): string {
     let partition = ''
-    if (sessionStorage.getItem('currentTenant')) {
+    if (sessionStorage.getItem('currentTenant') && sessionStorage.getItem('reqFromTenant')) {
       partition = sessionStorage.getItem(sessionStorage.getItem('currentTenant'));
-    } else if (sessionStorage.getItem('currentTpTenant')) {
+    } else if (sessionStorage.getItem('currentTpTenant') && sessionStorage.getItem('reqFromTpTenant')) {
       partition = sessionStorage.getItem(sessionStorage.getItem('currentTpTenant'));
     } else {
       partition = sessionStorage.getItem(this.resourceTenant());
