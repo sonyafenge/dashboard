@@ -16,7 +16,10 @@
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
 import {Observable} from 'rxjs/Observable';
-import {PersistentVolumeClaim, PersistentVolumeClaimList} from 'typings/backendapi';
+import {
+  PersistentVolumeClaim,
+  PersistentVolumeClaimList,
+} from 'typings/backendapi';
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
@@ -32,7 +35,7 @@ export class PersistentVolumeClaimListComponent extends ResourceListWithStatuses
   PersistentVolumeClaimList,
   PersistentVolumeClaim
   > {
-  @Input() endpoint = EndpointManager.resource(Resource.persistentVolumeClaim, true, true).list();
+  @Input() endpoint = EndpointManager.resource(Resource.persistentVolumeClaim, false, true).list();
 
   constructor(
     private readonly persistentVolumeClaim_: NamespacedResourceService<PersistentVolumeClaimList>,
@@ -54,6 +57,10 @@ export class PersistentVolumeClaimListComponent extends ResourceListWithStatuses
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
   }
 
+  map(persistentVolumeClaimList: PersistentVolumeClaimList): PersistentVolumeClaim[] {
+    return persistentVolumeClaimList.items;
+  }
+
   isInBoundState(resource: PersistentVolumeClaim): boolean {
     return resource.status === 'Bound';
   }
@@ -70,9 +77,6 @@ export class PersistentVolumeClaimListComponent extends ResourceListWithStatuses
     return this.persistentVolumeClaim_.get(this.endpoint, undefined, undefined, params);
   }
 
-  map(persistentVolumeClaimList: PersistentVolumeClaimList): PersistentVolumeClaim[] {
-    return persistentVolumeClaimList.items;
-  }
 
   getDisplayColumns(): string[] {
     return [
