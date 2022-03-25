@@ -14,7 +14,6 @@
 
 import {Injectable} from '@angular/core';
 import {Title} from '@angular/platform-browser';
-
 import {GlobalSettingsService} from './globalsettings';
 
 @Injectable()
@@ -37,7 +36,7 @@ export class TitleService {
   }
 
   private apply_(): void {
-    let title = 'Kubernetes Dashboard';
+    let title = 'Centaurus Dashboard';
 
     if (this.clusterName && this.clusterName.length > 0) {
       title = `${this.clusterName} - ` + title;

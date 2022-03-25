@@ -21,6 +21,7 @@ export class TenantService {
   private isSystemTenant_: boolean;
   private authTenant_: string;
   private currentTenant_ = '';
+  private resourceTenant_ = '';
 
   private readonly tenantRegex = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?)$/; // TODO: need to verify
 
@@ -33,13 +34,40 @@ export class TenantService {
     if (this.isSystemTenant_) {
       this.currentTenant_ = tenant;
     }
+
   }
 
+
   current(): string {
-    if (this.isSystemTenant_) {
-      return this.currentTenant_;
+    const username = sessionStorage.getItem('parentTenant');
+    const userType = sessionStorage.getItem('userType');
+    if (userType === 'cluster-admin'){
+      this.currentTenant_ = 'system'
+    } else {
+      this.currentTenant_ = username
     }
-    return '';
+    return this.currentTenant_;
+  }
+
+  resourceTenant(): string {
+    if (sessionStorage.getItem('currentTenant') && sessionStorage.getItem('reqFromTenant')) {
+      this.resourceTenant_ = sessionStorage.getItem('currentTenant')
+    } else if (sessionStorage.getItem('currentTpTenant') && sessionStorage.getItem('reqFromTpTenant')) {
+      this.resourceTenant_ = sessionStorage.getItem('currentTpTenant')
+    }
+    return this.resourceTenant_
+  }
+
+  tenantPartition(): string {
+    let partition = ''
+    if (sessionStorage.getItem('currentTenant') && sessionStorage.getItem('reqFromTenant')) {
+      partition = sessionStorage.getItem(sessionStorage.getItem('currentTenant'));
+    } else if (sessionStorage.getItem('currentTpTenant') && sessionStorage.getItem('reqFromTpTenant')) {
+      partition = sessionStorage.getItem(sessionStorage.getItem('currentTpTenant'));
+    } else {
+      partition = sessionStorage.getItem(this.resourceTenant());
+    }
+    return partition
   }
 
   setAuthTenant(tenant: string) {

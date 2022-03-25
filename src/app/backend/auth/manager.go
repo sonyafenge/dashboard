@@ -16,11 +16,10 @@
 package auth
 
 import (
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 	"k8s.io/client-go/tools/clientcmd/api"
-
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
 )
 
 // Implements AuthManager interface
@@ -37,22 +36,24 @@ func (self authManager) Login(spec *authApi.LoginSpec) (*authApi.AuthResponse, e
 	if err != nil {
 		return nil, err
 	}
-
 	authInfo, err := authenticator.GetAuthInfo()
 	if err != nil {
 		return nil, err
 	}
-
 	err = self.healthCheck(authInfo)
 	nonCriticalErrors, criticalError := errors.HandleError(err)
 	if criticalError != nil || len(nonCriticalErrors) > 0 {
-		return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
+		//return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
+		err = nil
 	}
 
-	tenant, err := self.GetTenant(authInfo)
+	tenant, err := self.GetTenant(authInfo, spec.NameSpace, spec.Tenant)
 	nonCriticalErrors, criticalError = errors.HandleError(err)
 	if criticalError != nil || len(nonCriticalErrors) > 0 {
 		return &authApi.AuthResponse{Errors: nonCriticalErrors}, criticalError
+	}
+	if tenant == "" {
+		tenant = spec.Tenant
 	}
 
 	token, err := self.tokenManager.Generate(authInfo)
@@ -91,7 +92,7 @@ func (self authManager) getAuthenticator(spec *authApi.LoginSpec) (authApi.Authe
 		return NewKubeConfigAuthenticator(spec, self.authenticationModes), nil
 	}
 
-	return nil, errors.NewInvalid("Not enough data to create authenticator.")
+	return nil, errors.NewInvalid("Invalid Username or Password")
 }
 
 // Checks if user data extracted from provided AuthInfo structure is valid and user is correctly authenticated
@@ -101,8 +102,8 @@ func (self authManager) healthCheck(authInfo api.AuthInfo) error {
 }
 
 // Get the tenant name from the provided AuthInfo
-func (self authManager) GetTenant(authInfo api.AuthInfo) (string, error) {
-	return self.clientManager.GetTenant(authInfo)
+func (self authManager) GetTenant(authInfo api.AuthInfo, nameSpace string, tenant string) (string, error) {
+	return self.clientManager.GetTenant(authInfo, nameSpace, tenant)
 }
 
 // NewAuthManager creates auth manager.

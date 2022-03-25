@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <g id="tick">
+    <path d="M0 7.99998C0 3.58171 3.58171 0 7.99998 0C12.4183 0 16 3.58171 16 7.99998C16 12.4183 12.4183 16 7.99998 16C3.58171 16 0 12.4183 0 7.99998Z" id="Circle" fill="#3A8F09" fill-rule="evenodd" stroke="none" />
+    <path d="M12.2157 3.76318L6.5603 9.41862L3.78522 6.64364L2.37622 8.05243L6.5603 12.2366L13.6247 5.17198L12.2157 3.76318Z" id="Polygon" fill="#EBF0F3" fill-rule="evenodd" stroke="none" />
+  </g>
+</svg>

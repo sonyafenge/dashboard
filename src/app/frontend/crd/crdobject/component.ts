@@ -33,19 +33,26 @@ enum Modes {
   YAML = 'yaml',
 }
 
-@Component({selector: 'kd-crd-object-detail', templateUrl: './template.html'})
+@Component({
+  selector: 'kd-crd-object-detail',
+  templateUrl: './template.html',
+})
+
 export class CRDObjectDetailComponent implements OnInit, OnDestroy {
   @ViewChild('group', {static: true}) buttonToggleGroup: MatButtonToggleGroup;
   @ViewChild('code', {static: true}) codeRef: ElementRef;
 
   private objectSubscription_: Subscription;
-  private readonly endpoint_ = EndpointManager.resource(Resource.crd, true, true);
+  private readonly endpoint_ = EndpointManager.resource(Resource.crd, false, true);
   object: CRDObjectDetail;
   modes = Modes;
   isInitialized = false;
   selectedMode = Modes.YAML;
   objectRaw: {[s: string]: string} = {};
   eventListEndpoint: string;
+  tenantName: string;
+  partitionName: string;
+  partition: string;
 
   constructor(
     private readonly object_: NamespacedResourceService<CRDObjectDetail>,
@@ -55,18 +62,33 @@ export class CRDObjectDetailComponent implements OnInit, OnDestroy {
     private readonly http_: HttpClient,
     private readonly renderer_: Renderer2,
     private readonly tenant_: TenantService,
-  ) {}
+  ) {
+    this.tenantName = this.tenant_.current() === 'system' && sessionStorage.getItem('crdPartition') !== null ?
+      this.tenant_.current() : this.tenant_.resourceTenant()
+    this.partitionName = this.tenantName === 'system' ? sessionStorage.getItem('crdPartition') : ''
+    this.partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem('crdPartition') + '/' : ''
+  }
 
   ngOnInit(): void {
-    const {crdName, namespace, objectName} = this.activatedRoute_.snapshot.params;
+
+    const {crdNamespace, crdName, objectName} = this.activatedRoute_.snapshot.params;
     this.eventListEndpoint = this.endpoint_.child(
       `${crdName}/${objectName}`,
       Resource.event,
-      namespace,
+      crdNamespace,
     );
 
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin' && crdNamespace === undefined) {
+      endpoint = `api/v1/cluster/${this.partitionName}/tenants/${this.tenantName}/crd/${crdName}/${objectName}`
+    } else if (sessionStorage.getItem('userType') === 'cluster-admin' && crdNamespace !== undefined) {
+      endpoint = `api/v1/${this.partition}tenants/${this.tenantName}/crd/${crdNamespace}/${crdName}/${objectName}`
+    } else {
+      endpoint = this.endpoint_.child(crdName, objectName, crdNamespace, this.tenantName)
+    }
+
     this.objectSubscription_ = this.object_
-      .get(this.endpoint_.child(crdName, objectName, namespace))
+      .get(endpoint)
       .subscribe((d: CRDObjectDetail) => {
         this.object = d;
         this.notifications_.pushErrors(d.errors);
@@ -74,11 +96,15 @@ export class CRDObjectDetailComponent implements OnInit, OnDestroy {
         this.isInitialized = true;
 
         // Get raw resource
-        const url = RawResource.getUrl(
-          this.tenant_.current(),
+        let url = RawResource.getUrl(
+          this.tenantName,
           this.object.typeMeta,
           this.object.objectMeta,
+          this.partitionName,
         );
+        if (crdNamespace === undefined) {
+          url = url.replace('/partition/', '/cluster/')
+        }
         this.http_
           .get(url)
           .toPromise()

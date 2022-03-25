@@ -26,13 +26,7 @@ limitations under the License.
         <a [routerLink]="getOverviewStateName()"
            queryParamsHandling="preserve"
            class="kd-toolbar-logo-link">
-          <!-- <mat-icon [svgIcon]="assets.getAppLogo()"
-                    class="kd-toolbar-logo">
-          </mat-icon> -->
-          Centaurus
-          <!-- <mat-icon [svgIcon]="assets.getAppLogoText()"
-                    class="kd-toolbar-logo-text">
-          </mat-icon> -->
+          <img class="logo_icon" src="assets/images/centaurus_logo.png" alt="">
         </a>
       </div>
       <kd-search class="kd-search-bar"
@@ -47,18 +41,8 @@ limitations under the License.
                 (click)="goToCreateState()">
           <mat-icon class="kd-primary-toolbar-icon">add</mat-icon>
         </button>
-        <kd-notifications class="kd-toolbar-action"></kd-notifications>
         <kd-user-panel class="kd-toolbar-action"></kd-user-panel>
       </div>
-    </div>
-  </mat-toolbar>
-
-  <mat-toolbar class="kd-second-toolbar kd-bg-primary">
-    <div class="kd-toolbar-tools"
-         fxFlex>
-      <kd-nav-hamburger fxFlex="none"></kd-nav-hamburger>
-      <kd-breadcrumbs class="kd-actionbar-breadcrumbs"></kd-breadcrumbs>
-      <kd-actionbar fxFlex="end"></kd-actionbar>
     </div>
   </mat-toolbar>
 

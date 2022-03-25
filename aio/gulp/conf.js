@@ -41,9 +41,9 @@ const arch = {
  * Configuration for container registry to push images to.
  */
 const containerRegistry = {
-  release: 'kubernetesui',
+  release: 'centaurusui',
   /** Default to an environment variable */
-  head: 'kubernetesdashboarddev',
+  head: 'centaurusdashboarddev',
 };
 
 /**
@@ -53,15 +53,15 @@ const version = {
   /**
    * Current release version of the project.
    */
-  release: 'v2.0.0-beta4',
+  release: 'v0.0.1',
   /**
    * Version name of the head release of the project.
    */
-  head: 'head',
+  head: 'dev',
   /**
    * Year of last source change of the project
    */
-  year: '2019',
+  year: '2022',
 };
 
 /**
@@ -82,7 +82,7 @@ export default {
    * the expression of recording version info into src/app/backend/client/manager.go
    */
   recordVersionExpression:
-      `-X github.com/kubernetes/dashboard/src/app/backend/client.Version=${version.release}`,
+    `-X github.com/CentaurusInfra/dashboard/src/app/backend/client.Version=${version.release}`,
 
   /**
    * Configuration for container registry to push images to.
@@ -100,15 +100,15 @@ export default {
     /**
      * Name of the main backend package that is used in go build command.
      */
-    mainPackageName: 'github.com/kubernetes/dashboard/src/app/backend',
+    mainPackageName: 'github.com/CentaurusInfra/dashboard/src/app/backend',
     /**
      * Names of all backend packages prefixed with 'test' command.
      */
     testCommandArgs:
-        [
-          'test',
-          'github.com/kubernetes/dashboard/src/app/backend/...',
-        ],
+      [
+        'test',
+        'github.com/CentaurusInfra/dashboard/src/app/backend/...',
+      ],
     /**
      * Insecure port number of the backend server. Only used during development.
      */
@@ -118,7 +118,7 @@ export default {
      */
     secureDevServerPort: 8443,
     /**
-     * Address for the Kubernetes API server.
+     * Address for the Centaurus API server.
      */
     apiServerHost: 'http://localhost:8080',
     /**
@@ -139,15 +139,15 @@ export default {
      * will attempt to connect to Heapster via a service proxy.
      */
     heapsterServerHost: argv.heapsterServerHost !== undefined ?
-        argv.heapsterServerHost :
-        'http://localhost:8001',
+      argv.heapsterServerHost :
+      'http://localhost:8001',
     /**
      * Address for the Sidecar API server. If blank, the dashboard
      * will attempt to connect to Sidecar via a service proxy.
      */
     sidecarServerHost: argv.sidecarServerHost !== undefined ?
-        argv.sidecarServerHost :
-        'http://localhost:8000',
+      argv.sidecarServerHost :
+      'http://localhost:8000',
     /**
      * File containing the default x509 Certificate for HTTPS.
      */
@@ -162,8 +162,8 @@ export default {
      * '--auto-generate-certificates' flag.
      */
     autoGenerateCerts: argv.autoGenerateCerts !== undefined ?
-        argv.autoGenerateCerts :
-        'false',
+      argv.autoGenerateCerts :
+      'false',
     /**
      * Directory path containing certificate files. Matches dashboard '--default-cert-dir' flag.
      */
@@ -176,14 +176,26 @@ export default {
      * System banner severity. Matches dashboard '--system-banner-severity' flag.
      */
     systemBannerSeverity: argv.systemBannerSeverity !== undefined ?
-        argv.systemBannerSeverity :
-        '',
+      argv.systemBannerSeverity :
+      '',
     /**
      * Allows to override enable skip login option on the backend.
      */
     enableSkipButton: argv.enableSkipButton !== undefined ?
-        argv.enableSkipButton :
-        false,
+      argv.enableSkipButton :
+      false,
+    /**
+     * Allows to enable login view when serving on http.
+     */
+    enableInsecureLogin: argv.enableInsecureLogin !== undefined ?
+      argv.enableInsecureLogin :
+      false,
+    /**
+     * Defines token time to live.
+     */
+    tokenTTL: argv.tokenTTL !== undefined ?
+      argv.tokenTTL :
+      0,
   },
 
   /**
@@ -214,7 +226,7 @@ export default {
      * Image name for the versioned release for current architecture.
      */
     releaseImageName:
-        `${containerRegistry.release}/${imageNameBase}-${arch.default}:${version.release}`,
+      `${containerRegistry.release}/${imageNameBase}-${arch.default}:${version.release}`,
 
     /**
      * Manifest name for the head release
@@ -225,19 +237,19 @@ export default {
      * Manifest name for the versioned release
      */
     releaseManifestName:
-        `${containerRegistry.release}/${imageNameBase}:${version.release}`,
+      `${containerRegistry.release}/${imageNameBase}:${version.release}`,
 
     /**
      * Image name for the head release for all supported architecture.
      */
     headImageNames: arch.list.map(
-        (arch) => `${containerRegistry.head}/${imageNameBase}-${arch}:${version.head}`),
+      (arch) => `${containerRegistry.head}/${imageNameBase}-${arch}:${version.head}`),
 
     /**
      * Image name for the versioned release for all supported architecture.
      */
     releaseImageNames: arch.list.map(
-        (arch) => `${containerRegistry.release}/${imageNameBase}-${arch}:${version.release}`),
+      (arch) => `${containerRegistry.release}/${imageNameBase}-${arch}:${version.release}`),
   },
 
   /**
@@ -251,7 +263,7 @@ export default {
     /**
      * The name of the root Angular module, i.e., the module that bootstraps the application.
      */
-    rootModuleName: 'kubernetesDashboard',
+    rootModuleName: 'centaurusDashboard',
     /**
      * If defined `gulp serve` will serve on HTTPS.
      */

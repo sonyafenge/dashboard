@@ -19,7 +19,6 @@ import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {NamespaceList} from '@api/backendapi';
 import {Subject} from 'rxjs';
 import {startWith, switchMap, takeUntil} from 'rxjs/operators';
-
 import {CONFIG} from '../../../index.config';
 import {NAMESPACE_STATE_PARAM} from '../../params/params';
 import {HistoryService} from '../../services/global/history';
@@ -28,8 +27,6 @@ import {NotificationSeverity, NotificationsService} from '../../services/global/
 import {KdStateService} from '../../services/global/state';
 import {EndpointManager, Resource} from '../../services/resource/endpoint';
 import {ResourceService} from '../../services/resource/resource';
-
-import {NamespaceChangeDialog} from './changedialog/dialog';
 
 @Component({
   selector: 'kd-namespace-selector',
@@ -169,26 +166,12 @@ export class NamespaceSelectorComponent implements OnInit, OnDestroy {
   }
 
   private handleNamespaceChangeDialog_(): void {
-    this.dialog_
-      .open(NamespaceChangeDialog, {
-        data: {
-          namespace: this.selectedNamespace,
-          newNamespace: this._getCurrentResourceNamespaceParam(),
-        },
-      })
-      .afterClosed()
-      .subscribe(confirmed => {
-        if (confirmed) {
-          this.selectedNamespace = this._getCurrentResourceNamespaceParam();
-          this.router_.navigate([], {
-            relativeTo: this._activatedRoute,
-            queryParams: {[NAMESPACE_STATE_PARAM]: this.selectedNamespace},
-            queryParamsHandling: 'merge',
-          });
-        } else {
-          this._historyService.goToPreviousState('overview');
-        }
-      });
+    this.selectedNamespace = this._getCurrentResourceNamespaceParam();
+    this.router_.navigate([], {
+      relativeTo: this._activatedRoute,
+      queryParams: {[NAMESPACE_STATE_PARAM]: this.selectedNamespace},
+      queryParamsHandling: 'merge',
+    });
   }
 
   private changeNamespace_(namespace: string): void {

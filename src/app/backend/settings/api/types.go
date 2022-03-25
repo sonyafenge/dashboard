@@ -24,7 +24,7 @@ import (
 
 const (
 	// SettingsConfigMapName contains a name of config map, that stores settings.
-	SettingsConfigMapName = "kubernetes-dashboard-settings"
+	SettingsConfigMapName = "centaurus-dashboard-settings"
 
 	// ConfigMapKindName is a name of config map kind.
 	ConfigMapKindName = "ConfigMap"

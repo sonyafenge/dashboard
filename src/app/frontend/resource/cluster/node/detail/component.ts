@@ -13,10 +13,9 @@
 // limitations under the License.
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute,Router} from '@angular/router';
 import {NodeAddress, NodeDetail, NodeTaint} from '@api/backendapi';
 import {Subscription} from 'rxjs/Subscription';
-
 import {ActionbarService, ResourceMeta} from '../../../../common/services/global/actionbar';
 import {NotificationsService} from '../../../../common/services/global/notifications';
 import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
@@ -34,15 +33,20 @@ export class NodeDetailComponent implements OnInit, OnDestroy {
   isInitialized = false;
   podListEndpoint: string;
   eventListEndpoint: string;
+  clusterName: string;
+  showTenant: boolean;
 
   constructor(
     private readonly node_: ResourceService<NodeDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
+    private readonly router_: Router,
     private readonly notifications_: NotificationsService,
   ) {}
 
   ngOnInit(): void {
+    this.showTenant = false;
+
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
 
     this.podListEndpoint = this.endpoint_.child(resourceName, Resource.pod);
@@ -55,6 +59,9 @@ export class NodeDetailComponent implements OnInit, OnDestroy {
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Node', d.objectMeta, d.typeMeta));
         this.isInitialized = true;
+        if (d.clusterName.includes('-tp')) {
+          this.showTenant = true;
+        }
       });
   }
 

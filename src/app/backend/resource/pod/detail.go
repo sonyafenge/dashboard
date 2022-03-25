@@ -24,13 +24,13 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	errorHandler "github.com/kubernetes/dashboard/src/app/backend/errors"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/controller"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/persistentvolumeclaim"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	errorHandler "github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/controller"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/persistentvolumeclaim"
 	v1 "k8s.io/api/core/v1"
 	res "k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -97,7 +97,7 @@ func GetPodDetail(client kubernetes.Interface, metricClient metricapi.MetricClie
 	log.Printf("Getting details of %s pod in %s namespace", name, namespace)
 
 	channels := &common.ResourceChannels{
-		ConfigMapList: common.GetConfigMapListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
+		ConfigMapList: common.GetConfigMapListChannel(client, common.NewSameNamespaceQuery(namespace), 1, ""),
 		SecretList:    common.GetSecretListChannel(client, common.NewSameNamespaceQuery(namespace), 1),
 	}
 

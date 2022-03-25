@@ -24,6 +24,7 @@ import {GlobalSettingsService} from '../global/globalsettings';
 import {NamespaceService} from '../global/namespace';
 import {TenantService} from '../global/tenant';
 
+
 @Injectable()
 export class ResourceService<T> extends ResourceBase<T> {
   /**
@@ -42,9 +43,13 @@ export class ResourceService<T> extends ResourceBase<T> {
     return this.tenant_.current();
   }
 
-  get(endpoint: string, name?: string, params?: HttpParams, tenant?: string): Observable<T> {
+  get(endpoint: string, name?: string, params?: HttpParams, tenant?: string, partition?: string): Observable<T> {
     if (name) {
       endpoint = endpoint.replace(':name', name);
+    }
+
+    if (partition) {
+      endpoint = endpoint.replace(':partition', sessionStorage.getItem(`${name}`));
     }
 
     if (tenant) {
@@ -86,7 +91,7 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
 
   private getNamespace_(): string {
     const currentNamespace = this.namespace_.current();
-    return this.namespace_.isMultiNamespace(currentNamespace) ? ' ' : currentNamespace;
+    return this.namespace_.isMultiNamespace(currentNamespace) ? '' : currentNamespace;
   }
 
   get(
@@ -95,6 +100,7 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
     namespace?: string,
     params?: HttpParams,
     tenant?: string,
+    partition? : string,
   ): Observable<T> {
     if (namespace) {
       endpoint = endpoint.replace(':namespace', namespace);
@@ -104,6 +110,11 @@ export class NamespacedResourceService<T> extends ResourceBase<T> {
 
     if (name) {
       endpoint = endpoint.replace(':name', name);
+    }
+
+    if (partition) {
+      tenant = name === null || name === undefined ? sessionStorage.getItem('currentTenant') : name
+      endpoint = endpoint.replace(':partition', sessionStorage.getItem(tenant));
     }
 
     if (tenant) {

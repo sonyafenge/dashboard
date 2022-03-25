@@ -14,7 +14,6 @@
 
 import {NgModule} from '@angular/core';
 import {Route, RouterModule} from '@angular/router';
-
 import {CRDDetailComponent} from './detail/component';
 import {CRDListComponent} from './list/component';
 import {PIN_DEFAULT_ACTIONBAR} from '../common/components/actionbars/routing';
@@ -33,7 +32,7 @@ const CRD_DETAIL_ROUTE: Route = {
 };
 
 const CRD_NAMESPACED_OBJECT_DETAIL_ROUTE: Route = {
-  path: ':crdName/:namespace/:objectName',
+  path: ':crdName/:crdNamespace/:objectName',
   component: CRDObjectDetailComponent,
   data: {breadcrumb: '{{ objectName }}', routeParamsCount: 2, parent: CRD_DETAIL_ROUTE},
 };

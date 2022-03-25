@@ -16,14 +16,12 @@
 package tenant
 
 import (
-	"log"
-
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	v1 "k8s.io/api/core/v1"
 	client "k8s.io/client-go/kubernetes"
-
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"log"
 )
 
 type Tenant struct {
@@ -31,7 +29,8 @@ type Tenant struct {
 	TypeMeta   api.TypeMeta   `json:"typeMeta"`
 
 	// Phase is the current lifecycle phase of the tenant
-	Phase v1.TenantPhase `json:"phase"`
+	Phase       v1.TenantPhase `json:"phase"`
+	ClusterName string         `json:"clusterName"`
 }
 
 // TenantList contains a list of tenants in the cluster.
@@ -43,7 +42,7 @@ type TenantList struct {
 	Errors []error `json:"errors"`
 }
 
-func GetTenantList(client client.Interface, dsQuery *dataselect.DataSelectQuery) (*TenantList, error) {
+func GetTenantList(client client.Interface, dsQuery *dataselect.DataSelectQuery, clusterName string, tenant string) (*TenantList, error) {
 	log.Println("Getting list of tenants")
 	tenants, err := client.CoreV1().Tenants().List(api.ListEverything)
 
@@ -52,10 +51,10 @@ func GetTenantList(client client.Interface, dsQuery *dataselect.DataSelectQuery)
 		return nil, criticalError
 	}
 
-	return toTenantList(tenants.Items, nonCriticalErrors, dsQuery), nil
+	return toTenantList(tenants.Items, nonCriticalErrors, dsQuery, clusterName, tenant), nil
 }
 
-func toTenantList(tenants []v1.Tenant, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery) *TenantList {
+func toTenantList(tenants []v1.Tenant, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery, clusterName string, tenantName string) *TenantList {
 	tenantList := &TenantList{
 		ListMeta: api.ListMeta{TotalItems: len(tenants)},
 		Tenants:  make([]Tenant, 0),
@@ -67,9 +66,16 @@ func toTenantList(tenants []v1.Tenant, nonCriticalErrors []error, dsQuery *datas
 	tenantList.Errors = nonCriticalErrors
 
 	for _, tenant := range tenants {
-		tenantList.Tenants = append(tenantList.Tenants, toTenant(tenant))
+		if tenantName == "system" {
+			tenant.ClusterName = clusterName
+			tenantList.Tenants = append(tenantList.Tenants, toTenant(tenant))
+		} else {
+			if tenantName == tenant.Name {
+				tenant.ClusterName = clusterName
+				tenantList.Tenants = append(tenantList.Tenants, toTenant(tenant))
+			}
+		}
 	}
-
 	return tenantList
 }
 

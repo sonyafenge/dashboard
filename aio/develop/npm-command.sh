@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Install dependencies
+echo "Install dependencies"
+npm ci
+aio/scripts/install-codegen.sh
+
 # Run npm command if K8S_DASHBOARD_NPM_CMD is set,
-# otherwise install and start dashboard.
+# otherwise start dashboard.
 if [[ -n "${K8S_DASHBOARD_NPM_CMD}" ]] ; then
   # Run npm command
   echo "Run npm '${K8S_DASHBOARD_NPM_CMD}'"
   npm ${K8S_DASHBOARD_NPM_CMD} \
-    --kubernetes-dashboard:bind_address=${K8S_DASHBOARD_BIND_ADDRESS} \
-    --kubernetes-dashboard:sidecar_host=${K8S_DASHBOARD_SIDECAR_HOST}
+    --centaurus-dashboard:bind_address=${K8S_DASHBOARD_BIND_ADDRESS} \
+    --centaurus-dashboard:sidecar_host=${K8S_DASHBOARD_SIDECAR_HOST} \
+    --centaurus-dashboard:port=${K8S_DASHBOARD_PORT}
 else
   # Install dashboard.
   echo "Install dashboard"
@@ -48,11 +53,12 @@ else
     echo "Kill kubectl ${KUBECTL_PID}"
     kill ${KUBECTL_PID}
     nohup kubectl proxy --address 127.0.0.1 --port 8000 >/tmp/kubeproxy.log 2>&1 &
-    export K8S_DASHBOARD_SIDECAR_HOST="http://localhost:8000/api/v1/namespaces/kubernetes-dashboard/services/dashboard-metrics-scraper:/proxy/"
+    export K8S_DASHBOARD_SIDECAR_HOST="http://localhost:8000/api/v1/namespaces/centaurus-dashboard/services/dashboard-metrics-scraper:/proxy/"
   fi
   # Start dashboard.
   echo "Start dashboard"
   npm start \
-    --kubernetes-dashboard:bind_address=${K8S_DASHBOARD_BIND_ADDRESS} \
-    --kubernetes-dashboard:sidecar_host=${K8S_DASHBOARD_SIDECAR_HOST}
+    --centaurus-dashboard:bind_address=${K8S_DASHBOARD_BIND_ADDRESS} \
+    --centaurus-dashboard:sidecar_host=${K8S_DASHBOARD_SIDECAR_HOST} \
+    --centaurus-dashboard:port=${K8S_DASHBOARD_PORT}
 fi

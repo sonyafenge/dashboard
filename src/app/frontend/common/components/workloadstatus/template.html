@@ -112,21 +112,6 @@ limitations under the License.
     </div>
 
     <div class="kd-graph-container"
-         *ngIf="resourcesRatio.replicationControllerRatio.length">
-      <div fxLayout="column"
-           fxLayoutAlign="center center">
-        <kd-allocation-chart id="replicationControllers"
-                             [colorPalette]="colors"
-                             [data]="resourcesRatio.replicationControllerRatio"
-                             type="pie"
-                             [enableTooltips]="true"
-                             [size]="140"></kd-allocation-chart>
-      </div>
-      <div class="kd-graph-title"
-           i18n>Replication Controllers</div>
-    </div>
-
-    <div class="kd-graph-container"
          *ngIf="resourcesRatio.statefulSetRatio.length">
       <div fxLayout="column"
            fxLayoutAlign="center center">

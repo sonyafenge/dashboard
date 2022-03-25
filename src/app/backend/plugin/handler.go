@@ -19,9 +19,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 	"github.com/emicklei/go-restful"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
 )
 
 const (

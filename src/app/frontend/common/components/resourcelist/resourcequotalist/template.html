@@ -1,0 +1,112 @@
+<!--
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="main_container">
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <div class="create_btn_sec detail_sec" align="right">
+        <button mat-raised-button matTooltip="Assign Quota" color="primary" (click)="onClick()">
+          <img class="add_icon" src="assets/images/plus_icon_white.svg" alt="">
+          Assign Quota</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <kd-card role="table" [hidden]="isHidden()">
+        <div title fxLayout="row" i18n></div>
+        <div title fxLayout="row" i18n>Quotas</div>
+        <div description><span class="kd-muted-light" i18n>Items:&nbsp;</span>{{totalItems}}
+        </div>
+
+        <div content [hidden]="showZeroState()">
+          <div kdLoadingSpinner [isLoading]="isLoading"></div>
+          <mat-table [dataSource]="getData()"
+                     matSort
+                     [matSortActive]="getColumns()[5]"
+                     matSortDisableClear
+                     matSortDirection="asc">
+            <ng-container [matColumnDef]="getColumns()[0]">
+              <mat-header-cell *matHeaderCellDef></mat-header-cell>
+              <mat-cell *matCellDef="let tenant">
+                <mat-icon [ngClass]="getStatus(resourcequota).iconClass">
+                  {{getStatus(resourcequota).iconName}}
+                </mat-icon>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container [matColumnDef]="getColumns()[1]">
+              <mat-header-cell *matHeaderCellDef
+                               mat-sort-header
+                               disableClear="true"
+                               i18n>Name</mat-header-cell>
+              <mat-cell *matCellDef="let resourcequota">
+                <a [routerLink]="getDetailsHref(resourcequota.objectMeta.name)"
+                   [state]="{namespace: resourcequota.objectMeta.namespace}"
+                   queryParamsHandling="preserve" >{{resourcequota.objectMeta.name}}</a>
+
+              </mat-cell>
+            </ng-container>
+
+            <ng-container [matColumnDef]="getColumns()[2]">
+              <mat-header-cell *matHeaderCellDef
+                               mat-sort-header
+                               disableClear="true"
+                               i18n>Namespace</mat-header-cell>
+              <mat-cell *matCellDef="let resourcequota">
+                {{resourcequota.objectMeta.namespace}}
+              </mat-cell>
+            </ng-container>
+
+            <ng-container [matColumnDef]="getColumns()[3]">
+              <mat-header-cell *matHeaderCellDef
+                               mat-sort-header
+                               disableClear="true"
+                               i18n>Age</mat-header-cell>
+              <mat-cell *matCellDef="let resourcequota">
+                <kd-date [date]="resourcequota.objectMeta.creationTimestamp"
+                         relative></kd-date>
+              </mat-cell>
+            </ng-container>
+
+
+            <ng-container *ngFor="let col of getActionColumns()"
+                          [matColumnDef]="col.name">
+              <mat-header-cell *matHeaderCellDef></mat-header-cell>
+              <mat-cell *matCellDef="let resourcequota">
+                <kd-dynamic-cell [component]="col.component"
+                                 [resource]="resourcequota"></kd-dynamic-cell>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="getColumns()"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: getColumns();"></mat-row>
+          </mat-table>
+
+          <mat-paginator [length]="totalItems"
+                         [pageSize]="itemsPerPage"
+                         [hidePageSize]="true"
+                         [showFirstLastButtons]="true"></mat-paginator>
+        </div>
+        <div content
+             [hidden]="!showZeroState()">
+          <kd-list-zero-state></kd-list-zero-state>
+        </div>
+      </kd-card>
+    </div>
+  </div>
+</div>

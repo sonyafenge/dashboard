@@ -18,7 +18,7 @@ import (
 	"crypto/elliptic"
 	"testing"
 
-	"github.com/kubernetes/dashboard/src/app/backend/cert/ecdsa"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/cert/ecdsa"
 )
 
 func TestNewECDSACreator(t *testing.T) {

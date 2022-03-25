@@ -17,8 +17,8 @@ package systembanner
 import (
 	"net/http"
 
+	"github.com/CentaurusInfra/dashboard/src/app/backend/systembanner/api"
 	restful "github.com/emicklei/go-restful"
-	"github.com/kubernetes/dashboard/src/app/backend/systembanner/api"
 )
 
 // SystemBannerHandler manages all endpoints related to system banner management.

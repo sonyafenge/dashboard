@@ -18,12 +18,12 @@ package pod
 import (
 	"log"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/event"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/event"
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sClient "k8s.io/client-go/kubernetes"
@@ -33,13 +33,10 @@ import (
 type PodList struct {
 	ListMeta          api.ListMeta       `json:"listMeta"`
 	CumulativeMetrics []metricapi.Metric `json:"cumulativeMetrics"`
-
 	// Basic information about resources status on the list.
 	Status common.ResourceStatus `json:"status"`
-
 	// Unordered list of Pods.
 	Pods []Pod `json:"pods"`
-
 	// List of non-critical errors, that occurred during resource retrieval.
 	Errors []error `json:"errors"`
 }
@@ -96,13 +93,12 @@ func GetPodList(client k8sClient.Interface, metricClient metricapi.MetricClient,
 // GetPodListWithMultiTenancy returns a list of all Pods in the cluster with multi tenancy support.
 func GetPodListWithMultiTenancy(client k8sClient.Interface, metricClient metricapi.MetricClient, tenant string, nsQuery *common.NamespaceQuery,
 	dsQuery *dataselect.DataSelectQuery) (*PodList, error) {
-	log.Print("Getting list of all pods in the cluster")
+	log.Printf("Getting list of all pods in the cluster with namespace: %s", nsQuery.ToRequestParam())
 
 	channels := &common.ResourceChannels{
 		PodList:   common.GetPodListChannelWithMultiTenancyAndOptions(client, tenant, nsQuery, metaV1.ListOptions{}, 1),
 		EventList: common.GetEventListChannelWithMultiTenancy(client, tenant, nsQuery, 1),
 	}
-
 	return GetPodListFromChannels(channels, dsQuery, metricClient)
 }
 
@@ -158,7 +154,6 @@ func ToPodList(pods []v1.Pod, events []v1.Event, nonCriticalErrors []error, dsQu
 	if err != nil {
 		podList.CumulativeMetrics = make([]metricapi.Metric, 0)
 	}
-
 	return podList
 }
 
@@ -175,6 +170,5 @@ func toPod(pod *v1.Pod, metrics *MetricsByPod, warnings []common.Event) Pod {
 	if m, exists := metrics.MetricsMap[pod.UID]; exists {
 		podDetail.Metrics = &m
 	}
-
 	return podDetail
 }

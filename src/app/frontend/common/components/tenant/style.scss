@@ -25,6 +25,10 @@
   }
 }
 
+:host mat-select ::ng-deep .mat-select-arrow {
+    color: #0000 !important;
+}
+
 .kd-namespace-select-input-container {
   font-weight: $bold-font-weight;
   margin-right: $baseline-grid;

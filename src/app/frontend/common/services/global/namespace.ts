@@ -37,7 +37,11 @@ export class NamespaceService {
   }
 
   current(): string {
-    return this.currentNamespace_ || CONFIG.defaultNamespace;
+    const nameSpace = sessionStorage.getItem('namespace');
+    if (nameSpace !== 'default'){
+      this.currentNamespace_ = nameSpace
+    }
+    return this.currentNamespace_;
   }
 
   getAllNamespacesKey(): string {

@@ -21,8 +21,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client"
 	restful "github.com/emicklei/go-restful"
-	"github.com/kubernetes/dashboard/src/app/backend/client"
 )
 
 func TestValidateLoginStatus(t *testing.T) {

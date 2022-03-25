@@ -15,14 +15,13 @@
 package customresourcedefinition
 
 import (
-	"reflect"
-	"testing"
-
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/fake"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"reflect"
+	"testing"
 )
 
 func TestGetCustomResourceDefinition(t *testing.T) {
@@ -65,7 +64,7 @@ func TestGetCustomResourceDefinition(t *testing.T) {
 	for _, c := range cases {
 		fakeClient := fake.NewSimpleClientset(c.crdList)
 
-		actual, _ := GetCustomResourceDefinitionList(fakeClient, dataselect.DefaultDataSelect)
+		actual, _ := GetCustomResourceDefinitionList(fakeClient, dataselect.DefaultDataSelect, "")
 
 		actions := fakeClient.Actions()
 		if len(actions) != len(c.expectedActions) {

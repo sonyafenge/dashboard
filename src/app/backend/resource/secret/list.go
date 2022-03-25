@@ -17,11 +17,12 @@ package secret
 
 import (
 	"log"
+	"time"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -42,6 +43,29 @@ type ImagePullSecretSpec struct {
 
 	// The value of the .dockercfg property. It must be Base64 encoded.
 	Data []byte `json:"data"`
+}
+
+// Secret is a single secret returned to the frontend.
+type SecretDetailSpec struct {
+	ObjectMeta struct {
+		Name        string `json:"name"`
+		Namespace   string `json:"namespace"`
+		Annotations struct {
+			KubernetesIoServiceAccountName string `json:"kubernetes.io/service-account.name"`
+			KubernetesIoServiceAccountUID  string `json:"kubernetes.io/service-account.uid"`
+		} `json:"annotations"`
+		CreationTimestamp time.Time `json:"creationTimestamp"`
+		UID               string    `json:"uid"`
+	} `json:"objectMeta"`
+	TypeMeta struct {
+		Kind string `json:"kind"`
+	} `json:"typeMeta"`
+	Type string `json:"type"`
+	Data struct {
+		CaCrt     string `json:"ca.crt"`
+		Namespace string `json:"namespace"`
+		Token     string `json:"token"`
+	} `json:"data"`
 }
 
 // GetName returns the name of the ImagePullSecret

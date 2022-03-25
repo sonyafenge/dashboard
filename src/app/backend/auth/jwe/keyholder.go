@@ -26,10 +26,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 
-	"github.com/kubernetes/dashboard/src/app/backend/args"
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	syncApi "github.com/kubernetes/dashboard/src/app/backend/sync/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	syncApi "github.com/CentaurusInfra/dashboard/src/app/backend/sync/api"
 )
 
 // Entries held by resource used to synchronize encryption key data.
@@ -132,7 +132,8 @@ func (self *rsaKeyHolder) init() {
 	log.Printf("Storing encryption key in a secret")
 	err := self.synchronizer.Create(self.getEncryptionKeyHolder())
 	if err != nil && !errors.IsAlreadyExists(err) {
-		panic(err)
+		log.Printf("Failed to store encryption key in a secret: %s", err)
+		return
 	}
 }
 

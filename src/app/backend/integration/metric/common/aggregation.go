@@ -17,10 +17,10 @@ package common
 import (
 	"sort"
 
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
 )
 
-// SortableInt64 implements sort.Interface for []int64. This allows to use built in sort with int64.
+// SortableInt64 implements sort.Interface for []int64. This allows tos use built in sort with int64.
 type SortableInt64 []int64
 
 func (a SortableInt64) Len() int           { return len(a) }

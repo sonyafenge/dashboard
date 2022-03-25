@@ -16,19 +16,25 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {EventEmitter, Injectable} from '@angular/core';
 import {MatDialog, MatDialogConfig} from '@angular/material';
 import {ObjectMeta, TypeMeta} from '@api/backendapi';
-
 import {AlertDialog, AlertDialogConfig} from '../../dialogs/alert/dialog';
 import {DeleteResourceDialog} from '../../dialogs/deleteresource/dialog';
 import {EditResourceDialog} from '../../dialogs/editresource/dialog';
 import {ScaleResourceDialog} from '../../dialogs/scaleresource/dialog';
 import {TriggerResourceDialog} from '../../dialogs/triggerresource/dialog';
 import {RawResource} from '../../resources/rawresource';
-
+import {CreateTenantDialog } from '../../dialogs/createTenant/dialog';
+import {CreateUserDialog} from '../../dialogs/createUser/dialog';
+import {CreateNamespaceDialog} from '../../dialogs/createNamespace/dialog';
+import {CreateRoleDialog} from '../../dialogs/createRole/dialog';
+import {CreateClusterroleDialog} from '../../dialogs/createClusterrole/dialog';
+import {CreateAssignQuotaDialog } from '../../dialogs/createAssignQuota/dialog';
 import {ResourceMeta} from './actionbar';
 import {TenantService} from './tenant';
 
 @Injectable()
 export class VerberService {
+  onCreate = new EventEmitter<boolean>();
+  onCreateTenant = new EventEmitter<boolean>();
   onDelete = new EventEmitter<boolean>();
   onEdit = new EventEmitter<boolean>();
   onScale = new EventEmitter<boolean>();
@@ -38,7 +44,81 @@ export class VerberService {
     private readonly dialog_: MatDialog,
     private readonly http_: HttpClient,
     private tenant_: TenantService,
+
   ) {}
+
+  // create Tenant dialog
+  showTenantCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateTenantDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
+
+  // create User dialog
+  showUserCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateUserDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
+
+  // create Namespace  dialog
+  showNamespaceCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateNamespaceDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+
+  }
+
+  //Create Quota dialog
+  showResourceQuotaCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateAssignQuotaDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
+
+  // create Role dialog
+  showRoleCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateRoleDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
+
+  // create Clusterrole dialog
+  showClusterroleCreateDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
+    const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);
+    this.dialog_
+      .open(CreateClusterroleDialog, dialogConfig)
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
+        }
+      });
+  }
 
   showDeleteDialog(displayName: string, typeMeta: TypeMeta, objectMeta: ObjectMeta): void {
     const dialogConfig = this.getDialogConfig_(displayName, typeMeta, objectMeta);

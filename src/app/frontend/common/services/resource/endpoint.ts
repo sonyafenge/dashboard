@@ -24,6 +24,7 @@ export enum Resource {
   daemonSet = 'daemonset',
   deployment = 'deployment',
   pod = 'pod',
+  virtualMachine = 'virtualmachine',
   replicaSet = 'replicaset',
   oldReplicaSet = 'oldreplicaset',
   newReplicaSet = 'newreplicaset',
@@ -42,6 +43,17 @@ export enum Resource {
   event = 'event',
   container = 'container',
   tenant = 'tenant',
+  partition = 'partition',
+  resourcequota = 'resourcequota',
+  role = 'role',
+  user = 'users',
+  users = 'user',
+  serviceaccount= 'serviceaccount',
+  resourcePartition = 'resourcepartition',
+  tenantPartition = 'tenantpartition',
+  network = 'crd',
+  networkFull = 'network',
+  networkObject = 'object',
 }
 
 export enum Utility {
@@ -53,28 +65,44 @@ class ResourceEndpoint {
     private readonly resource_: Resource,
     private readonly namespaced_ = false,
     private readonly tenanted_ = false,
-  ) {}
+    private readonly partitioned_ = false,
+  ) {
+  }
 
   list(): string {
-    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
+    return `${baseHref}${this.partitioned_ ? '/partition/:partition' : ''}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
       this.namespaced_ ? '/:namespace' : ''
     }`;
   }
 
   detail(): string {
-    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
+    return `${baseHref}${this.partitioned_ ? '/partition/:partition' : ''}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
       this.namespaced_ ? '/:namespace' : ''
     }/:name`;
   }
 
-  child(resourceName: string, relatedResource: Resource, resourceNamespace?: string): string {
+  child(resourceName: string, relatedResource: Resource, resourceNamespace?: string, tenant?: string, partition?: string): string {
     if (!resourceNamespace) {
       resourceNamespace = ':namespace';
     }
+    let url = ''
+    if (tenant) {
+      if (partition) {
+        url = `${baseHref}/partition/${partition}${this.tenanted_ ? `/tenants/${tenant}` : ''}/${this.resource_}${
+          this.namespaced_ ? `/${resourceNamespace}` : ''
+        }/${resourceName}/${relatedResource}`
+      } else {
+        url = `${baseHref}${this.tenanted_ ? `/tenants/${tenant}` : ''}/${this.resource_}${
+          this.namespaced_ ? `/${resourceNamespace}` : ''
+        }/${resourceName}/${relatedResource}`
+      }
 
-    return `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
-      this.namespaced_ ? `/${resourceNamespace}` : ''
-    }/${resourceName}/${relatedResource}`;
+    } else {
+      url = `${baseHref}${this.tenanted_ ? '/tenants/:tenant' : ''}/${this.resource_}${
+        this.namespaced_ ? `/${resourceNamespace}` : ''
+      }/${resourceName}/${relatedResource}`
+    }
+    return url;
   }
 }
 
@@ -91,8 +119,8 @@ class UtilityEndpoint {
 }
 
 export class EndpointManager {
-  static resource(resource: Resource, namespaced?: boolean, tenanted?: boolean): ResourceEndpoint {
-    return new ResourceEndpoint(resource, namespaced, tenanted);
+  static resource(resource: Resource, namespaced?: boolean, tenanted?: boolean, partitioned?: boolean): ResourceEndpoint {
+    return new ResourceEndpoint(resource, namespaced, tenanted, partitioned);
   }
 
   static utility(utility: Utility): UtilityEndpoint {

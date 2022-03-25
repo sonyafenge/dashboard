@@ -17,10 +17,10 @@ package configmap
 import (
 	"log"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes "k8s.io/client-go/kubernetes"
@@ -48,7 +48,16 @@ type ConfigMap struct {
 func GetConfigMapList(client kubernetes.Interface, nsQuery *common.NamespaceQuery, dsQuery *dataselect.DataSelectQuery) (*ConfigMapList, error) {
 	log.Printf("Getting list config maps in the namespace %s", nsQuery.ToRequestParam())
 	channels := &common.ResourceChannels{
-		ConfigMapList: common.GetConfigMapListChannel(client, nsQuery, 1),
+		ConfigMapList: common.GetConfigMapListChannel(client, nsQuery, 1, ""),
+	}
+
+	return GetConfigMapListFromChannels(channels, dsQuery)
+}
+
+func GetConfigMapListWithMultiTenancy(client kubernetes.Interface, tenant string, nsQuery *common.NamespaceQuery, dsQuery *dataselect.DataSelectQuery) (*ConfigMapList, error) {
+	log.Printf("Getting list config maps in the namespace %s", nsQuery.ToRequestParam())
+	channels := &common.ResourceChannels{
+		ConfigMapList: common.GetConfigMapListChannel(client, nsQuery, 1, tenant),
 	}
 
 	return GetConfigMapListFromChannels(channels, dsQuery)

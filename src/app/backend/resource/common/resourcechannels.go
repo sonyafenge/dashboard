@@ -16,7 +16,7 @@
 package common
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
 	apps "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	batch "k8s.io/api/batch/v1"
@@ -120,6 +120,7 @@ type ResourceChannels struct {
 
 	// List and error channels to ClusterRoleBindings
 	ClusterRoleBindingList ClusterRoleBindingListChannel
+	VMList                 VMListChannel
 }
 
 // ServiceListChannel is a list and error channels to Services.
@@ -425,6 +426,11 @@ type PodListChannel struct {
 	Error chan error
 }
 
+type VMListChannel struct {
+	List  chan *v1.PodList
+	Error chan error
+}
+
 // GetPodListChannel returns a pair of channels to a Pod list and errors that both must be read
 // numReads times.
 func GetPodListChannel(client client.Interface,
@@ -471,6 +477,32 @@ func GetPodListChannelWithMultiTenancyAndOptions(client client.Interface, tenant
 	options metaV1.ListOptions, numReads int) PodListChannel {
 
 	channel := PodListChannel{
+		List:  make(chan *v1.PodList, numReads),
+		Error: make(chan error, numReads),
+	}
+
+	go func() {
+		list, err := client.CoreV1().PodsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(options)
+		var filteredItems []v1.Pod
+		for _, item := range list.Items {
+			if nsQuery.Matches(item.ObjectMeta.Namespace) {
+				filteredItems = append(filteredItems, item)
+			}
+		}
+		list.Items = filteredItems
+		for i := 0; i < numReads; i++ {
+			channel.List <- list
+			channel.Error <- err
+		}
+	}()
+
+	return channel
+}
+
+func GetVMListChannelWithMultiTenancyAndOptions(client client.Interface, tenant string, nsQuery *NamespaceQuery,
+	options metaV1.ListOptions, numReads int) VMListChannel {
+
+	channel := VMListChannel{
 		List:  make(chan *v1.PodList, numReads),
 		Error: make(chan error, numReads),
 	}
@@ -938,15 +970,17 @@ type ConfigMapListChannel struct {
 // GetConfigMapListChannel returns a pair of channels to a ConfigMap list and errors that both must be read
 // numReads times.
 func GetConfigMapListChannel(client client.Interface, nsQuery *NamespaceQuery,
-	numReads int) ConfigMapListChannel {
-
+	numReads int, tenant string) ConfigMapListChannel {
+	//if tenant==""{
+	//  tenant="system"
+	//}
 	channel := ConfigMapListChannel{
 		List:  make(chan *v1.ConfigMapList, numReads),
 		Error: make(chan error, numReads),
 	}
 
 	go func() {
-		list, err := client.CoreV1().ConfigMapsWithMultiTenancy(nsQuery.ToRequestParam(), "").List(api.ListEverything)
+		list, err := client.CoreV1().ConfigMapsWithMultiTenancy(nsQuery.ToRequestParam(), tenant).List(api.ListEverything)
 		var filteredItems []v1.ConfigMap
 		for _, item := range list.Items {
 			if nsQuery.Matches(item.ObjectMeta.Namespace) {

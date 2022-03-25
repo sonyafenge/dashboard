@@ -15,20 +15,20 @@
 package settings
 
 import (
-	"net/http"
-
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/iam"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/settings/api"
 	restful "github.com/emicklei/go-restful"
-
-	"github.com/kubernetes/dashboard/src/app/backend/args"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/settings/api"
+	"log"
+	"net/http"
 )
 
 // SettingsHandler manages all endpoints related to settings management.
 type SettingsHandler struct {
 	manager       api.SettingsManager
-	clientManager clientapi.ClientManager
+	clientManager []clientapi.ClientManager
 }
 
 // Install creates new endpoints for settings management.
@@ -68,8 +68,16 @@ func (self *SettingsHandler) handleSettingsGlobalCanI(request *restful.Request, 
 	if len(verb) == 0 {
 		verb = http.MethodGet
 	}
+	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
 
-	canI := self.clientManager.CanI(request, clientapi.ToSelfSubjectAccessReview(
+	log.Printf("cookie_tenant is: %s", c.Value)
+
+	canI := cManager.CanI(request, clientapi.ToSelfSubjectAccessReview(
 		args.Holder.GetNamespace(),
 		api.SettingsConfigMapName,
 		api.ConfigMapKindName,
@@ -84,12 +92,20 @@ func (self *SettingsHandler) handleSettingsGlobalCanI(request *restful.Request, 
 }
 
 func (self *SettingsHandler) handleSettingsGlobalGet(request *restful.Request, response *restful.Response) {
-	client, err := self.clientManager.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
+
+	log.Printf("cookie_tenant is: %s", c.Value)
+
+	client, err := cManager.Client(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
-
 	result := self.manager.GetGlobalSettings(client)
 	response.WriteHeaderAndEntity(http.StatusOK, result)
 }
@@ -101,7 +117,16 @@ func (self *SettingsHandler) handleSettingsGlobalSave(request *restful.Request, 
 		return
 	}
 
-	client, err := self.clientManager.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
+
+	log.Printf("cookie_tenant is: %s", c.Value)
+
+	client, err := cManager.Client(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -115,7 +140,16 @@ func (self *SettingsHandler) handleSettingsGlobalSave(request *restful.Request, 
 }
 
 func (self *SettingsHandler) handleSettingsGetPinned(request *restful.Request, response *restful.Response) {
-	client, err := self.clientManager.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
+
+	log.Printf("cookie_tenant is: %s", c.Value)
+
+	client, err := cManager.Client(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -132,12 +166,20 @@ func (self *SettingsHandler) handleSettingsSavePinned(request *restful.Request, 
 		return
 	}
 
-	client, err := self.clientManager.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
+
+	log.Printf("cookie_tenant is: %s", c.Value)
+
+	client, err := cManager.Client(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
 	}
-
 	if err := self.manager.SavePinnedResource(client, pinnedResource); err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -152,7 +194,16 @@ func (self *SettingsHandler) handleSettingsDeletePinned(request *restful.Request
 		Namespace: request.PathParameter("namespace"),
 	}
 
-	client, err := self.clientManager.Client(request)
+	c, err := request.Request.Cookie("tenant")
+	if err != nil {
+		response.WriteError(http.StatusInternalServerError, err)
+		return
+	}
+	cManager := iam.ResourceAllocator(c.Value, self.clientManager)
+
+	log.Printf("cookie_tenant is: %s", c.Value)
+
+	client, err := cManager.Client(request)
 	if err != nil {
 		errors.HandleInternalError(response, err)
 		return
@@ -166,6 +217,6 @@ func (self *SettingsHandler) handleSettingsDeletePinned(request *restful.Request
 }
 
 // NewSettingsHandler creates SettingsHandler.
-func NewSettingsHandler(manager api.SettingsManager, clientManager clientapi.ClientManager) SettingsHandler {
+func NewSettingsHandler(manager api.SettingsManager, clientManager []clientapi.ClientManager) SettingsHandler {
 	return SettingsHandler{manager: manager, clientManager: clientManager}
 }

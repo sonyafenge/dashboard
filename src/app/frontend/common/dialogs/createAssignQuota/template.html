@@ -1,0 +1,127 @@
+<!--
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<form [formGroup]="form1">
+
+  <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+    <h2 mat-dialog-title>Create a New Quota</h2>
+  </div>
+
+  <div class="tab_content first_tab_content" id="first_tab_content">
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Quota</mat-label>
+        <input matInput type="text" formControlName="quotaname" required autocomplete="off"/>
+        <mat-hint align="end"></mat-hint>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="quotaname.errors && (quotaname.dirty || quotaname.touched)">
+        <span class="red" *ngIf="quotaname.errors.required">Name is required.</span>
+        <span class="red" *ngIf="quotaname.hasError('pattern')">Name must be alphanumeric and may contain dashes.</span>
+        <span class="red" *ngIf="quotaname.hasError('maxlength')">Name should not be greater than 24 characters.</span>
+      </div>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Tenant</mat-label>
+        <input type="text" matInput formControlName="tenant" required autocomplete="off"/>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="tenants.errors && (tenants.dirty || tenants.touched)">
+        <span class="red" *ngIf="tenants.errors.required">Name is required.</span>
+        <span class="red" *ngIf="tenants.hasError('pattern')">Name must be alphanumeric and may contain dashes.</span>
+        <span class="red" *ngIf="tenants.hasError('maxlength')">Name should not be greater than 24 characters.</span>
+      </div>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Namespace</mat-label>
+        <input type="text" matInput formControlName="namespace" required autocomplete="off"/>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="namespaces.errors && (namespaces.dirty || namespaces.touched)">
+        <span class="red" *ngIf="namespaces.errors.required">Name is required.</span>
+        <span class="red" *ngIf="namespaces.hasError('pattern')">Name must be alphanumeric and may contain dashes.</span>
+        <span class="red" *ngIf="namespaces.hasError('maxlength')">Name should not be greater than 63 characters.</span>
+      </div>
+    </div>
+
+    <label><b>Enter Object Count</b></label>
+    <div class="row">
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Services</mat-label>
+          <input type="text" matInput formControlName="service" placeholder="0" autocomplete="off" />
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Memory</mat-label>
+          <input type="text" matInput formControlName="memory" placeholder="0" autocomplete="off"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>CPUs</mat-label>
+          <input type="text" matInput formControlName="cpu" placeholder="0" autocomplete="off"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Pods</mat-label>
+          <input type="text" matInput formControlName="pod" placeholder="0" autocomplete="off"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>PVC</mat-label>
+          <input type="text" matInput formControlName="pvc" placeholder="0" autocomplete="off"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Config Maps</mat-label>
+          <input type="text" matInput formControlName="config_maps" placeholder="0" autocomplete="off"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Secrets</mat-label>
+          <input type="text" matInput formControlName="secrets" placeholder="0" autocomplete="off"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+        <mat-form-field appearance="fill">
+          <mat-label>Ephemeral Storage</mat-label>
+          <input type="text" matInput formControlName="ephemeral_storage" placeholder="0" autocomplete="off"/>
+        </mat-form-field>
+      </div>
+
+      <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+        <mat-dialog-actions align="end">
+          <button mat-button mat-dialog-close>Cancel</button>
+          <button mat-button [mat-dialog-close]="true" type="submit" (click)="createQuota()" [disabled]="!form1.valid">Create</button>
+        </mat-dialog-actions>
+      </div>
+    </div>
+  </div>
+</form>

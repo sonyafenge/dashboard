@@ -13,10 +13,8 @@
 // limitations under the License.
 
 import {NgModule} from '@angular/core';
-
 import {ComponentsModule} from '../common/components/module';
 import {SharedModule} from '../shared.module';
-
 import {CRDRoutingModule} from './routing';
 import {CRDDetailComponent} from './detail/component';
 import {CRDListComponent} from './list/component';

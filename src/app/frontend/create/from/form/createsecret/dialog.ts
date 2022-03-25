@@ -92,7 +92,7 @@ export class CreateSecretDialog implements OnInit {
       data: this.data.value,
     };
 
-    const tokenPromise = this.csrfToken_.getTokenForAction('secret');
+    const tokenPromise = this.csrfToken_.getTokenForAction('system','secret');
     tokenPromise.subscribe(csrfToken => {
       return this.http_
         .post<{valid: boolean}>(

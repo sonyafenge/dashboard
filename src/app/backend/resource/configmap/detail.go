@@ -46,6 +46,17 @@ func GetConfigMapDetail(client kubernetes.Interface, namespace, name string) (*C
 	return getConfigMapDetail(rawConfigMap), nil
 }
 
+func GetConfigMapDetailWithMultiTenancy(client kubernetes.Interface, namespace, name string, tenant string) (*ConfigMapDetail, error) {
+	log.Printf("Getting details of %s config map in %s namespace", name, namespace)
+
+	rawConfigMap, err := client.CoreV1().ConfigMapsWithMultiTenancy(namespace, tenant).Get(name, metaV1.GetOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return getConfigMapDetail(rawConfigMap), nil
+}
 func getConfigMapDetail(rawConfigMap *v1.ConfigMap) *ConfigMapDetail {
 	return &ConfigMapDetail{
 		ConfigMap: toConfigMap(rawConfigMap.ObjectMeta),

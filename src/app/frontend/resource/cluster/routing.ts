@@ -20,7 +20,7 @@ export const CLUSTER_ROUTE: Route = {
   path: '',
   component: ClusterComponent,
   data: {
-    breadcrumb: 'Cluster',
+    breadcrumb: 'Cluster Management',
     link: ['', 'cluster'],
   },
 };

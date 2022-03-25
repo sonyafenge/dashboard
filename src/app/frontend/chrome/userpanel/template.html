@@ -15,21 +15,7 @@ limitations under the License.
 -->
 
 <mat-menu #actions="matMenu">
-  <div class="kd-auth-status kd-muted-light">
-    <ng-container *ngIf="isLoginStatusInitialized">
-      <ng-container [ngSwitch]="true">
-        <ng-container *ngSwitchCase="loginStatus.headerPresent && !loginStatus.impersonationPresent"
-                      i18n>Logged in with auth header</ng-container>
-        <ng-container *ngSwitchCase="loginStatus.tokenPresent"
-                      i18n>Logged in with token</ng-container>
-        <ng-container *ngSwitchCase="loginStatus.headerPresent && loginStatus.impersonationPresent">{{loginStatus.impersonatedUser}}</ng-container>
-        <ng-container *ngSwitchDefault
-                      i18n>Default service account</ng-container>
-      </ng-container>
 
-    </ng-container>
-  </div>
-  <mat-divider></mat-divider>
   <button mat-menu-item
           *ngIf="isAuthSkipped()"
           (click)="logout()"
@@ -37,15 +23,34 @@ limitations under the License.
   </button>
   <button mat-menu-item
           *ngIf="isLoggedIn()"
+          i18n
+          (click)="settings()">
+    <span i18n>Settings</span>
+  </button>
+  <mat-divider *ngIf="isLoggedIn()"></mat-divider>
+
+  <button mat-menu-item
+          *ngIf="isLoggedIn()"
+          i18n
+          (click)="about()">
+    <span i18n>About</span>
+  </button>
+
+  <mat-divider *ngIf="isLoggedIn()"></mat-divider>
+
+  <button mat-menu-item
+          *ngIf="isLoggedIn()"
           (click)="logout()"
-          i18n>Sign out
+          i18n>
+    <span i18n>Sign out</span>
   </button>
 </mat-menu>
 
 <button mat-icon-button
         color="primary"
         [matMenuTriggerFor]="actions"
-        (click)="$event.stopPropagation()">
+        (click)="$event.stopPropagation()"
+        matTooltip="Account Setting">
   <mat-icon class="kd-user-panel-icon kd-primary-toolbar-icon">account_circle</mat-icon>
   <svg class="kd-cross-style"
        *ngIf="isAuthSkipped()"

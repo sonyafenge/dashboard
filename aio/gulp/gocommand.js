@@ -33,7 +33,7 @@ const env = lodash.merge(process.env, {PATH: devPath});
 /**
  * Minimum required Go Version
  */
-const minGoVersion = '1.12.6';
+const minGoVersion = '1.15.0';
 
 /**
  * Spawns a Go process after making sure all Go prerequisites are
@@ -47,9 +47,9 @@ const minGoVersion = '1.12.6';
  */
 export default function goCommand(args, doneFn, envOverride) {
   checkPrerequisites()
-      .then(() => spawnGoProcess(args, envOverride))
-      .then(doneFn)
-      .fail((error) => doneFn(error));
+    .then(() => spawnGoProcess(args, envOverride))
+    .then(doneFn)
+    .fail((error) => doneFn(error));
 }
 
 /**
@@ -67,18 +67,18 @@ function checkPrerequisites() {
 function checkGo() {
   let deferred = q.defer();
   child.exec(
-      'which go', {
-        env: env,
-      },
-      function(error, stdout, stderror) {
-        if (error || stderror || !stdout) {
-          deferred.reject(new Error(
-              'Go is not on the path. Please pass the PATH variable when you run ' +
-              'the gulp task with "PATH=$PATH" or install go if you have not yet.'));
-          return;
-        }
-        deferred.resolve();
-      });
+    'which go', {
+      env: env,
+    },
+    function(error, stdout, stderror) {
+      if (error || stderror || !stdout) {
+        deferred.reject(new Error(
+          'Go is not on the path. Please pass the PATH variable when you run ' +
+          'the gulp task with "PATH=$PATH" or install go if you have not yet.'));
+        return;
+      }
+      deferred.resolve();
+    });
   return deferred.promise;
 }
 
@@ -89,38 +89,38 @@ function checkGo() {
 function checkGoVersion() {
   let deferred = q.defer();
   child.exec(
-      'go version', {
-        env: env,
-      },
-      function(error, stdout) {
-        let match = /go version devel/.exec(stdout.toString());
-        if (match && match.length > 0) {
-          // If running a development version of Go we assume the version to be
-          // good enough, if compilation gives weird errors the developer also
-          // should know what is going on, since he uses a development version
-          // of Go :)
-          deferred.resolve();
-          return;
-        }
-        match = /[\d.]+/.exec(stdout.toString());  // matches version number
-        if (match && match.length < 1) {
-          deferred.reject(new Error('Go version not found.'));
-          return;
-        }
-        let currentGoVersion = match[0];
-        // semver requires a patch number, so we'll append '.0' if it isn't present.
-        if (currentGoVersion.split('.').length === 2) {
-          currentGoVersion = `${currentGoVersion}.0`;
-        }
-        if (semver.lt(currentGoVersion, minGoVersion)) {
-          deferred.reject(new Error(
-              `The current go version '${currentGoVersion}' is older than ` +
-              `the minimum required version '${minGoVersion}'. ` +
-              `Please upgrade your go version!`));
-          return;
-        }
+    'go version', {
+      env: env,
+    },
+    function(error, stdout) {
+      let match = /go version devel/.exec(stdout.toString());
+      if (match && match.length > 0) {
+        // If running a development version of Go we assume the version to be
+        // good enough, if compilation gives weird errors the developer also
+        // should know what is going on, since he uses a development version
+        // of Go :)
         deferred.resolve();
-      });
+        return;
+      }
+      match = /[\d.]+/.exec(stdout.toString());  // matches version number
+      if (match && match.length < 1) {
+        deferred.reject(new Error('Go version not found.'));
+        return;
+      }
+      let currentGoVersion = match[0];
+      // semver requires a patch number, so we'll append '.0' if it isn't present.
+      if (currentGoVersion.split('.').length === 2) {
+        currentGoVersion = `${currentGoVersion}.0`;
+      }
+      if (semver.lt(currentGoVersion, minGoVersion)) {
+        deferred.reject(new Error(
+          `The current go version '${currentGoVersion}' is older than ` +
+          `the minimum required version '${minGoVersion}'. ` +
+          `Please upgrade your go version!`));
+        return;
+      }
+      deferred.resolve();
+    });
 
   return deferred.promise;
 }

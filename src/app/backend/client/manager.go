@@ -16,11 +16,15 @@
 package client
 
 import (
+	"fmt"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"log"
+	"path/filepath"
 	"strings"
 
+	pluginclientset "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/client/clientset/versioned"
 	restful "github.com/emicklei/go-restful"
-	pluginclientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
 	v1 "k8s.io/api/authorization/v1"
 	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,11 +33,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/kubernetes/dashboard/src/app/backend/args"
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	clientapi "github.com/kubernetes/dashboard/src/app/backend/client/api"
-	"github.com/kubernetes/dashboard/src/app/backend/client/csrf"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	clientapi "github.com/CentaurusInfra/dashboard/src/app/backend/client/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client/csrf"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 )
 
 // Dashboard UI default values for client configs.
@@ -86,6 +90,11 @@ type clientManager struct {
 	// to service account used by dashboard or kubeconfig file if it was passed during dashboard
 	// init.
 	insecureConfig *rest.Config
+	clustername    string
+}
+
+func (self *clientManager) GetClusterName() string {
+	return self.clustername
 }
 
 // Client returns a kubernetes client. In case dashboard login is enabled and option to skip
@@ -220,7 +229,7 @@ func (self *clientManager) CSRFKey() string {
 }
 
 // GetTenant gets the tenant name using the provided AuthInfo
-func (self *clientManager) GetTenant(authInfo api.AuthInfo) (string, error) {
+func (self *clientManager) GetTenant(authInfo api.AuthInfo, nameSpace string, tenant string) (string, error) {
 	cfg, err := self.buildConfigFromFlags(self.apiserverHost, self.kubeConfigPath)
 	if err != nil {
 		return "", err
@@ -238,8 +247,15 @@ func (self *clientManager) GetTenant(authInfo api.AuthInfo) (string, error) {
 	}
 
 	// Get the tenant name from default namespace.
-	result, err := client.CoreV1().NamespacesWithMultiTenancy("").Get("default", metaV1.GetOptions{})
-	tenant := result.ObjectMeta.Tenant
+	_, err = client.CoreV1().PodsWithMultiTenancy(nameSpace, tenant).List(metaV1.ListOptions{})
+	if err == nil {
+		return tenant, nil
+	}
+	result, err := client.CoreV1().NamespacesWithMultiTenancy("").Get(nameSpace, metaV1.GetOptions{})
+	if err != nil {
+		log.Printf("list namespace failed: %s", err.Error())
+	}
+	tenant = result.ObjectMeta.Tenant
 	return tenant, err
 }
 
@@ -341,7 +357,6 @@ func (self *clientManager) extractAuthInfo(req *restful.Request) (*api.AuthInfo,
 	authHeader := req.HeaderParameter("Authorization")
 	impersonationHeader := req.HeaderParameter("Impersonate-User")
 	jweToken := req.HeaderParameter(JWETokenHeader)
-
 	// Authorization header will be more important than our token
 	token := self.extractTokenFromHeader(authHeader)
 	if len(token) > 0 {
@@ -413,6 +428,7 @@ func (self *clientManager) secureClient(req *restful.Request) (kubernetes.Interf
 	cfg, err := self.secureConfig(req)
 	if err != nil {
 		return nil, err
+
 	}
 
 	client, err := kubernetes.NewForConfig(cfg)
@@ -534,6 +550,8 @@ func (self *clientManager) initInsecureConfig() {
 	if err != nil {
 		panic(err)
 	}
+	clusterName, err := GetClusternName(self.kubeConfigPath)
+	self.clustername = clusterName
 
 	self.initConfig(cfg)
 	self.insecureConfig = cfg
@@ -554,4 +572,29 @@ func NewClientManager(kubeConfigPath, apiserverHost string) clientapi.ClientMana
 
 	result.init()
 	return result
+}
+
+func GetClusternName(config string) (cName string, err error) {
+	filename, _ := filepath.Abs(config)
+	yamlFile, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	var clusterDetail ClusterDetail
+
+	err = yaml.Unmarshal(yamlFile, &clusterDetail)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Value: %s \n", clusterDetail.Clusters[0].Name)
+	return clusterDetail.Clusters[0].Name, nil
+}
+
+type ClusterDetail struct {
+	APIVersion string `yaml:"apiVersion"`
+	Clusters   []struct {
+		Name string `yaml:"name"`
+	} `yaml:"clusters"`
 }

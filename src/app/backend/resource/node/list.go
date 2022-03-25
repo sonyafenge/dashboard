@@ -20,10 +20,10 @@ import (
 	v1 "k8s.io/api/core/v1"
 	client "k8s.io/client-go/kubernetes"
 
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 )
 
 // NodeList contains a list of nodes in the cluster.
@@ -43,10 +43,11 @@ type Node struct {
 	TypeMeta           api.TypeMeta           `json:"typeMeta"`
 	Ready              v1.ConditionStatus     `json:"ready"`
 	AllocatedResources NodeAllocatedResources `json:"allocatedResources"`
+	ClusterName        string                 `json:"clusterName"`
 }
 
 // GetNodeList returns a list of all Nodes in the cluster.
-func GetNodeList(client client.Interface, dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient) (*NodeList, error) {
+func GetNodeList(client client.Interface, dsQuery *dataselect.DataSelectQuery, metricClient metricapi.MetricClient, cLusterName string) (*NodeList, error) {
 	nodes, err := client.CoreV1().Nodes().List(api.ListEverything)
 
 	nonCriticalErrors, criticalError := errors.HandleError(err)
@@ -54,11 +55,11 @@ func GetNodeList(client client.Interface, dsQuery *dataselect.DataSelectQuery, m
 		return nil, criticalError
 	}
 
-	return toNodeList(client, nodes.Items, nonCriticalErrors, dsQuery, metricClient), nil
+	return toNodeList(client, nodes.Items, nonCriticalErrors, dsQuery, metricClient, cLusterName), nil
 }
 
 func toNodeList(client client.Interface, nodes []v1.Node, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery,
-	metricClient metricapi.MetricClient) *NodeList {
+	metricClient metricapi.MetricClient, clusterName string) *NodeList {
 	nodeList := &NodeList{
 		Nodes:    make([]Node, 0),
 		ListMeta: api.ListMeta{TotalItems: len(nodes)},
@@ -71,12 +72,13 @@ func toNodeList(client client.Interface, nodes []v1.Node, nonCriticalErrors []er
 	nodeList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 
 	for _, node := range nodes {
-		pods, err := getNodePods(client, node)
+		pods, err := GetNodePodsDetails(client, node)
 		if err != nil {
 			log.Printf("Couldn't get pods of %s node: %s\n", node.Name, err)
 		}
-
+		node.ClusterName = clusterName
 		nodeList.Nodes = append(nodeList.Nodes, toNode(node, pods))
+
 	}
 
 	cumulativeMetrics, err := metricPromises.GetMetrics()
@@ -89,7 +91,7 @@ func toNodeList(client client.Interface, nodes []v1.Node, nonCriticalErrors []er
 }
 
 func toNode(node v1.Node, pods *v1.PodList) Node {
-	allocatedResources, err := getNodeAllocatedResources(node, pods)
+	allocatedResources, err := GetNodeAllocatedResources(node, pods)
 	if err != nil {
 		log.Printf("Couldn't get allocated resources of %s node: %s\n", node.Name, err)
 	}
@@ -99,6 +101,7 @@ func toNode(node v1.Node, pods *v1.PodList) Node {
 		TypeMeta:           api.NewTypeMeta(api.ResourceKindNode),
 		Ready:              getNodeConditionStatus(node, v1.NodeReady),
 		AllocatedResources: allocatedResources,
+		ClusterName:        node.ClusterName,
 	}
 }
 

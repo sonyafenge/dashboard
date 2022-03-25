@@ -13,22 +13,7 @@
 // limitations under the License.
 
 import {Component} from '@angular/core';
-import {
-  CronJobList,
-  DaemonSetList,
-  DeploymentList,
-  JobList,
-  Metric,
-  PodList,
-  ReplicaSetList,
-  ReplicationControllerList,
-  StatefulSetList,
-} from '@api/backendapi';
-import {OnListChangeEvent, ResourcesRatio} from '@api/frontendapi';
-import {emptyResourcesRatio} from 'common/components/workloadstatus/component';
-import {Helper, ResourceRatioModes} from 'overview/helper';
-
-import {ListGroupIdentifier, ListIdentifier} from '../../common/components/resourcelist/groupids';
+import {ListGroupIdentifier} from '../../common/components/resourcelist/groupids';
 import {GroupedResourceList} from '../../common/resources/groupedlist';
 
 @Component({

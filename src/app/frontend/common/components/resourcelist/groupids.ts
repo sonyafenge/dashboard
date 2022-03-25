@@ -14,6 +14,7 @@
 // limitations under the License.
 
 export enum ListIdentifier {
+  role = 'roleList',
   clusterRole = 'clusterRoleList',
   namespace = 'namespaceList',
   node = 'nodeList',
@@ -26,17 +27,25 @@ export enum ListIdentifier {
   deployment = 'deploymentList',
   daemonSet = 'daemonSetList',
   pod = 'podList',
+  virtualMachine = 'virtualMachineList',
   replicaSet = 'replicaSetList',
   ingress = 'ingressList',
   service = 'serviceList',
   configMap = 'configMapList',
   persistentVolumeClaim = 'persistentVolumeClaimList',
   secret = 'secretList',
-  replicationController = 'replicationControllerList',
+  resourcequota = 'resourcequota',
   statefulSet = 'statefulSetList',
   event = 'event',
   resource = 'resource',
   tenant = 'tenant',
+  resourcePartition = 'resourcepartition',
+  tenantPartition = 'tenantpartition',
+  user = 'users',
+  serviceaccount = 'serviceaccount',
+  network = 'crdList',
+  networkObject = 'crdObjectList',
+  tpTenant = 'tptenant'
 }
 
 export enum ListGroupIdentifier {

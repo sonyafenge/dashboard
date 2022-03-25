@@ -21,7 +21,7 @@
 }
 
 .kd-login-card {
-  grid-column: 3 / 8;
+  grid-column: 1 / 6;
   grid-row: 2;
 }
 
@@ -50,4 +50,13 @@
 
 :host {
   height: 100vh;
+}
+
+.image-logo{
+  position: relative;
+  left: 48%;
+  transform: translateX(-50%);
+  width: 55%;
+  margin-bottom: 45px;
+  margin-top: 20px;
 }

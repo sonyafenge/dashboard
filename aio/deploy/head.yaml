@@ -15,7 +15,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kubernetes-dashboard-head
+  name: centaurus-dashboard-head
 
 ---
 
@@ -23,9 +23,9 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 
 ---
 
@@ -33,15 +33,15 @@ kind: Service
 apiVersion: v1
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 spec:
   ports:
     - port: 443
       targetPort: 8443
   selector:
-    k8s-app: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
 
 ---
 
@@ -49,9 +49,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-certs
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-certs
+  namespace: centaurus-dashboard-head
 type: Opaque
 
 ---
@@ -60,9 +60,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-csrf
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-csrf
+  namespace: centaurus-dashboard-head
 type: Opaque
 data:
   csrf: ""
@@ -73,9 +73,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-key-holder
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-key-holder
+  namespace: centaurus-dashboard-head
 type: Opaque
 
 ---
@@ -84,9 +84,9 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-settings
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-settings
+  namespace: centaurus-dashboard-head
 
 ---
 
@@ -94,19 +94,19 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 rules:
   # Allow Dashboard to get, update and delete Dashboard exclusive secrets.
   - apiGroups: [""]
     resources: ["secrets"]
-    resourceNames: ["kubernetes-dashboard-key-holder", "kubernetes-dashboard-certs", "kubernetes-dashboard-csrf"]
+    resourceNames: ["centaurus-dashboard-key-holder", "centaurus-dashboard-certs", "centaurus-dashboard-csrf"]
     verbs: ["get", "update", "delete"]
-    # Allow Dashboard to get and update 'kubernetes-dashboard-settings' config map.
+    # Allow Dashboard to get and update 'centaurus-dashboard-settings' config map.
   - apiGroups: [""]
     resources: ["configmaps"]
-    resourceNames: ["kubernetes-dashboard-settings"]
+    resourceNames: ["centaurus-dashboard-settings"]
     verbs: ["get", "update"]
     # Allow Dashboard to get metrics.
   - apiGroups: [""]
@@ -124,8 +124,8 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
 rules:
   # Allow Metrics Scraper to get metrics from the Metrics server
   - apiGroups: ["metrics.k8s.io"]
@@ -138,33 +138,33 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: kubernetes-dashboard-head
+  name: centaurus-dashboard-head
 subjects:
   - kind: ServiceAccount
-    name: kubernetes-dashboard-head
-    namespace: kubernetes-dashboard-head
+    name: centaurus-dashboard-head
+    namespace: centaurus-dashboard-head
 
 ---
 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kubernetes-dashboard-head
+  name: centaurus-dashboard-head
 subjects:
   - kind: ServiceAccount
-    name: kubernetes-dashboard-head
-    namespace: kubernetes-dashboard-head
+    name: centaurus-dashboard-head
+    namespace: centaurus-dashboard-head
 
 ---
 
@@ -172,28 +172,28 @@ kind: Deployment
 apiVersion: apps/v1beta2
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 spec:
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      k8s-app: kubernetes-dashboard-head
+      k8s-app: centaurus-dashboard-head
   template:
     metadata:
       labels:
-        k8s-app: kubernetes-dashboard-head
+        k8s-app: centaurus-dashboard-head
     spec:
       containers:
-        - name: kubernetes-dashboard-head
+        - name: centaurus-dashboard-head
           image: kubernetesdashboarddev/dashboard:head
           ports:
             - containerPort: 9090
               protocol: TCP
           args:
-            - --namespace=kubernetes-dashboard-head
+            - --namespace=centaurus-dashboard-head
           # Uncomment the following line to manually specify Kubernetes API server Host
           # If not specified, Dashboard will attempt to auto discover the API server and connect
           # to it. Uncomment only if the default does not work.
@@ -211,7 +211,7 @@ spec:
       volumes:
         - name: tmp-volume
           emptyDir: {}
-      serviceAccountName: kubernetes-dashboard-head
+      serviceAccountName: centaurus-dashboard-head
       # Comment the following tolerations if Dashboard must not be deployed on master
       tolerations:
         - key: node-role.kubernetes.io/master
@@ -225,7 +225,7 @@ metadata:
   labels:
     k8s-app: dashboard-metrics-scraper-head
   name: dashboard-metrics-scraper-head
-  namespace: kubernetes-dashboard-head
+  namespace: centaurus-dashboard-head
 spec:
   ports:
     - port: 8000
@@ -241,7 +241,7 @@ metadata:
   labels:
     k8s-app: dashboard-metrics-scraper-head
   name: dashboard-metrics-scraper-head
-  namespace: kubernetes-dashboard-head
+  namespace: centaurus-dashboard-head
 spec:
   replicas: 1
   revisionHistoryLimit: 10
@@ -267,9 +267,9 @@ spec:
             initialDelaySeconds: 30
             timeoutSeconds: 30
           volumeMounts:
-          - mountPath: /tmp
-            name: tmp-volume
-      serviceAccountName: kubernetes-dashboard-head
+            - mountPath: /tmp
+              name: tmp-volume
+      serviceAccountName: centaurus-dashboard-head
       # Comment the following tolerations if Dashboard must not be deployed on master
       tolerations:
         - key: node-role.kubernetes.io/master

@@ -14,7 +14,7 @@
 
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
-import {Tenant, TenantList} from '@api/backendapi';
+import {ObjectMeta, Tenant, TenantList, TypeMeta} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
 
 import {ResourceListWithStatuses} from '../../../resources/list';
@@ -23,16 +23,25 @@ import {ResourceService} from '../../../services/resource/resource';
 import {NotificationsService} from '../../../services/global/notifications';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
 import {MenuComponent} from '../../list/column/menu/component';
+import {VerberService} from '../../../services/global/verber';
+import {ActivatedRoute} from "@angular/router";
+import {isNil} from "lodash";
 
 @Component({
   selector: 'kd-tenant-list',
   templateUrl: './template.html',
 })
 export class TenantListComponent extends ResourceListWithStatuses<TenantList, Tenant> {
-  @Input() endpoint = EndpointManager.resource(Resource.tenant).list();
+  @Input() endpoint = EndpointManager.resource(Resource.tenant,false,true).list();
+
+  displayName: string;
+  typeMeta: TypeMeta;
+  objectMeta: ObjectMeta;
 
   constructor(
+    readonly verber_: VerberService,
     private readonly tenant_: ResourceService<TenantList>,
+    private readonly activatedRoute_: ActivatedRoute,
     notifications: NotificationsService,
   ) {
     super('tenant', notifications);
@@ -52,7 +61,7 @@ export class TenantListComponent extends ResourceListWithStatuses<TenantList, Te
   }
 
   map(tenantList: TenantList): Tenant[] {
-    return tenantList.tenants;
+    return tenantList.tenants
   }
 
   isInErrorState(resource: Tenant): boolean {
@@ -64,6 +73,27 @@ export class TenantListComponent extends ResourceListWithStatuses<TenantList, Te
   }
 
   getDisplayColumns(): string[] {
-    return ['statusicon', 'name', 'phase', 'age'];
+    return ['statusicon', 'name', 'clusterName', 'phase', 'age'];
   }
+
+  onClick(): void {
+    this.verber_.showTenantCreateDialog(this.displayName, this.typeMeta, this.objectMeta);  //changes needed
+  }
+
+  setPartition(partitionName:string, $event:any) {
+    const resourceName = $event.target.innerHTML.replace(/^\s+|\s+$/gm,'');
+    // @ts-ignore
+    const reqFromTenant = this.activatedRoute_.snapshot['_routerState'].url
+    if (sessionStorage.getItem('currentTenant')) {
+      sessionStorage.removeItem('currentTenant')
+      sessionStorage.removeItem('reqFromTenant')
+    }
+    if (sessionStorage.getItem(`${resourceName}`)) {
+      sessionStorage.removeItem(`${resourceName}`)
+    }
+    sessionStorage.setItem('currentTenant', resourceName);
+    sessionStorage.setItem('reqFromTenant', reqFromTenant);
+    sessionStorage.setItem(`${resourceName}`,partitionName);
+  }
+
 }

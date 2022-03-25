@@ -15,13 +15,14 @@
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {ConfigMapDetail} from '@api/backendapi';
+import {ConfigMapDetail, StringMap} from '@api/backendapi';
 import {Subscription} from 'rxjs/Subscription';
 
 import {ActionbarService, ResourceMeta} from '../../../../common/services/global/actionbar';
 import {NotificationsService} from '../../../../common/services/global/notifications';
 import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
 import {NamespacedResourceService} from '../../../../common/services/resource/resource';
+import {TenantService} from "../../../../common/services/global/tenant";
 
 @Component({
   selector: 'kd-config-map-detail',
@@ -31,23 +32,39 @@ export class ConfigMapDetailComponent implements OnInit, OnDestroy {
   private configMapSubscription_: Subscription;
   private endpoint_ = EndpointManager.resource(Resource.configMap, true, true);
   configMap: ConfigMapDetail;
+  configMapData: StringMap;
   isInitialized = false;
+  private tenantName: string;
+  private partition: string;
 
   constructor(
     private readonly configMap_: NamespacedResourceService<ConfigMapDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
+    private readonly tenant_: TenantService,
     private readonly notifications_: NotificationsService,
-  ) {}
+  ) {
+    this.tenantName = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('currentTenant') : this.tenant_.current()
+    this.partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(sessionStorage.getItem('currentTenant')) + '/' : ''
+  }
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
 
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/${this.partition}tenants/${this.tenantName}/configmap/${resourceNamespace}/${resourceName}`
+    } else {
+      endpoint = this.endpoint_.detail()
+    }
+
     this.configMapSubscription_ = this.configMap_
-      .get(this.endpoint_.detail(), resourceName, resourceNamespace)
+      .get(endpoint, resourceName, resourceNamespace)
       .subscribe((d: ConfigMapDetail) => {
         this.configMap = d;
+        console.log("data => ", this.configMap.data);
         this.notifications_.pushErrors(d.errors);
         this.actionbar_.onInit.emit(new ResourceMeta('Config Map', d.objectMeta, d.typeMeta));
         this.isInitialized = true;
@@ -57,5 +74,13 @@ export class ConfigMapDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.configMapSubscription_.unsubscribe();
     this.actionbar_.onDetailsLeave.emit();
+  }
+
+  getConfigMapData(cm: ConfigMapDetail): string {
+    if (!cm) {
+      return '';
+    }
+
+    return JSON.stringify(cm.data);
   }
 }

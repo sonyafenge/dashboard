@@ -15,7 +15,7 @@
 package sidecar
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/args"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
 	"k8s.io/client-go/rest"
 )
 

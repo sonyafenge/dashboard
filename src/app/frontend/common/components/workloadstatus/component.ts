@@ -22,7 +22,6 @@ export const emptyResourcesRatio: ResourcesRatio = {
   jobRatio: [],
   podRatio: [],
   replicaSetRatio: [],
-  replicationControllerRatio: [],
   statefulSetRatio: [],
 };
 

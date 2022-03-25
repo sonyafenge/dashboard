@@ -41,8 +41,10 @@ ARCH=$(uname | awk '{print tolower($0)}')
 # Local cluster configuration (check start-cluster.sh script for more details).
 HEAPSTER_VERSION="v1.5.4"
 HEAPSTER_PORT=8082
-KIND_VERSION="0.2.1"
+KIND_VERSION="v0.10.0"
 KIND_BIN=${CACHE_DIR}/kind-${KIND_VERSION}
+CODEGEN_PKG=${GOPATH}/src/github.com/CentaurusInfra/arktos/staging/src/k8s.io/code-generator
+CODEGEN_BIN=${CODEGEN_PKG}/generate-groups.sh
 
 # Setup logger.
 ERROR_STYLE=`tput setaf 1`
@@ -77,5 +79,5 @@ function ensure-kubeconfig {
   # so we can not `mv` or `rm` it.
   cp ${HOME}/.kube/config ${HOME}/.kube/config-unkind
 
-  cat $(${KIND_BIN} get kubeconfig-path --name="k8s-cluster-ci") > $HOME/.kube/config
+  ${KIND_BIN} get kubeconfig --name="k8s-cluster-ci" > ${HOME}/.kube/config
 }

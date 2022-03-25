@@ -16,6 +16,6 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-settings
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-settings
+  namespace: centaurus-dashboard-head

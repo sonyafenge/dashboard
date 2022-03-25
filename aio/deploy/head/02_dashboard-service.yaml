@@ -16,12 +16,12 @@ kind: Service
 apiVersion: v1
 metadata:
   labels:
-    k8s-app: kubernetes-dashboard-head
-  name: kubernetes-dashboard-head
-  namespace: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head
+  name: centaurus-dashboard-head
+  namespace: centaurus-dashboard-head
 spec:
   ports:
     - port: 443
       targetPort: 8443
   selector:
-    k8s-app: kubernetes-dashboard-head
+    k8s-app: centaurus-dashboard-head

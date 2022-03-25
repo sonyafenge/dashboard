@@ -20,7 +20,7 @@ limitations under the License.
        fxLayout="row"
        i18n>Custom Resource Definitions</div>
   <div description><span class="kd-muted-light"
-          i18n>Items:&nbsp;</span>{{totalItems}}</div>
+                         i18n>Items:&nbsp;</span>{{totalItems}}</div>
   <div actions>
     <kd-card-list-filter></kd-card-list-filter>
   </div>
@@ -51,29 +51,38 @@ limitations under the License.
                          i18n>Name</mat-header-cell>
         <mat-cell *matCellDef="let crd">
           <a [routerLink]="getDetailsHref(crd.objectMeta.name)"
+             (click) = setPartitionName($event,crd.clusterName)
              queryParamsHandling="preserve">{{crd.names.kind}}</a>
         </mat-cell>
       </ng-container>
 
       <ng-container [matColumnDef]="getColumns()[2]">
+        <mat-header-cell [hidden]="!isClusterAdmin"
+                         *matHeaderCellDef
+                         i18n>Tenant Partition</mat-header-cell>
+        <mat-cell [hidden]="!isClusterAdmin"
+                  *matCellDef="let crd">{{crd.clusterName}}</mat-cell>
+      </ng-container>
+
+      <ng-container [matColumnDef]="getColumns()[3]">
         <mat-header-cell *matHeaderCellDef
                          i18n>Group</mat-header-cell>
         <mat-cell *matCellDef="let crd">{{crd.group}}</mat-cell>
       </ng-container>
 
-      <ng-container [matColumnDef]="getColumns()[3]">
+      <ng-container [matColumnDef]="getColumns()[4]">
         <mat-header-cell *matHeaderCellDef
                          i18n>Full Name</mat-header-cell>
         <mat-cell *matCellDef="let crd">{{crd.objectMeta.name}}</mat-cell>
       </ng-container>
 
-      <ng-container [matColumnDef]="getColumns()[4]">
+      <ng-container [matColumnDef]="getColumns()[5]">
         <mat-header-cell *matHeaderCellDef
                          i18n>Namespaced</mat-header-cell>
         <mat-cell *matCellDef="let crd">{{isNamespaced(crd)}}</mat-cell>
       </ng-container>
 
-      <ng-container [matColumnDef]="getColumns()[5]">
+      <ng-container [matColumnDef]="getColumns()[6]">
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header
                          disableClear="true"

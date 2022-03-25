@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="13px" height="9px" viewBox="0 0 13 9" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <g id="Laptop">
+    <path d="M1.55213 7.75862L10.8625 7.75862C11.3767 7.75862 11.7935 7.34178 11.7935 6.82758L11.7935 0.931034C11.7935 0.416838 11.3767 0 10.8625 0L1.55213 0C1.03793 0 0.621094 0.416838 0.621094 0.931034L0.621094 6.82758C0.621094 7.34178 1.03793 7.75862 1.55213 7.75862ZM1.55225 0.93103L10.8626 0.93103L10.8626 6.82758L1.55225 6.82758L1.55225 0.93103Z" id="Shape" fill="#131725" fill-rule="evenodd" stroke="none" />
+    <path d="M0 8.06897L12.4138 8.06897L12.4138 9L0 9L0 8.06897Z" id="Rectangle-path" fill="#131725" fill-rule="evenodd" stroke="none" />
+  </g>
+</svg>

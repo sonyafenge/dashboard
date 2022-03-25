@@ -25,6 +25,7 @@ import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {NamespacedResourceService} from '../../../services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {TenantService} from "../../../services/global/tenant";
 
 @Component({
   selector: 'kd-replica-set-list',
@@ -34,9 +35,12 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
   @Input() title: string;
   @Input() endpoint = EndpointManager.resource(Resource.replicaSet, true, true).list();
 
+  tenantName: string;
+
   constructor(
     private readonly replicaSet_: NamespacedResourceService<ReplicaSetList>,
     private readonly activatedRoute_: ActivatedRoute,
+    private readonly tenant_: TenantService,
     notifications: NotificationsService,
     resolver: ComponentFactoryResolver,
   ) {
@@ -54,10 +58,20 @@ export class ReplicaSetListComponent extends ResourceListWithStatuses<ReplicaSet
 
     // Register dynamic columns.
     this.registerDynamicColumn('namespace', 'name', this.shouldShowNamespaceColumn_.bind(this));
+    this.tenantName = this.activatedRoute_.snapshot.params.resourceName === undefined ?
+      this.tenant_.current() : this.tenant_.resourceTenant()
+    sessionStorage.setItem('replicaSetTenant', this.tenantName);
   }
 
   getResourceObservable(params?: HttpParams): Observable<ReplicaSetList> {
-    return this.replicaSet_.get(this.endpoint, undefined, undefined, params);
+    const partition = this.tenantName === 'system' ? 'partition/' + this.tenant_.tenantPartition() + '/' : ''
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin' && !this.endpoint.includes('/deployment/')) {
+      endpoint = `api/v1/${partition}tenants/${this.tenantName}/replicaset`
+    } else {
+      endpoint = this.endpoint
+    }
+    return this.replicaSet_.get(endpoint, undefined, undefined, params, this.tenantName);
   }
 
   map(rsList: ReplicaSetList): ReplicaSet[] {

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,9 +29,13 @@ GOSU="exec /usr/sbin/gosu user"
 # Run command if K8S_DASHBOARD_CMD is set,
 # otherwise run `npm ${K8S_DASHBOARD_NPM_CMD}`.
 if [[ -n "${K8S_DASHBOARD_CMD}" ]] ; then
-  # Run npm command
+  # Run specified command
   echo "Run '${K8S_DASHBOARD_CMD}'"
+  echo "Dependencies are not fully installed. You need run following commands before running other npm commands for dashboard."
+  echo "  npm ci"
+  echo "  aio/scripts/install-codegen.sh"
   ${GOSU} ${K8S_DASHBOARD_CMD}
 else
+  # Run npm command
   ${GOSU} aio/develop/npm-command.sh
 fi

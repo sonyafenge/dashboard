@@ -21,11 +21,9 @@ import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {AppConfig} from '@api/backendapi';
 import {ResourcesRatio} from '@api/frontendapi';
-
 import {ConfigService} from '../../services/global/config';
 import {AllocationChartComponent} from '../allocationchart/component';
 import {CardComponent} from '../card/component';
-
 import {WorkloadStatusComponent} from './component';
 
 const testResourcesRatio: ResourcesRatio = {
@@ -50,11 +48,6 @@ const testResourcesRatio: ResourcesRatio = {
   replicaSetRatio: [
     {key: 'Running: 1', value: 50},
     {key: 'Failed: 1', value: 50},
-    {key: 'Pending: 0', value: 0},
-  ],
-  replicationControllerRatio: [
-    {key: 'Running: 2', value: 100},
-    {key: 'Failed: 0', value: 0},
     {key: 'Pending: 0', value: 0},
   ],
   statefulSetRatio: [],

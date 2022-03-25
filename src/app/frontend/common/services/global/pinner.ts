@@ -73,13 +73,15 @@ export class PinnerService {
   }
 
   isPinned(kind: string, name: string, namespace?: string): boolean {
-    for (const pinnedResource of this.pinnedResources_) {
-      if (
-        pinnedResource.name === name &&
-        pinnedResource.kind === kind &&
-        pinnedResource.namespace === namespace
-      ) {
-        return true;
+    if (this.pinnedResources_ !== undefined) {
+      for (const pinnedResource of this.pinnedResources_) {
+        if (
+          pinnedResource.name === name &&
+          pinnedResource.kind === kind &&
+          pinnedResource.namespace === namespace
+        ) {
+          return true;
+        }
       }
     }
     return false;

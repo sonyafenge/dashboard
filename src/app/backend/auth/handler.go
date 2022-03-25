@@ -15,18 +15,40 @@
 package auth
 
 import (
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/emicklei/go-restful"
 
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/validation"
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/validation"
 )
 
 // AuthHandler manages all endpoints related to dashboard auth, such as login.
 type AuthHandler struct {
-	manager authApi.AuthManager
+	manager []authApi.AuthManager
+}
+
+func AuthAllocator(tenantname string, auths []authApi.AuthManager) authApi.AuthManager {
+	if tenantname == "system" {
+		return auths[0]
+	}
+
+	if authlen := len(auths); authlen > 1 {
+		pref := []rune(strings.ToUpper(tenantname))
+		log.Printf("prefix:%v", pref[0])
+		if pref[0] <= rune(77) {
+			log.Printf("selected config of %s cluster", "TP-1")
+			return auths[0]
+		} else {
+			log.Printf("selected config of %s cluster", "TP-2")
+			return auths[1]
+		}
+	}
+	log.Printf("selected config of %s cluster", "TP-1")
+	return auths[0]
 }
 
 // Install creates new endpoints for dashboard auth, such as login. It allows user to log in to dashboard using
@@ -58,18 +80,27 @@ func (self AuthHandler) Install(ws *restful.WebService) {
 
 func (self AuthHandler) handleLogin(request *restful.Request, response *restful.Response) {
 	loginSpec := new(authApi.LoginSpec)
+	log.Println("authorizing user...")
 	if err := request.ReadEntity(loginSpec); err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(errors.HandleHTTPError(err), err.Error()+"\n")
 		return
 	}
-
-	loginResponse, err := self.manager.Login(loginSpec)
+	if loginSpec.NameSpace == "" {
+		loginSpec.NameSpace = "default"
+	}
+	if loginSpec.Tenant == "" {
+		response.WriteError(http.StatusUnauthorized, errors.NewUnauthorized("Invalid username or password"))
+		return
+	}
+	authmanager := AuthAllocator(loginSpec.Tenant, self.manager)
+	loginResponse, err := authmanager.Login(loginSpec)
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(errors.HandleHTTPError(err), err.Error()+"\n")
 		return
 	}
+	loginResponse.NameSpace = loginSpec.NameSpace
 
 	response.WriteHeaderAndEntity(http.StatusOK, loginResponse)
 }
@@ -85,14 +116,19 @@ func (self *AuthHandler) handleJWETokenRefresh(request *restful.Request, respons
 		response.WriteErrorString(errors.HandleHTTPError(err), err.Error()+"\n")
 		return
 	}
-
-	refreshedJWEToken, err := self.manager.Refresh(tokenRefreshSpec.JWEToken)
+	var refreshedJWEToken string
+	var err error
+	for _, authmanager := range self.manager {
+		refreshedJWEToken, err = authmanager.Refresh(tokenRefreshSpec.JWEToken)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(errors.HandleHTTPError(err), err.Error()+"\n")
 		return
 	}
-
 	response.WriteHeaderAndEntity(http.StatusOK, &authApi.AuthResponse{
 		JWEToken: refreshedJWEToken,
 		Errors:   make([]error, 0),
@@ -100,14 +136,28 @@ func (self *AuthHandler) handleJWETokenRefresh(request *restful.Request, respons
 }
 
 func (self *AuthHandler) handleLoginModes(request *restful.Request, response *restful.Response) {
-	response.WriteHeaderAndEntity(http.StatusOK, authApi.LoginModesResponse{Modes: self.manager.AuthenticationModes()})
+	var err error
+	for _, authmanager := range self.manager {
+		response.WriteHeaderAndEntity(http.StatusOK, authApi.LoginModesResponse{Modes: authmanager.AuthenticationModes()})
+		if err == nil {
+			break
+		}
+	}
+
 }
 
 func (self *AuthHandler) handleLoginSkippable(request *restful.Request, response *restful.Response) {
-	response.WriteHeaderAndEntity(http.StatusOK, authApi.LoginSkippableResponse{Skippable: self.manager.AuthenticationSkippable()})
+	var err error
+	for _, authmanager := range self.manager {
+		response.WriteHeaderAndEntity(http.StatusOK, authApi.LoginSkippableResponse{Skippable: authmanager.AuthenticationSkippable()})
+		if err == nil {
+			break
+		}
+	}
+
 }
 
 // NewAuthHandler created AuthHandler instance.
-func NewAuthHandler(manager authApi.AuthManager) AuthHandler {
+func NewAuthHandler(manager []authApi.AuthManager) AuthHandler {
 	return AuthHandler{manager: manager}
 }

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +31,7 @@ LOCAL_GID=$(id -g)
 # command with K8S_DASHBOAD_NPM_CMD.
 # But if K8S_DASHBOARD_CMD is set, the command in K8S_DASHBOARD_CMD will be
 # executed instead of `npm ${K8S_DASHBOARD_NPM_CMD}`.
-K8S_DASHBOARD_NPM_CMD=$*
+K8S_DASHBOARD_NPM_CMD=${K8S_DASHBOARD_NPM_CMD:-$*}
 
 # kubeconfig for dashboard.
 # This will be mounted and certain npm command can modify it,
@@ -41,8 +40,8 @@ K8S_DASHBOARD_NPM_CMD=$*
 if [[ -n "${K8S_DASHBOARD_KUBECONFIG}" ]] ; then
   K8S_OWN_CLUSTER=true
 else
-  touch ${DIR}/../../kind.kubeconfig
-  K8S_DASHBOARD_KUBECONFIG=$(pwd ${DIR}/../../)/kind.kubeconfig
+  touch /tmp/kind.kubeconfig
+  K8S_DASHBOARD_KUBECONFIG=/tmp/kind.kubeconfig
 fi
 
 # Bind addres for dashboard
@@ -51,11 +50,17 @@ K8S_DASHBOARD_BIND_ADDRESS=${K8S_DASHBOARD_BIND_ADDRESS:-"127.0.0.1"}
 # Metrics Scraper sidecar host for dashboard
 K8S_DASHBOARD_SIDECAR_HOST=${K8S_DASHBOARD_SIDECAR_HOST:-"http://localhost:8000"}
 
+# Port for dashboard (frontend)
+K8S_DASHBOARD_PORT=${K8S_DASHBOARD_PORT:-"8080"}
+
+# Debugging port for dashboard (backend)
+K8S_DASHBOARD_DEBUG_PORT=${K8S_DASHBOARD_DEBUG_PORT:-"2345"}
+
 # Build and run container for dashboard
 DASHBOARD_IMAGE_NAME=${K8S_DASHBOARD_CONTAINER_NAME:-"k8s-dashboard-dev-image"}
 K8S_DASHBOARD_SRC=${K8S_DASHBOARD_SRC:-"${CD}"}
 K8S_DASHBOARD_CONTAINER_NAME=${K8S_DASHBOARD_CONTAINER_NAME:-"k8s-dashboard-dev"}
-K8S_DASHBOARD_SRC_ON_CONTAINER=/go/src/github.com/kubernetes/dashboard
+K8S_DASHBOARD_SRC_ON_CONTAINER=/go/src/github.com/CentaurusInfra/dashboard
 
 echo "Remove existing container ${K8S_DASHBOARD_CONTAINER_NAME}"
 docker rm -f ${K8S_DASHBOARD_CONTAINER_NAME}
@@ -79,12 +84,11 @@ docker run \
   -e K8S_OWN_CLUSTER=${K8S_OWN_CLUSTER} \
   -e K8S_DASHBOARD_BIND_ADDRESS=${K8S_DASHBOARD_BIND_ADDRESS} \
   -e K8S_DASHBOARD_SIDECAR_HOST=${K8S_DASHBOARD_SIDECAR_HOST} \
+  -e K8S_DASHBOARD_PORT=${K8S_DASHBOARD_PORT} \
   -e K8S_DASHBOARD_DEBUG=${K8S_DASHBOARD_DEBUG} \
   -e LOCAL_UID="${LOCAL_UID}" \
   -e LOCAL_GID="${LOCAL_GID}" \
-  -p 8080:8080 \
-  -p 8443:8443 \
-  -p 9090:9090 \
-  -p 2345:2345 \
+  -p ${K8S_DASHBOARD_PORT}:${K8S_DASHBOARD_PORT} \
+  -p ${K8S_DASHBOARD_DEBUG_PORT}:${K8S_DASHBOARD_DEBUG_PORT} \
   ${DOCKER_RUN_OPTS} \
   ${DASHBOARD_IMAGE_NAME}

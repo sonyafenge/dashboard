@@ -1,0 +1,91 @@
+<!--
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<form [formGroup]="form1">
+  <div class="row">
+    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+      <h2 mat-dialog-title>Create a new Role</h2>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Enter Role</mat-label>
+        <input matInput type="text"   formControlName="role" required autocomplete="off"/>
+        <mat-hint align="end"></mat-hint>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="role.errors && (role.dirty || role.touched)">
+        <span class="red" *ngIf="role.errors.required">Name is required.</span>
+        <span class="red" *ngIf="role.hasError('pattern')">Name must be alphanumeric and may contain dashes.</span>
+        <span class="red" *ngIf="role.hasError('maxlength')">Name should not be greater than 24 characters.</span>
+      </div>
+    </div>
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Enter Namespace</mat-label>
+        <input matInput type="text"   formControlName="namespace" required autocomplete="off"/>
+        <mat-hint align="end"></mat-hint>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="namespace.errors && (namespace.dirty || namespace.touched)">
+        <span class="red" *ngIf="namespace.errors.required">Name is required.</span>
+        <span class="red" *ngIf="namespace.hasError('pattern')">Name must be alphanumeric and may contain dashes.</span>
+        <span class="red" *ngIf="namespace.hasError('maxlength')">Name should not be greater than 63 characters.</span>
+      </div>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Apigroups</mat-label>
+        <input matInput formControlName="apigroups" placeholder="e.g. apps,extensions" required autocomplete="off"/>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="apigroups.errors && (apigroups.dirty || apigroups.touched)">
+        <span class="red" *ngIf="apigroups.errors.required">Apigroups is required.</span>
+        <span class="red" *ngIf="apigroups.hasError('pattern')">Apigroups must be alphanumeric characters or '-' or ' * '.</span>
+        <span class="red" *ngIf="apigroups.hasError('maxlength')">Apigroups should not be greater than 63 characters.</span>
+      </div>
+    </div>
+
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Resources</mat-label>
+        <input matInput formControlName="resources" placeholder="e.g. pods,deployments" required autocomplete="off"/>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="resources.errors && (resources.dirty || resources.touched)">
+        <span class="red" *ngIf="resources.errors.required">Resources is required.</span>
+        <span class="red" *ngIf="resources.hasError('pattern')">Resources must be alphanumeric characters or '-' or ' * '.</span>
+        <span class="red" *ngIf="resources.hasError('maxlength')">Resources should not be greater than 63 characters.</span>
+      </div>
+    </div>
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-form-field appearance="fill">
+        <mat-label>Verbs</mat-label>
+        <input matInput formControlName="verbs" placeholder="e.g. get,list,create" required autocomplete="off"/>
+      </mat-form-field>
+      <div class="error_sec" *ngIf="verbs.errors && (verbs.dirty || verbs.touched)">
+        <span class="red" *ngIf="verbs.errors.required">Verbs is required.</span>
+        <span class="red" *ngIf="verbs.hasError('pattern')">Verbs must be alphanumeric characters or '-' or ' * '.</span>
+        <span class="red" *ngIf="verbs.hasError('maxlength')">Verbs should not be greater than 63 characters.</span>
+      </div>
+    </div>
+
+    <div class="col-10 col-sm-10 col-md-10 col-lg-10">
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close>Cancel</button>
+        <button mat-button [mat-dialog-close]="true" type="submit" (click)="createRole()" [disabled]="!form1.valid">Create</button>
+      </mat-dialog-actions>
+    </div>
+  </div>
+</form>

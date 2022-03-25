@@ -126,16 +126,23 @@ const (
 	ResourceKindPersistentVolume         = "persistentvolume"
 	ResourceKindCustomResourceDefinition = "customresourcedefinition"
 	ResourceKindPod                      = "pod"
+	ResourceKindVirtualMachine           = "virtualmachine"
 	ResourceKindReplicaSet               = "replicaset"
 	ResourceKindReplicationController    = "replicationcontroller"
 	ResourceKindResourceQuota            = "resourcequota"
+	ResourceKindRole                     = "role"
+	ResourceKindRoleBinding              = "rolebinding"
 	ResourceKindSecret                   = "secret"
 	ResourceKindService                  = "service"
+	ResourceKindServiceAccount           = "serviceaccount"
 	ResourceKindStatefulSet              = "statefulset"
 	ResourceKindStorageClass             = "storageclass"
 	ResourceKindClusterRole              = "clusterrole"
+	ResourceKindClusterRoleBinding       = "clusterrolebinding"
 	ResourceKindEndpoint                 = "endpoint"
 	ResourceKindTenant                   = "tenant"
+	ResourceKindUser                     = "user"
+	ResourceKindClusterPartition         = "partition"
 )
 
 // ClientType represents type of client that is used to perform generic operations on resources.
@@ -189,10 +196,17 @@ var KindToAPIMapping = map[string]APIMapping{
 	ResourceKindResourceQuota:            {"resourcequotas", ClientTypeDefault, true},
 	ResourceKindSecret:                   {"secrets", ClientTypeDefault, true},
 	ResourceKindService:                  {"services", ClientTypeDefault, true},
+	ResourceKindServiceAccount:           {"servicesaccounts", ClientTypeDefault, true},
+	ResourceKindRole:                     {"roles", ClientTypeDefault, false},
+	ResourceKindRoleBinding:              {"rolebindings", ClientTypeRbacClient, true},
 	ResourceKindStatefulSet:              {"statefulsets", ClientTypeAppsClient, true},
 	ResourceKindStorageClass:             {"storageclasses", ClientTypeStorageClient, false},
 	ResourceKindEndpoint:                 {"endpoints", ClientTypeDefault, true},
 	ResourceKindClusterRole:              {"clusterroles", ClientTypeRbacClient, false},
+	ResourceKindClusterRoleBinding:       {"clusterrolebindings", ClientTypeRbacClient, false},
+	ResourceKindTenant:                   {"tenants", ClientTypeDefault, false},
+	ResourceKindUser:                     {"users", ClientTypeDefault, false},
+	ResourceKindClusterPartition:         {"partition", ClientTypeDefault, false},
 }
 
 // IsSelectorMatching returns true when an object with the given selector targets the same

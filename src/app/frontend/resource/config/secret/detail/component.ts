@@ -22,6 +22,7 @@ import {ActionbarService, ResourceMeta} from '../../../../common/services/global
 import {NotificationsService} from '../../../../common/services/global/notifications';
 import {EndpointManager, Resource} from '../../../../common/services/resource/endpoint';
 import {NamespacedResourceService} from '../../../../common/services/resource/resource';
+import {TenantService} from "../../../../common/services/global/tenant";
 
 @Component({
   selector: 'kd-secret-detail',
@@ -32,20 +33,34 @@ export class SecretDetailComponent implements OnInit, OnDestroy {
   private readonly endpoint_ = EndpointManager.resource(Resource.secret, true, true);
   secret: SecretDetail;
   isInitialized = false;
+  private tenantName: string;
+  private partition: string;
 
   constructor(
     private readonly secret_: NamespacedResourceService<SecretDetail>,
     private readonly actionbar_: ActionbarService,
     private readonly activatedRoute_: ActivatedRoute,
+    private readonly tenant_: TenantService,
     private readonly notifications_: NotificationsService,
-  ) {}
+  ) {
+    this.tenantName = this.tenant_.current() === 'system' ?
+      sessionStorage.getItem('currentTenant') : this.tenant_.current()
+    this.partition = this.tenantName === 'system' ? 'partition/' + sessionStorage.getItem(sessionStorage.getItem('currentTenant')) + '/' : ''
+  }
 
   ngOnInit(): void {
     const resourceName = this.activatedRoute_.snapshot.params.resourceName;
     const resourceNamespace = this.activatedRoute_.snapshot.params.resourceNamespace;
 
+    let endpoint = ''
+    if (sessionStorage.getItem('userType') === 'cluster-admin') {
+      endpoint = `api/v1/${this.partition}tenants/${this.tenantName}/secret/${resourceNamespace}/${resourceName}`
+    } else {
+      endpoint = this.endpoint_.detail()
+    }
+
     this.secretSubscription_ = this.secret_
-      .get(this.endpoint_.detail(), resourceName, resourceNamespace)
+      .get(endpoint, resourceName, resourceNamespace)
       .subscribe((d: SecretDetail) => {
         this.secret = d;
         this.notifications_.pushErrors(d.errors);

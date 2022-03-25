@@ -1,5 +1,4 @@
 // Copyright 2017 The Kubernetes Authors.
-// Copyright 2020 Authors of Arktos - file modified.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,9 +13,7 @@
 // limitations under the License.
 
 import {NgModule} from '@angular/core';
-
 import {SharedModule} from '../../shared.module';
-
 import {ActionbarComponent} from './actionbar/component';
 import {ActionbarDetailActionsComponent} from './actionbar/detailactions/component';
 import {ActionbarDetailDeleteComponent} from './actionbar/detailactions/delete/component';
@@ -62,7 +59,6 @@ import {PodStatusCardComponent} from './podstatus/component';
 import {PolicyRuleListComponent} from './policyrule/component';
 import {PropertyComponent} from './property/component';
 import {ProxyComponent} from './proxy/component';
-import {ResourceQuotaListComponent} from './quotas/component';
 import {ClusterRoleListComponent} from './resourcelist/clusterrole/component';
 import {ConfigMapListComponent} from './resourcelist/configmap/component';
 import {CRDListComponent} from './resourcelist/crd/component';
@@ -79,8 +75,8 @@ import {NodeListComponent} from './resourcelist/node/component';
 import {PersistentVolumeListComponent} from './resourcelist/persistentvolume/component';
 import {PersistentVolumeClaimListComponent} from './resourcelist/persistentvolumeclaim/component';
 import {PodListComponent} from './resourcelist/pod/component';
+import {VirtualMachineListComponent} from './resourcelist/virtualmachine/component'
 import {ReplicaSetListComponent} from './resourcelist/replicaset/component';
-import {ReplicationControllerListComponent} from './resourcelist/replicationcontroller/component';
 import {SecretListComponent} from './resourcelist/secret/component';
 import {ServiceListComponent} from './resourcelist/service/component';
 import {StatefulSetListComponent} from './resourcelist/statefulset/component';
@@ -91,8 +87,20 @@ import {TextInputComponent} from './textinput/component';
 import {UploadFileComponent} from './uploadfile/component';
 import {WorkloadStatusComponent} from './workloadstatus/component';
 import {ZeroStateComponent} from './zerostate/component';
+import {ServiceAccountListComponent} from "./resourcelist/serviceaccount/component";
 import {TenantSelectorComponent} from './tenant/component';
 import {TenantListComponent} from './resourcelist/tenantlist/component';
+import {UserListComponent} from "./resourcelist/user/component";
+import {ResourceQuotasListComponent} from "./resourcelist/resourcequotalist/component";
+import {PartitionListComponent} from "./resourcelist/partitionlist/component";
+import {ResourcePartitionListComponent} from "./resourcelist/resourcepartition/component";
+import {TenantPartitionListComponent} from "./resourcelist/tenantpartition/component";
+import {RoleListComponent} from "./resourcelist/role/component";
+import {ResourceQuotaListComponent} from "./quotas/component";
+import {TpTenantListComponent} from "./resourcelist/tptenants/component";
+import {NetworkListComponent} from './resourcelist/network/component';
+import {NetworkObjectListComponent} from './resourcelist/networkobject/component';
+import {NetworkVersionListComponent} from './resourcelist/networkversion/component';
 
 const components = [
   ActionbarDetailActionsComponent,
@@ -105,8 +113,10 @@ const components = [
   ActionbarComponent,
   AllocationChartComponent,
   ActionbarDetailTriggerComponent,
-
   BreadcrumbsComponent,
+  ResourcePartitionListComponent,
+  TenantPartitionListComponent,
+  TpTenantListComponent,
 
   CardComponent,
   CardListFilterComponent,
@@ -129,11 +139,9 @@ const components = [
   DateComponent,
   DeploymentListComponent,
   DefaultActionbar,
-
   EndpointListComponent,
   ExternalEndpointComponent,
   EventListComponent,
-
   HiddenPropertyComponent,
 
   IngressListComponent,
@@ -156,20 +164,24 @@ const components = [
 
   ObjectMetaComponent,
 
+  PartitionListComponent,
   PodStatusCardComponent,
   PropertyComponent,
   ProxyComponent,
   PodListComponent,
+  VirtualMachineListComponent,
   PersistentVolumeListComponent,
   PersistentVolumeClaimListComponent,
   PolicyRuleListComponent,
   PinDefaultActionbar,
 
-  ResourceQuotaListComponent,
+  ResourceQuotasListComponent,
   ResourceLimitListComponent,
   ReplicaSetListComponent,
-  ReplicationControllerListComponent,
   RowDetailComponent,
+  RoleListComponent,
+  ResourceQuotaListComponent,
+
 
   StorageClassListComponent,
   StatefulSetListComponent,
@@ -189,6 +201,13 @@ const components = [
 
   TenantSelectorComponent,
   TenantListComponent,
+
+  ServiceAccountListComponent,
+  UserListComponent,
+
+  NetworkListComponent,
+  NetworkObjectListComponent,
+  NetworkVersionListComponent,
 ];
 
 @NgModule({

@@ -17,7 +17,6 @@ import {HttpParams} from '@angular/common/http';
 import {Component, ComponentFactoryResolver, Input} from '@angular/core';
 import {Event, Job, JobList} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
-
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
 import {EndpointManager, Resource} from '../../../services/resource/endpoint';
@@ -29,6 +28,7 @@ import {ListGroupIdentifier, ListIdentifier} from '../groupids';
   selector: 'kd-job-list',
   templateUrl: './template.html',
 })
+
 export class JobListComponent extends ResourceListWithStatuses<JobList, Job> {
   @Input() title: string;
   @Input() endpoint = EndpointManager.resource(Resource.job, true, true).list();

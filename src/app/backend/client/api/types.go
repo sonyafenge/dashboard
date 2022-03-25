@@ -16,9 +16,9 @@
 package api
 
 import (
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	pluginclientset "github.com/CentaurusInfra/dashboard/src/app/backend/plugin/client/clientset/versioned"
 	restful "github.com/emicklei/go-restful"
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	pluginclientset "github.com/kubernetes/dashboard/src/app/backend/plugin/client/clientset/versioned"
 	v1 "k8s.io/api/authorization/v1"
 	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,8 +30,7 @@ import (
 
 const (
 	// Resource information that are used as csrf token storage. Can be accessible by multiple dashboard replicas.
-	CsrfTokenSecretName = "kubernetes-dashboard-csrf"
-
+	CsrfTokenSecretName = "centaurus-dashboard-csrf"
 	// Name of the data var that holds the csrf token inside the secret.
 	CsrfTokenSecretData = "csrf"
 )
@@ -51,7 +50,8 @@ type ClientManager interface {
 	HasAccess(authInfo api.AuthInfo) error
 	VerberClient(req *restful.Request, config *rest.Config) (ResourceVerber, error)
 	SetTokenManager(manager authApi.TokenManager)
-	GetTenant(authInfo api.AuthInfo) (string, error)
+	GetTenant(authInfo api.AuthInfo, nameSpace string, tenant string) (string, error)
+	GetClusterName() string
 }
 
 // ResourceVerber is responsible for performing generic CRUD operations on all supported resources.

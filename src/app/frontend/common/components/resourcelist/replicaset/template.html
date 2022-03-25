@@ -61,6 +61,7 @@ limitations under the License.
         <mat-cell *matCellDef="let replicaSet">
           <a (click)="$event.stopPropagation()"
              [routerLink]="getDetailsHref(replicaSet.objectMeta.name, replicaSet.objectMeta.namespace)"
+             [state]="{namespace: replicaSet.objectMeta.namespace}"
              queryParamsHandling="preserve">
             {{replicaSet.objectMeta.name}}
           </a>

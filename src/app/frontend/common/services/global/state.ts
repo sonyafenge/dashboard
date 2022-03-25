@@ -37,9 +37,11 @@ export class KdStateService {
     resourceName?: string,
     namespace?: string,
     resourceType?: string,
+    tenant?: string,
   ): string {
-    resourceName = resourceName || '';
+    tenant = tenant || '';
     namespace = namespace || '';
+    resourceName = resourceName || '';
     resourceType = resourceType || '';
 
     if (namespace && resourceName === undefined) {
@@ -47,6 +49,7 @@ export class KdStateService {
     }
 
     let href = `/${stateName}`;
+    href = tenant ? `${href}/${tenant}` : href;
     href = namespace ? `${href}/${namespace}` : href;
     href = resourceName ? `${href}/${resourceName}` : href;
     href = resourceType ? `${href}/${resourceType}` : href;

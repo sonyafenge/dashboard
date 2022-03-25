@@ -15,23 +15,25 @@
 package handler
 
 import (
-	"encoding/json"
-	"net/http"
-	"testing"
-
 	"bytes"
-	"reflect"
-	"strings"
-
+	"encoding/json"
 	restful "github.com/emicklei/go-restful"
 	"github.com/kubernetes/dashboard/src/app/backend/args"
-	"github.com/kubernetes/dashboard/src/app/backend/auth"
-	authApi "github.com/kubernetes/dashboard/src/app/backend/auth/api"
-	"github.com/kubernetes/dashboard/src/app/backend/auth/jwe"
-	"github.com/kubernetes/dashboard/src/app/backend/client"
-	"github.com/kubernetes/dashboard/src/app/backend/settings"
-	"github.com/kubernetes/dashboard/src/app/backend/sync"
 	"github.com/kubernetes/dashboard/src/app/backend/systembanner"
+	"net/http"
+	"reflect"
+	"strings"
+	"testing"
+
+	"github.com/CentaurusInfra/dashboard/src/app/backend/args"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/auth"
+	authApi "github.com/CentaurusInfra/dashboard/src/app/backend/auth/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/auth/jwe"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/client"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/settings"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/sync"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/systembanner"
+	"github.com/emicklei/go-restful"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -43,11 +45,8 @@ func getTokenManager() authApi.TokenManager {
 }
 
 func TestCreateHTTPAPIHandler(t *testing.T) {
-	cManager := client.NewClientManager("", "http://localhost:8080")
-	authManager := auth.NewAuthManager(cManager, getTokenManager(), authApi.AuthenticationModes{}, true)
-	sManager := settings.NewSettingsManager()
 	sbManager := systembanner.NewSystemBannerManager("Hello world!", "INFO")
-	_, err := CreateHTTPAPIHandler(nil, cManager, authManager, sManager, sbManager)
+	_, err := CreateHTTPAPIHandler(nil, nil, nil, nil, nil, nil, sbManager, nil)
 	if err != nil {
 		t.Fatal("CreateHTTPAPIHandler() cannot create HTTP API handler")
 	}

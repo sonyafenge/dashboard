@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <g id="tick">
+    <path d="M0 7.99998C0 3.58171 3.58171 0 7.99998 0C12.4183 0 16 3.58171 16 7.99998C16 12.4183 12.4183 16 7.99998 16C3.58171 16 0 12.4183 0 7.99998Z" id="Circle" fill="#FF0000" fill-rule="evenodd" stroke="none" />
+    <g id="Group" transform="translate(6.666504 2.4654846)">
+      <path d="M1.3335 0C0.781211 0 0.333496 0.298548 0.333496 0.666826L0.333496 6.89054C0.333496 7.25882 0.781211 7.55736 1.3335 7.55736C1.88578 7.55736 2.3335 7.25882 2.3335 6.89054L2.3335 0.666826C2.3335 0.298548 1.88578 0 1.3335 0Z" id="Shape" fill="#FFFFFF" fill-rule="evenodd" stroke="none" />
+      <path d="M1.33349 11.1348C2.06996 11.1348 2.66699 10.5377 2.66699 9.80127C2.66699 9.0648 2.06996 8.46777 1.33349 8.46777C0.597025 8.46777 0 9.0648 0 9.80127C0 10.5377 0.597025 11.1348 1.33349 11.1348Z" id="Oval" fill="#FFFFFF" fill-rule="evenodd" stroke="none" />
+    </g>
+  </g>
+</svg>

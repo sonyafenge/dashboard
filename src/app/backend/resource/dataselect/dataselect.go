@@ -15,11 +15,10 @@
 package dataselect
 
 import (
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	metricapi "github.com/CentaurusInfra/dashboard/src/app/backend/integration/metric/api"
 	"log"
 	"sort"
-
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	metricapi "github.com/kubernetes/dashboard/src/app/backend/integration/metric/api"
 )
 
 // GenericDataCell describes the interface of the data cell that contains all the necessary methods needed to perform

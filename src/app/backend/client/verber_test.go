@@ -26,7 +26,7 @@ import (
 	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	restclient "k8s.io/client-go/rest"
 
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
 )
 
 type clientFunc func(req *http.Request) (*http.Response, error)
@@ -51,7 +51,7 @@ func (c *FakeRESTClient) Delete() *restclient.Request {
 	codec := apitesting.TestCodec(factory, metaV1.SchemeGroupVersion)
 	return restclient.NewRequest(clientFunc(func(req *http.Request) (*http.Response, error) {
 		return c.response, c.err
-	}), "DELETE", nil, "/api/v1", restclient.ContentConfig{}, restclient.Serializers{
+	}), "DELETE", nil, "/api/v1/tenants/", restclient.ContentConfig{}, restclient.Serializers{
 		Encoder: codec,
 	}, nil, nil, 0)
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="13px" height="13px" viewBox="0 0 13 13" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+  <g id="User" transform="translate(0.5 0.5)">
+    <g id="profile-circle">
+      <path d="M5.92822 6.46798C4.87222 6.43198 4.03223 5.56798 4.03223 4.50599C4.03223 3.41999 4.90822 2.53799 6.00022 2.53799C7.08622 2.53799 7.96821 3.41999 7.96821 4.50599C7.96221 5.56798 7.12822 6.43198 6.07222 6.46798C6.03022 6.46198 5.97622 6.46198 5.92822 6.46798Z" id="Vector" fill="none" fill-rule="evenodd" stroke="#1F263E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M6.00004 12C4.44005 12 3.02405 11.406 1.95605 10.428C2.01605 9.864 2.37605 9.312 3.01805 8.88C4.66205 7.788 7.35004 7.788 8.98203 8.88C9.62403 9.312 9.98403 9.864 10.044 10.428C8.97603 11.406 7.56004 12 6.00004 12Z" id="Vector" fill="none" fill-rule="evenodd" stroke="#1F263E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M5.99998 12C2.68628 12 0 9.31368 0 5.99998C0 2.68628 2.68628 0 5.99998 0C9.31368 0 12 2.68628 12 5.99998C12 9.31368 9.31368 12 5.99998 12Z" id="Vector" fill="none" fill-rule="evenodd" stroke="#1F263E" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </g>
+</svg>

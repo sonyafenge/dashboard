@@ -16,10 +16,10 @@
 package customresourcedefinition
 
 import (
-	"github.com/kubernetes/dashboard/src/app/backend/api"
-	"github.com/kubernetes/dashboard/src/app/backend/errors"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/common"
-	"github.com/kubernetes/dashboard/src/app/backend/resource/dataselect"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/api"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/errors"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/common"
+	"github.com/CentaurusInfra/dashboard/src/app/backend/resource/dataselect"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 )
@@ -44,10 +44,11 @@ type CustomResourceDefinition struct {
 	Scope       apiextensions.ResourceScope                 `json:"scope"`
 	Names       apiextensions.CustomResourceDefinitionNames `json:"names"`
 	Established apiextensions.ConditionStatus               `json:"established"`
+	ClusterName string                                      `json:"clusterName"`
 }
 
 // GetCustomResourceDefinitionList returns all the custom resource definitions in the cluster.
-func GetCustomResourceDefinitionList(client apiextensionsclientset.Interface, dsQuery *dataselect.DataSelectQuery) (*CustomResourceDefinitionList, error) {
+func GetCustomResourceDefinitionList(client apiextensionsclientset.Interface, dsQuery *dataselect.DataSelectQuery, clusterName string) (*CustomResourceDefinitionList, error) {
 	channel := common.GetCustomResourceDefinitionChannel(client, 1)
 	crdList := <-channel.List
 	err := <-channel.Error
@@ -57,11 +58,11 @@ func GetCustomResourceDefinitionList(client apiextensionsclientset.Interface, ds
 		return nil, criticalError
 	}
 
-	return toCustomResourceDefinitionList(crdList.Items, nonCriticalErrors, dsQuery), nil
+	return toCustomResourceDefinitionList(crdList.Items, nonCriticalErrors, dsQuery, clusterName), nil
 }
 
 // GetCustomResourceDefinitionListWithMultiTenancy returns all the custom resource definitions in the cluster.
-func GetCustomResourceDefinitionListWithMultiTenancy(client apiextensionsclientset.Interface, dsQuery *dataselect.DataSelectQuery, tenant string) (*CustomResourceDefinitionList, error) {
+func GetCustomResourceDefinitionListWithMultiTenancy(client apiextensionsclientset.Interface, dsQuery *dataselect.DataSelectQuery, tenant string, clusterName string) (*CustomResourceDefinitionList, error) {
 	channel := common.GetCustomResourceDefinitionChannelWithMultiTenancy(client, tenant, 1)
 	crdList := <-channel.List
 	err := <-channel.Error
@@ -71,10 +72,10 @@ func GetCustomResourceDefinitionListWithMultiTenancy(client apiextensionsclients
 		return nil, criticalError
 	}
 
-	return toCustomResourceDefinitionList(crdList.Items, nonCriticalErrors, dsQuery), nil
+	return toCustomResourceDefinitionList(crdList.Items, nonCriticalErrors, dsQuery, clusterName), nil
 }
 
-func toCustomResourceDefinitionList(crds []apiextensions.CustomResourceDefinition, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery) *CustomResourceDefinitionList {
+func toCustomResourceDefinitionList(crds []apiextensions.CustomResourceDefinition, nonCriticalErrors []error, dsQuery *dataselect.DataSelectQuery, clusterName string) *CustomResourceDefinitionList {
 	crdList := &CustomResourceDefinitionList{
 		Items:    make([]CustomResourceDefinition, 0),
 		ListMeta: api.ListMeta{TotalItems: len(crds)},
@@ -86,6 +87,7 @@ func toCustomResourceDefinitionList(crds []apiextensions.CustomResourceDefinitio
 	crdList.ListMeta = api.ListMeta{TotalItems: filteredTotal}
 
 	for _, crd := range crds {
+		crd.ClusterName = clusterName
 		crdList.Items = append(crdList.Items, toCustomResourceDefinition(&crd))
 	}
 
@@ -101,6 +103,7 @@ func toCustomResourceDefinition(crd *apiextensions.CustomResourceDefinition) Cus
 		Scope:       crd.Spec.Scope,
 		Names:       crd.Status.AcceptedNames,
 		Established: getCRDConditionStatus(crd, apiextensions.Established),
+		ClusterName: crd.ClusterName,
 	}
 }
 

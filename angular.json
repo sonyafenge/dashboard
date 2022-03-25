@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "kubernetes-dashboard": {
+    "centaurus-dashboard": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -24,14 +24,23 @@
               }
             ],
             "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.css",
               "node_modules/highlight.js/styles/github.css",
               "node_modules/material-design-icons/iconfont/material-icons.css",
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
               "node_modules/xterm/dist/xterm.css",
               "node_modules/c3/c3.min.css",
+              "node_modules/sweetalert2/src/sweetalert2.scss",
               "src/app/frontend/index.scss"
             ],
-            "scripts": ["node_modules/sockjs-client/dist/sockjs.min.js"]
+            "scripts": [
+              "./node_modules/jquery/dist/jquery.js",
+              "./node_modules/@popperjs/core/dist/umd/popper.min.js",
+              "./node_modules/bootstrap/dist/js/bootstrap.min.js",
+              "node_modules/sockjs-client/dist/sockjs.min.js",
+              "node_modules/sweetalert2/dist/sweetalert2.js"
+
+            ]
           },
           "configurations": {
             "production": {
@@ -56,19 +65,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "kubernetes-dashboard:build",
+            "browserTarget": "centaurus-dashboard:build",
             "port": 8080
           },
           "configurations": {
             "production": {
-              "browserTarget": "kubernetes-dashboard:build:production"
+              "browserTarget": "centaurus-dashboard:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "kubernetes-dashboard:build"
+            "browserTarget": "centaurus-dashboard:build"
           }
         },
         "test": {
@@ -100,9 +109,9 @@
           }
         }
       }
-    },
+    }
   },
-  "defaultProject": "kubernetes-dashboard",
+  "defaultProject": "centaurus-dashboard",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "kd",

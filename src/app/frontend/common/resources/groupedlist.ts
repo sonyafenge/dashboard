@@ -20,7 +20,6 @@ import {
   Metric,
   PodList,
   ReplicaSetList,
-  ReplicationControllerList,
   ResourceList,
   StatefulSetList,
 } from '@api/backendapi';
@@ -118,14 +117,6 @@ export class GroupedResourceList {
         this.resourcesRatio.replicaSetRatio = Helper.getResourceRatio(
           replicaSets.status,
           replicaSets.listMeta.totalItems,
-        );
-        break;
-      }
-      case ListIdentifier.replicationController: {
-        const replicationControllers = list as ReplicationControllerList;
-        this.resourcesRatio.replicationControllerRatio = Helper.getResourceRatio(
-          replicationControllers.status,
-          replicationControllers.listMeta.totalItems,
         );
         break;
       }

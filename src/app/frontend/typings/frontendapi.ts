@@ -114,7 +114,6 @@ export interface ResourcesRatio {
   jobRatio: RatioItem[];
   podRatio: RatioItem[];
   replicaSetRatio: RatioItem[];
-  replicationControllerRatio: RatioItem[];
   statefulSetRatio: RatioItem[];
 }
 

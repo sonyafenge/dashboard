@@ -14,7 +14,7 @@
 
 import {HttpParams} from '@angular/common/http';
 import {Component, Input} from '@angular/core';
-import {Node, NodeList} from '@api/backendapi';
+import {Node, NodeList, ObjectMeta, TypeMeta} from '@api/backendapi';
 import {Observable} from 'rxjs/Observable';
 import {ResourceListWithStatuses} from '../../../resources/list';
 import {NotificationsService} from '../../../services/global/notifications';
@@ -22,15 +22,26 @@ import {EndpointManager, Resource} from '../../../services/resource/endpoint';
 import {ResourceService} from '../../../services/resource/resource';
 import {MenuComponent} from '../../list/column/menu/component';
 import {ListGroupIdentifier, ListIdentifier} from '../groupids';
+import {VerberService} from "../../../services/global/verber";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'kd-node-list',
   templateUrl: './template.html',
 })
+// @ts-ignore
 export class NodeListComponent extends ResourceListWithStatuses<NodeList, Node> {
   @Input() endpoint = EndpointManager.resource(Resource.node).list();
+  displayName:string;
+  typeMeta:TypeMeta;
+  objectMeta:ObjectMeta;
+  nodeCount: number;
+  partitions: [];
+  clusterName: string;
 
   constructor(
+    readonly verber_: VerberService,
+    private readonly router_: Router,
     private readonly node_: ResourceService<NodeList>,
     notifications: NotificationsService,
   ) {
@@ -45,6 +56,14 @@ export class NodeListComponent extends ResourceListWithStatuses<NodeList, Node> 
     this.registerBinding(this.icon.checkCircle, 'kd-success', this.isInSuccessState);
     this.registerBinding(this.icon.help, 'kd-muted', this.isInUnknownState);
     this.registerBinding(this.icon.error, 'kd-error', this.isInErrorState);
+
+    const routeInfo = this.router_.getCurrentNavigation();
+    if ( routeInfo === null || routeInfo.extras.state === undefined ) {
+      this.clusterName = sessionStorage.getItem('rpClusterName')
+    } else {
+      this.clusterName = (routeInfo.extras.state['clusterName']).toString();
+      sessionStorage.setItem('rpClusterName', this.clusterName)
+    }
   }
 
   getResourceObservable(params?: HttpParams): Observable<NodeList> {
@@ -52,7 +71,52 @@ export class NodeListComponent extends ResourceListWithStatuses<NodeList, Node> 
   }
 
   map(nodeList: NodeList): Node[] {
-    return nodeList.nodes;
+    this.nodeCount = 0
+    const resourcePartitionList: any = [];
+    const tenantPartitionList: any = [];
+    const nonScaleOutPartitionList: any = [];
+
+    nodeList.nodes.map((node)=>{
+      if(node['objectMeta']['name'].includes("-rp"))
+      {
+        resourcePartitionList.push(node);
+      } else if(node['objectMeta']['name'].includes("-tp")){
+        tenantPartitionList.push(node);
+      }
+      else{
+        nonScaleOutPartitionList.push(node);
+      }
+    })
+
+    const resourcePartitions = resourcePartitionList.reduce((acc:any, item:any) => {
+      acc[`${item.clusterName}`] = (acc[`${item.clusterName}`] || []);
+      acc[`${item.clusterName}`].push(item);
+      return acc;
+    }, {});
+
+    const tenantPartitions = tenantPartitionList.reduce((acc:any, item:any) => {
+      acc[`${item.clusterName}`] = (acc[`${item.clusterName}`] || []);
+      acc[`${item.clusterName}`].push(item);
+      return acc;
+    }, {});
+
+    const nonScaleOutPartitions = nonScaleOutPartitionList.reduce((acc:any, item:any) => {
+      acc[`${item.clusterName}`] = (acc[`${item.clusterName}`] || []);
+      acc[`${item.clusterName}`].push(item);
+      return acc;
+    }, {});
+
+    if (this.clusterName.includes("-rp")){
+      this.partitions = resourcePartitions[this.clusterName];
+      this.nodeCount = resourcePartitions[this.clusterName].length
+    }else if (this.clusterName.includes("-tp")){
+      this.partitions = tenantPartitions[this.clusterName]
+      this.nodeCount = tenantPartitions[this.clusterName].length
+    }else{
+      this.partitions = nonScaleOutPartitions[this.clusterName]
+      this.nodeCount = nonScaleOutPartitions[this.clusterName].length
+    }
+    return this.partitions;
   }
 
   isInErrorState(resource: Node): boolean {
@@ -70,4 +134,5 @@ export class NodeListComponent extends ResourceListWithStatuses<NodeList, Node> 
   getDisplayColumns(): string[] {
     return ['statusicon', 'name', 'labels', 'ready', 'cpureq', 'cpulim', 'memreq', 'memlim', 'age'];
   }
+
 }
