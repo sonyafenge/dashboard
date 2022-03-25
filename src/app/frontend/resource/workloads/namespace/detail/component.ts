@@ -52,7 +52,7 @@ export class NamespaceDetailComponent implements OnInit, OnDestroy {
 
     let endpoint = ''
     if (sessionStorage.getItem('userType') === 'cluster-admin') {
-      endpoint = `api/v1/tenants/${resourceTenant}/namespace/${resourceName}`
+      endpoint = `api/v1/${partition}tenants/${resourceTenant}/namespace/${resourceName}`
     } else {
       endpoint = this.endpoint_.detail()
     }

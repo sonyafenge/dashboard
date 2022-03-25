@@ -46,7 +46,7 @@ export class EventListComponent extends ResourceListWithStatuses<EventList, Even
     this.registerBinding(this.icon.none, '', this.isNormal.bind(this));
 
     this.tenantName = this.tenant_.current() === 'system' ?
-      sessionStorage.getItem('currentTenant') : this.tenant_.current()
+      this.tenant_.resourceTenant() : this.tenant_.current()
     this.partition = this.tenantName === 'system' ? this.tenant_.tenantPartition() : ''
   }
 
