@@ -47,7 +47,7 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
   constructor(
     readonly verber_: VerberService,
     private readonly tenant_: ResourceService<TenantList>,
-    private readonly route_: ActivatedRoute,
+    private readonly activatedRoute_: ActivatedRoute,
     private readonly router_: Router,
     private readonly cookieService_: CookieService,
     notifications: NotificationsService,
@@ -56,7 +56,7 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
     this.id = ListIdentifier.tenant;
     this.groupId = ListGroupIdentifier.cluster;
 
-    this.nodeName = this.route_.snapshot.params.resourceName
+    this.nodeName = this.activatedRoute_.snapshot.params.resourceName
 
     const routeInfo = this.router_.getCurrentNavigation();
     if ( routeInfo === null || routeInfo.extras.state === undefined ) {
@@ -115,11 +115,15 @@ export class TpTenantListComponent extends ResourceListWithStatuses<TenantList, 
 
   setPartition(partitionName:string, $event:any) {
     const resourceName = $event.target.innerHTML.replace(/^\s+|\s+$/gm,'');
+    // @ts-ignore
+    const reqFromTpTenant = this.activatedRoute_.snapshot['_routerState'].url
     if (sessionStorage.getItem(`${resourceName}`)) {
       sessionStorage.removeItem(resourceName)
       sessionStorage.removeItem('currentTpTenant')
+      sessionStorage.removeItem('reqFromTpTenant')
     }
     sessionStorage.setItem('currentTpTenant', resourceName)
+    sessionStorage.setItem('reqFromTpTenant', reqFromTpTenant)
     sessionStorage.setItem(`${resourceName}`,partitionName);;
   }
 }
