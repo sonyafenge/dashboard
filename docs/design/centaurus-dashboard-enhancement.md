@@ -228,6 +228,8 @@ roleRef:
 
 Earlier dashboard go-client was able to connect to only one api-server of Arktos cluster, the modified dashboard client will be able to communicate to multiple api-server which allow dashboard service to fetch all details of all RPs and TPs.
 
+Also, system is default tenant in tenant partition, with multiple TPs, cluster will have multiple system tenant. It is confusing for dashboard client to perform operations on particular system tenant of tenant partition. So, Added API calls which will include the tenant partition's name so that dashboard client will pick the correct system tenant for a particular tenant partition.
+
 ## Dashboard detailed Design
 
 ##### 1. Login Page

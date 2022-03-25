@@ -93,6 +93,11 @@ User can access dashboard on **https://hostmachineIP:9443/#/login** with usernam
 
 ![](img.png)
 
+**Note:** If you build image from the dashboard code and want to use it,
+
+To use it with **docker-compose.yml**, only replace `image` endpoint of `dashboard` under  `services` .
+
+To use it with **centaurus-dashboard.yaml**, only replace the `image` endpoint of `centaurus-dashboard` container in `kind: Deployment`.
 
 ## Arktos cluster tear-down
 
