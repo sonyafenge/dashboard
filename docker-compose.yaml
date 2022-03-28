@@ -15,7 +15,7 @@ services:
       - /var/lib/postgres-data:/var/lib/postgresql/data
 
   dashboard:
-    image: c2cengg20190034/dashboard:dev  # TODO change image to "centaurus/dashboard:latest" while merging the PR
+    image: gcr.io/workload-controller-manager/centaurus-dashboard:latest  # TODO change image to "centaurus/dashboard:latest" while merging the PR
     restart: always
     environment:
       - DB_HOST=postgresdb

@@ -188,7 +188,7 @@ spec:
     spec:
       containers:
         - name: centaurus-dashboard
-          image: centaurusui/dashboard:v0.0.1
+          image: gcr.io/workload-controller-manager/centaurus-dashboard:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8443
