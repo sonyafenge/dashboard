@@ -84,8 +84,8 @@ openssl genrsa -out certs/dashboard.key 2048
 openssl rsa -in certs/dashboard.key -out certs/dashboard.key
 openssl req -sha256 -new -key certs/dashboard.key -out certs/dashboard.csr -subj "/CN=$(hostname -i | awk '{print $1}')"
 openssl x509 -req -sha256 -days 365 -in certs/dashboard.csr -signkey certs/dashboard.key -out certs/dashboard.crt
-wget https://github.com/CentaurusInfra/dashboard/blob/centaurus/docker-compose.yaml
-# TODO remove above link and use "wget https://raw.githubusercontent.com/CentaurusInfra/dashboard/centaurus/docker-compose.yaml"
+wget https://raw.githubusercontent.com/CentaurusInfra/dashboard/centaurus/docker-compose.yaml
+
 docker-compose up -d
 ```
 
