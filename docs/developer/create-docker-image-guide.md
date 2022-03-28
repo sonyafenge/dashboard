@@ -17,7 +17,7 @@ Make sure the following software is installed and added to the $PATH variable:
 2. Clone the repository.
 
 ```bash
-git clone https://github.com/Click2Cloud-Centaurus/dashboard.git $HOME/dashboard -b centaurus
+git clone https://github.com/CentaurusInfra/dashboard.git $HOME/dashboard -b centaurus
 # TODO while merging PR change it to "git clone https://github.com/CentaurusInfra/dashboard.git $HOME/dashboard -b centaurus
 cd $HOME/dashboard
 ```

@@ -1,8 +1,6 @@
 
 # Centaurus Portal Requirement & Design
 
-**Author(s)**: [Click2Cloud Inc](https://github.com/Click2Cloud-Centaurus)
-
 This design document is a proposal for enhancing the dashboard UI that
 allows users to manage Centaurus Cluster, Tenants, Users, and
 Quotas in an intuitive way.
